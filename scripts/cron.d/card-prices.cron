@@ -1,0 +1,1 @@
+20 9 * * * $R card-prices 1800 $REPO/scripts/card-prices.py

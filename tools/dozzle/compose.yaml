@@ -1,0 +1,57 @@
+services:
+  dozzle:
+    image: amir20/dozzle:v11.2.0
+    container_name: dozzle
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      # Read-only Docker API via the socket proxy (POST=0, so container actions can't work anyway).
+      DOCKER_HOST: tcp://docker-socket-proxy:2375
+      DOZZLE_HOSTNAME: homelab
+      DOZZLE_NO_ANALYTICS: "true"
+      # Defaults, stated so nobody flips them by accident: no start/stop/shell/MCP from the UI.
+      DOZZLE_ENABLE_ACTIONS: "false"
+      DOZZLE_ENABLE_SHELL: "false"
+      DOZZLE_ENABLE_MCP: "false"
+    volumes:
+      - ${APPDATA_PATH}/dozzle:/data
+    healthcheck:
+      test: ["CMD", "/dozzle", "healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+      - socket-proxy
+    labels:
+      # Traefik: port 8082 via Traefik entrypoint, behind the dashboard login; no dozzle.lan
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.dozzle.rule=PathPrefix(`/`)
+      - traefik.http.routers.dozzle.entrypoints=dozzle
+      - traefik.http.routers.dozzle.middlewares=admin-auth@docker
+      - traefik.http.services.dozzle.loadbalancer.server.port=8080
+      # Dashboard
+      - homelab.name=Dozzle
+      - homelab.group=Infrastructure
+      - homelab.icon=dozzle
+      - homelab.audience=admin
+      - homelab.description=Live container logs
+      - homelab.port=8082
+      # Uptime Kuma (AutoKuma) – internal address, because the published port needs a login
+      - kuma.dozzle.http.name=dozzle
+      - kuma.dozzle.http.url=http://dozzle:8080/healthcheck
+
+networks:
+  proxy:
+    external: true
+  socket-proxy:
+    external: true

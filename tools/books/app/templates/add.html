@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Add a book</h1>
+<form method="get" action="/add">
+  <input type="search" name="q" value="{{ q }}" placeholder="Title, author or ISBN" aria-label="Search Open Library">
+  <button type="submit">Search Open Library</button>
+</form>
+{% if err %}<div class="err">{{ err }}</div>{% endif %}
+{% for r in results %}
+<form method="post" action="/add" class="card">
+  <div class="body">
+    <strong>{{ r.title }}</strong>
+    <div class="muted">{{ r.authors }}{% if r.pages %} &middot; {{ r.pages }} pages{% endif %}</div>
+    <input type="hidden" name="title" value="{{ r.title }}">
+    <input type="hidden" name="authors" value="{{ r.authors }}">
+    <input type="hidden" name="isbn13" value="{{ r.isbn13 or '' }}">
+    <input type="hidden" name="isbn10" value="{{ r.isbn10 or '' }}">
+    <input type="hidden" name="pages" value="{{ r.pages or '' }}">
+    <input type="hidden" name="cover_id" value="{{ r.cover_id or '' }}">
+    <div class="row">
+      <select name="shelf" aria-label="Shelf" style="width:auto;margin:0">
+        {% for s in SHELVES %}<option value="{{ s }}" {{ 'selected' if s == 'want' }}>{{ SHELF_NAMES[s] }}</option>{% endfor %}
+      </select>
+      <button type="submit">Add</button>
+    </div>
+  </div>
+</form>
+{% endfor %}
+<h2>Add by hand</h2>
+<form method="post" action="/add">
+  <label>Title<input type="text" name="title" required></label>
+  <label>Author<input type="text" name="authors" required></label>
+  <label>ISBN (optional)<input type="text" name="isbn13" inputmode="numeric"></label>
+  <label>Shelf
+    <select name="shelf">{% for s in SHELVES %}<option value="{{ s }}" {{ 'selected' if s == 'want' }}>{{ SHELF_NAMES[s] }}</option>{% endfor %}</select>
+  </label>
+  <button type="submit">Add book</button>
+</form>
+{% endblock %}

@@ -1,0 +1,7 @@
+# gitleaks config for scripts/secret-scan.sh (the scan before every loop/deploy push)
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Placeholder names in .env.example (empty values, comments)"
+paths = ['''(^|/)\.env\.example$''']

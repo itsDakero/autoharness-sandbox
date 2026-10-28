@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/self-check.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-self-check.push.name=cron-self-check
+      - kuma.cron-self-check.push.push_token=${KUMA_CRON_PUSH_SECRET:-}selfcheck0000000
+      - kuma.cron-self-check.push.interval=93600
+      - kuma.cron-self-check.push.max_retries=0

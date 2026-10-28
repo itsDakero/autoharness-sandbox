@@ -1,0 +1,1 @@
+0 */2 * * * $R fpl-bootstrap 720 $REPO/scripts/fpl-job.sh bootstrap 3 600

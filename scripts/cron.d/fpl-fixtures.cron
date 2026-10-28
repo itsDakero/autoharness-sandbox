@@ -1,0 +1,1 @@
+30 6 * * * $R fpl-fixtures 720 $REPO/scripts/fpl-job.sh fixtures 2 600

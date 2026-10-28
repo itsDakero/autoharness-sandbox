@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/fpl-fixtures.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-fpl-fixtures.push.name=cron-fpl-fixtures
+      - kuma.cron-fpl-fixtures.push.push_token=${KUMA_CRON_PUSH_SECRET:-}fplfixtures00000
+      - kuma.cron-fpl-fixtures.push.interval=93600
+      - kuma.cron-fpl-fixtures.push.max_retries=0

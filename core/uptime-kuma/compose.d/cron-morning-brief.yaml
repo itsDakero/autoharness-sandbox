@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/morning-brief.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-morning-brief.push.name=cron-morning-brief
+      - kuma.cron-morning-brief.push.push_token=${KUMA_CRON_PUSH_SECRET:-}morningbrief0000
+      - kuma.cron-morning-brief.push.interval=93600
+      - kuma.cron-morning-brief.push.max_retries=0

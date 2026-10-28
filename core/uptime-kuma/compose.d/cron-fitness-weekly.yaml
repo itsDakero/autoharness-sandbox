@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/fitness-weekly.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-fitness-weekly.push.name=cron-fitness-weekly
+      - kuma.cron-fitness-weekly.push.push_token=${KUMA_CRON_PUSH_SECRET:-}fitnessweekly000
+      - kuma.cron-fitness-weekly.push.interval=691200
+      - kuma.cron-fitness-weekly.push.max_retries=0

@@ -1,0 +1,42 @@
+services:
+  leafgreen:
+    build: .
+    image: homelab/leafgreen:0.2.0
+    container_name: leafgreen
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+    ports:
+      - "8085:8080"                  # host port = homelab.port
+    volumes:
+      - ${APPDATA_PATH}/leafgreen:/data   # state.json + backups/
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://leafgreen.lan)
+      - traefik.enable=true
+      - traefik.http.routers.leafgreen.rule=Host(`leafgreen.${DOMAIN}`)
+      - traefik.http.routers.leafgreen.entrypoints=web
+      - traefik.http.services.leafgreen.loadbalancer.server.port=8080
+      # Dashboard
+      - homelab.name=LeafGreen Field Notes
+      - homelab.group=Games
+      - homelab.icon=nintendo-switch
+      - homelab.audience=admin
+      - homelab.description=Walkthrough and Nuzlocke helper for Pokémon LeafGreen
+      - homelab.port=8085
+      # Uptime Kuma (AutoKuma)
+      - kuma.leafgreen.http.name=leafgreen
+      - kuma.leafgreen.http.url=http://${LAN_IP}:8085/healthz
+
+networks:
+  proxy:
+    external: true

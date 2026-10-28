@@ -1,0 +1,49 @@
+services:
+  sonarr:
+    image: linuxserver/sonarr:4.0.20.3014-ls326
+    container_name: sonarr
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:8989/ping"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+    ports:
+      - "8989:8989"                  # host port = homelab.port
+    volumes:
+      - ${APPDATA_PATH}/sonarr:/config
+      # Read-write (approved via the guard): imports hardlink from /mnt/media/downloads/tv
+      # into /mnt/media/tv; same path as in qbittorrent, one filesystem.
+      - ${MEDIA_PATH}:/mnt/media
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://sonarr.lan)
+      - traefik.enable=true
+      - traefik.http.routers.sonarr.rule=Host(`sonarr.${DOMAIN}`)
+      - traefik.http.routers.sonarr.entrypoints=web
+      - traefik.http.services.sonarr.loadbalancer.server.port=8989
+      # Dashboard
+      - homelab.name=Sonarr
+      - homelab.group=Media
+      - homelab.icon=sonarr
+      - homelab.audience=admin
+      - homelab.description=TV shows, up to 2160p
+      - homelab.port=8989
+      # Uptime Kuma (AutoKuma) – checks the published port, like family devices use it
+      - kuma.sonarr.http.name=sonarr
+      - kuma.sonarr.http.url=http://${LAN_IP}:8989/ping
+
+networks:
+  proxy:
+    external: true

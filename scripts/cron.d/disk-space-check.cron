@@ -1,0 +1,1 @@
+10 9 * * * $R disk-space-check 600 --ok 0,1 $REPO/scripts/disk-space-check.sh

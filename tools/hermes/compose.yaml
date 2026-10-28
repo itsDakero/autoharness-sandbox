@@ -1,0 +1,73 @@
+# Hermes assistant (M6 stage D, docs/m6-research.md): Discord bot in its own channel, answering Dan only,
+# on the Mac mini's model (config.yaml). Not a web service: no port, no Traefik, so the tile isn't a link.
+# Fenced in by what it gets: no Docker API or socket proxy, no proxy network, no repo mounts beyond ideas/ and the runbooks (docs/, forensics/README.md, read-only),
+# no shell or web tools (config.yaml). It sees the homelab through the dashboard's status file.
+services:
+  hermes:
+    image: nousresearch/hermes-agent:v0.22.5
+    container_name: hermes
+    restart: unless-stopped
+    healthcheck:
+      # \0 is a NUL in the bytes literal, so it matches the real argv; this check's own cmdline holds a literal backslash and can't match itself
+      test: ["CMD", "python3", "-c", "import glob,sys; sys.exit(0 if any(b'hermes_cli' in c and b'gateway\\0run' in c for c in (open(p,'rb').read() for p in glob.glob('/proc/[0-9]*/cmdline'))) else 1)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command: ["gateway", "run"]
+    environment:
+      TZ: ${TZ}
+      HERMES_UID: "1000"   # dan, so its proposals (and its data dir) are dan's files
+      HERMES_GID: "1000"
+      HERMES_UPDATE_CHECK: "0"
+      # Where its file tool may write (the image's default is /opt/data only): its data + proposals
+      HERMES_WRITE_SAFE_ROOT: /opt/data:/homelab/ideas/proposed
+      DISCORD_BOT_TOKEN: ${HERMES_DISCORD_BOT_TOKEN:?set HERMES_DISCORD_BOT_TOKEN}
+      DISCORD_ALLOWED_USERS: ${HERMES_DISCORD_ALLOWED_USER_ID:?set HERMES_DISCORD_ALLOWED_USER_ID}
+      DISCORD_ALLOWED_CHANNELS: ${HERMES_DISCORD_CHANNEL_ID:?set HERMES_DISCORD_CHANNEL_ID}
+      DISCORD_FREE_RESPONSE_CHANNELS: ${HERMES_DISCORD_CHANNEL_ID}
+      DISCORD_HOME_CHANNEL: ${HERMES_DISCORD_CHANNEL_ID}
+    volumes:
+      - ${APPDATA_PATH}/hermes:/opt/data                 # sessions, memories, logs (restic backs it up)
+      - ./config.yaml:/opt/data/config.yaml:ro           # it can't change its own model or tools
+      - ./SOUL.md:/opt/data/SOUL.md:ro                   # its instructions
+      - ${APPDATA_PATH}/dashboard/agent-feed:/homelab/status:ro   # status.json, from the dashboard
+      - ../../ideas:/homelab/ideas:ro
+      - ../../ideas/proposed:/homelab/ideas/proposed     # the one place it writes
+      # The same two again under /opt/data: its file tool resolves a relative "homelab/ideas/..." from there,
+      # and proposals written that way landed in its data dir, never reaching the dashboard (2026-10-18)
+      - ../../ideas:/opt/data/homelab/ideas:ro
+      - ../../ideas/proposed:/opt/data/homelab/ideas/proposed
+      # runbooks, read-only; never the repo root or CLAUDE.md: Hermes loads any CLAUDE.md/AGENTS.md it finds
+      - ../../docs:/homelab/docs:ro
+      - ../../forensics/README.md:/homelab/forensics-README.md:ro
+      - ../../docs:/opt/data/homelab/docs:ro
+      - ../../forensics/README.md:/opt/data/homelab/forensics-README.md:ro
+    mem_limit: 3g
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - hermes
+    labels:
+      # Dashboard (no homelab.port: not a web service)
+      - homelab.name=Hermes
+      - homelab.group=Tools
+      - homelab.icon=hermes
+      - homelab.audience=admin
+      - homelab.description=Homelab assistant on Discord (Mac mini model)
+      # Uptime Kuma (AutoKuma): container running, checked through the socket proxy (Kuma's, not Hermes's);
+      # the model itself is mac-mini-ollama
+      - kuma.hermes.docker.name=hermes
+      - kuma.hermes.docker.docker_container=hermes
+      - kuma.hermes.docker.docker_host_name=socket-proxy
+      - kuma.hermes.docker.interval=60
+
+# Its own network: internet (Discord) and the Mac over the host's Tailscale route, no other containers.
+networks:
+  hermes:
+    name: hermes

@@ -1,0 +1,50 @@
+# Second Radarr for the 720p remote library (/mnt/media/movies-720p).
+services:
+  radarr-remote:
+    image: linuxserver/radarr:6.4.4.10685-ls318
+    container_name: radarr-remote
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:7878/ping"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+    ports:
+      - "7879:7878"                  # host port = homelab.port
+    volumes:
+      - ${APPDATA_PATH}/radarr-remote:/config
+      # Read-write (approved via the guard): imports hardlink from /mnt/media/downloads/movies-remote
+      # into /mnt/media/movies-720p; same path as in qbittorrent, one filesystem.
+      - ${MEDIA_PATH}:/mnt/media
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://radarr-remote.lan)
+      - traefik.enable=true
+      - traefik.http.routers.radarr-remote.rule=Host(`radarr-remote.${DOMAIN}`)
+      - traefik.http.routers.radarr-remote.entrypoints=web
+      - traefik.http.services.radarr-remote.loadbalancer.server.port=7878
+      # Dashboard
+      - homelab.name=Radarr (Remote)
+      - homelab.group=Media
+      - homelab.icon=radarr
+      - homelab.audience=admin
+      - homelab.description=Movies, 720p copies for the remote library
+      - homelab.port=7879
+      # Uptime Kuma (AutoKuma) – checks the published port, like family devices use it
+      - kuma.radarr-remote.http.name=radarr-remote
+      - kuma.radarr-remote.http.url=http://${LAN_IP}:7879/ping
+
+networks:
+  proxy:
+    external: true

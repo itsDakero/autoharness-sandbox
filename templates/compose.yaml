@@ -1,0 +1,50 @@
+# Template: copy to <category>/<service>/compose.yaml and replace "myservice".
+# Pick a free host port from the CLAUDE.md port table; it appears three times below.
+services:
+  myservice:
+    image: example/myservice:1.2.3   # pin an exact version, never :latest
+    container_name: myservice
+    restart: unless-stopped
+    # cap container logs (CLAUDE.md rule)
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+    ports:
+      - "8123:80"                    # host port = homelab.port
+      # - "${LAN_IP}:8123:80"        # or: LAN IP only (not reachable on the tailnet IP)
+    volumes:
+      - ${APPDATA_PATH}/myservice:/config
+    # use a tool the image already has (curl/wget/python/app CLI), health URL else port;
+    # omit if the image has its own HEALTHCHECK; never install packages
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:80/ || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://myservice.lan)
+      - traefik.enable=true
+      - traefik.http.routers.myservice.rule=Host(`myservice.${DOMAIN}`)
+      - traefik.http.routers.myservice.entrypoints=web
+      - traefik.http.services.myservice.loadbalancer.server.port=80
+      # Dashboard
+      - homelab.name=My Service
+      - homelab.group=Apps
+      - homelab.icon=myservice
+      - homelab.audience=family
+      - homelab.description=What it does, in one line
+      - homelab.port=8123
+      # Uptime Kuma (AutoKuma) – checks the published port, like family devices use it
+      - kuma.myservice.http.name=myservice
+      - kuma.myservice.http.url=http://${LAN_IP}:8123
+
+networks:
+  proxy:
+    external: true

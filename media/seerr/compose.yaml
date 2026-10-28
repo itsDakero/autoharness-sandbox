@@ -1,0 +1,54 @@
+# Seerr: family requests, Jellyfin sign-in (Danflix). Main Radarr/Sonarr are the defaults;
+# remote users' requests are moved to radarr-remote/sonarr-remote by scripts/seerr-route.py (cron).
+# See docs/m2-media.md, Stage E.
+services:
+  seerr:
+    image: ghcr.io/seerr-team/seerr:v3.5.1
+    container_name: seerr
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:5055/api/v1/status"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    init: true
+    user: "${PUID}:${PGID}"
+    environment:
+      TZ: ${TZ}
+      LOG_LEVEL: info
+    ports:
+      - "5055:5055"                  # host port = homelab.port
+    volumes:
+      - ${APPDATA_PATH}/seerr/config:/app/config
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://seerr.lan)
+      - traefik.enable=true
+      - traefik.http.routers.seerr.rule=Host(`seerr.${DOMAIN}`)
+      - traefik.http.routers.seerr.entrypoints=web
+      - traefik.http.services.seerr.loadbalancer.server.port=5055
+      # Dashboard
+      - homelab.name=Seerr
+      - homelab.group=Media
+      - homelab.icon=seerr
+      - homelab.audience=family
+      - homelab.description=Request movies and TV
+      - homelab.port=5055
+      # Uptime Kuma (AutoKuma) – checks the published port, like family devices use it
+      - kuma.seerr.http.name=seerr
+      - kuma.seerr.http.url=http://${LAN_IP}:5055/api/v1/status
+
+networks:
+  proxy:
+    external: true

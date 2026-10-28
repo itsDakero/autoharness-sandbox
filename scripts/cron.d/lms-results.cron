@@ -1,0 +1,1 @@
+40 */2 * * * $R lms-results 300 $REPO/scripts/lms-job.sh results

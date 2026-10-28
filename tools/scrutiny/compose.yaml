@@ -1,0 +1,55 @@
+services:
+  scrutiny:
+    # Omnibus: web UI + collector (cron inside) + InfluxDB in one container.
+    image: ghcr.io/analogj/scrutiny:v0.9.5-omnibus
+    container_name: scrutiny
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:8080/api/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+    ports:
+      - "8084:8080"                  # LAN + tailnet; host port = homelab.port
+    # smartctl needs raw SCSI/ATA passthrough. Devices are read-only (:r).
+    cap_add:
+      - SYS_RAWIO
+    devices:
+      - /dev/sda:/dev/sda:r
+      - /dev/sdb:/dev/sdb:r
+      - /dev/sdc:/dev/sdc:r
+    volumes:
+      - /run/udev:/run/udev:ro
+      - ${APPDATA_PATH}/scrutiny/config:/opt/scrutiny/config
+      - ${APPDATA_PATH}/scrutiny/influxdb:/opt/scrutiny/influxdb
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://scrutiny.lan)
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.scrutiny.rule=Host(`scrutiny.${DOMAIN}`)
+      - traefik.http.routers.scrutiny.entrypoints=web
+      - traefik.http.services.scrutiny.loadbalancer.server.port=8080
+      # Dashboard
+      - homelab.name=Scrutiny
+      - homelab.group=Infrastructure
+      - homelab.icon=scrutiny
+      - homelab.audience=admin
+      - homelab.description=Disk health (SMART)
+      - homelab.port=8084
+      # Uptime Kuma (AutoKuma) – checks the published port, like family devices use it
+      - kuma.scrutiny.http.name=scrutiny
+      - kuma.scrutiny.http.url=http://${LAN_IP}:8084/api/health
+
+networks:
+  proxy:
+    external: true

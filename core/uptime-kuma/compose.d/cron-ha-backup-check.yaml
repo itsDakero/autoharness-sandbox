@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/ha-backup-check.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-ha-backup-check.push.name=cron-ha-backup-check
+      - kuma.cron-ha-backup-check.push.push_token=${KUMA_CRON_PUSH_SECRET:-}habackupcheck000
+      - kuma.cron-ha-backup-check.push.interval=93600
+      - kuma.cron-ha-backup-check.push.max_retries=0

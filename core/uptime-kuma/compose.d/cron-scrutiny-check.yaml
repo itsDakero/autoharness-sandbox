@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/scrutiny-check.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-scrutiny-check.push.name=cron-scrutiny-check
+      - kuma.cron-scrutiny-check.push.push_token=${KUMA_CRON_PUSH_SECRET:-}scrutinycheck000
+      - kuma.cron-scrutiny-check.push.interval=93600
+      - kuma.cron-scrutiny-check.push.max_retries=0

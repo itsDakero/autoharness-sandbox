@@ -1,0 +1,10 @@
+fastapi==0.142.2
+uvicorn==0.54.0
+# Current PyPI stable on 2026-10-19: https://pypi.org/pypi/jinja2/json
+jinja2==3.1.6
+# Current PyPI stable on 2026-10-19: https://pypi.org/pypi/python-multipart/json
+python-multipart==0.0.32
+# Current PyPI stable on 2026-10-19: https://pypi.org/pypi/pillow/json
+pillow==13.0.0
+# Current PyPI stable on 2026-10-19: https://pypi.org/pypi/pillow-heif/json
+pillow-heif==1.8.1

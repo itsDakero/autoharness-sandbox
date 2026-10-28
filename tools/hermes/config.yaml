@@ -1,0 +1,63 @@
+# Hermes Agent config (M6 stage D, docs/m6-research.md). Mounted read-only at /opt/data/config.yaml, so the
+# agent can't change its own model, tools or limits. Secrets come from the container env (compose), not here.
+# Reference: https://github.com/NousResearch/hermes-agent/blob/v0.22.5/cli-config.yaml.example
+_config_version: 50
+
+# The Mac mini's Ollama over Tailscale (docs/mac-mini.md); picked by the bench in docs/mac-mini.md.
+# No fallback_providers: anything else would be a paid API.
+model:
+  default: "qwen3.5:9b"
+  provider: "custom"
+  base_url: "http://100.74.81.122:11434/v1"
+  api_key: "no-key"
+  context_length: 65536
+  ollama_num_ctx: 65536
+
+# Discord only, and only these toolsets (Dan, 2026-10-15). disabled_toolsets removes the rest even if a
+# preset or an upgrade would add them.
+platform_toolsets:
+  discord: [file, memory, session_search, todo, clarify]
+agent:
+  max_turns: 30
+  disabled_toolsets:
+    - terminal
+    - code_execution
+    - browser
+    - web
+    - search
+    - vision
+    - image_gen
+    - tts
+    - skills_hub
+    - delegation
+    - cronjob
+    - discord_admin
+    - messaging
+
+approvals:
+  mode: auto_deny
+  unattended_mode: auto_deny
+
+skills:
+  creation_nudge_interval: 0
+
+discord:
+  require_mention: false     # its own channel only (DISCORD_ALLOWED_CHANNELS), so no @mention needed
+  auto_thread: false
+  reactions: true
+  history_backfill: true
+
+group_sessions_per_user: true
+
+# Its own logins only: never borrow Claude Code's or Codex's logins (no paid API on the subscription).
+auth:
+  adopt_external_logins: false
+
+telemetry:
+  shared_metrics:
+    enabled: false
+    send: false
+
+updates:
+  check: false
+  pre_update_backup: false

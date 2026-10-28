@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/storage-cleanup.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-storage-cleanup.push.name=cron-storage-cleanup
+      - kuma.cron-storage-cleanup.push.push_token=${KUMA_CRON_PUSH_SECRET:-}storagecleanup00
+      - kuma.cron-storage-cleanup.push.interval=691200
+      - kuma.cron-storage-cleanup.push.max_retries=0

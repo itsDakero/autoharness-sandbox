@@ -1,0 +1,113 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:2.5.6-rootless   # runs as uid 1000 (node)
+    container_name: uptime-kuma
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+    ports:
+      - "3001:3001"                  # host port = homelab.port
+    volumes:
+      - ${APPDATA_PATH}/uptime-kuma:/app/data
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      proxy: {}
+      socket-proxy: {}               # Docker monitors (read-only API via docker-socket-proxy)
+      # Checks leave via this network: a container can't reach a port published
+      # by another container on its own network (that traffic hits UFW's INPUT).
+      monitor:
+        gw_priority: 1
+    labels:
+      # Traefik
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.uptime-kuma.rule=Host(`status.${DOMAIN}`)
+      - traefik.http.routers.uptime-kuma.entrypoints=web
+      - traefik.http.services.uptime-kuma.loadbalancer.server.port=3001
+      # Dashboard
+      - homelab.name=Uptime Kuma
+      - homelab.group=Infrastructure
+      - homelab.icon=uptime-kuma
+      - homelab.audience=admin
+      - homelab.description=Service status and alerts
+      - homelab.port=3001
+      # Uptime Kuma (AutoKuma)
+      - kuma.uptime-kuma.http.name=uptime-kuma
+      # Self-check via localhost: a container can't reach its own published port.
+      - kuma.uptime-kuma.http.url=http://localhost:3001/
+      # Mac mini's Ollama (M6, docs/mac-mini.md): not a container here, so its monitor lives on Kuma.
+      # Tailnet IP only (Ollama doesn't listen on the LAN). On Wi-Fi: 3 retries before ntfy.
+      - kuma.mac-mini-ollama.http.name=mac-mini-ollama
+      - kuma.mac-mini-ollama.http.url=http://100.74.81.122:11434/api/version
+      - kuma.mac-mini-ollama.http.retry_interval=60
+      - kuma.mac-mini-ollama.http.max_retries=3
+      # Its dashboard tile (core/dashboard: homelab.external.<id>.*; status = Kuma monitors <id>-*). No link.
+      - homelab.external.mac-mini.name=Mac mini
+      - homelab.external.mac-mini.group=Infrastructure
+      - homelab.external.mac-mini.icon=ollama
+      - homelab.external.mac-mini.audience=admin
+      - homelab.external.mac-mini.description=Ollama model server, tailnet only
+      # Cron dead-man's switch (scripts/cron-run.sh pushes here; docs/m1-core.md). Interval = period + grace.
+      # Token = secret (16) + job name without hyphens, padded with 0 / cut to 16: Kuma wants exactly 32 alphanumerics.
+      # Per-job labels live in compose.d/cron-<name>.yaml (loaded by scripts/dc.sh; never run compose here without it).
+      - homelab.external.cron.name=Cron jobs
+      - homelab.external.cron.group=Infrastructure
+      - homelab.external.cron.icon=healthchecks
+      - homelab.external.cron.audience=admin
+      - "homelab.external.cron.description=Scheduled jobs, last run OK"
+      # Docker host for Kuma "docker" monitors (AutoKuma docker_host entity)
+      - kuma.socket-proxy.docker_host.name=socket-proxy
+      - kuma.socket-proxy.docker_host.connection_type=tcp
+      - kuma.socket-proxy.docker_host.path=tcp://docker-socket-proxy:2375
+
+  # Creates Uptime Kuma monitors from kuma.* container labels.
+  # Needs KUMA_USERNAME/KUMA_PASSWORD (scripts/core-up.sh skips it until they're set).
+  autokuma:
+    image: ghcr.io/bigboot/autokuma:2.0.0          # 2.x = Uptime Kuma v2 API
+    container_name: autokuma
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    user: ${PUID}:${PGID}
+    depends_on:
+      # AutoKuma 2.0.0 doesn't re-login after Uptime Kuma restarts ("You are not
+      # logged in"), so compose restarts it with Kuma. Fixed upstream in 2.1.0.
+      uptime-kuma:
+        condition: service_started
+        restart: true
+    environment:
+      TZ: ${TZ}
+      AUTOKUMA__KUMA__URL: http://uptime-kuma:3001
+      AUTOKUMA__KUMA__USERNAME: ${KUMA_USERNAME}
+      AUTOKUMA__KUMA__PASSWORD: ${KUMA_PASSWORD}
+      AUTOKUMA__DOCKER__HOSTS: tcp://docker-socket-proxy:2375
+      AUTOKUMA__ON_DELETE: delete
+      # Every AutoKuma monitor alerts via the ntfy-urgent notification (created in the Kuma UI;
+      # 1 = its Kuma id, see docs/m1-core.md). 2.0.0's notification_name_list only finds
+      # notifications AutoKuma created itself, so use the id.
+      AUTOKUMA__DEFAULT_SETTINGS: |-
+        *.notification_id_list: {"1": true}
+    volumes:
+      - ${APPDATA_PATH}/autokuma:/data
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+      - socket-proxy
+
+networks:
+  proxy:
+    external: true
+  socket-proxy:
+    external: true
+  monitor:
+    name: monitor

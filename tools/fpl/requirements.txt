@@ -1,0 +1,26 @@
+# Understat xG scraper. Source: https://pypi.org/pypi/soccerdata/json (released 2026-10-19; needs pandas>=2,<4)
+soccerdata==2026.43.0
+# Current PyPI stable on 2026-10-25: https://pypi.org/pypi/pandas/json
+pandas==3.1.0
+# Current PyPI stable on 2026-10-25: https://pypi.org/pypi/pyarrow/json
+pyarrow==26.0.0
+# Current PyPI stable on 2026-10-25: https://pypi.org/pypi/requests/json
+requests==2.34.2
+# Web page (same pins as tools/lms)
+fastapi==0.142.2
+uvicorn==0.54.0
+jinja2==3.1.6
+python-multipart==0.0.32
+# DuckDB reads the collector's Parquet. Current PyPI stable on 2026-10-26: https://pypi.org/pypi/duckdb/json
+duckdb==2.0.0
+# open-fpl-solver's solver (HiGHS). Current PyPI stable on 2026-10-26: https://pypi.org/pypi/highspy/json
+highspy==1.15.1
+# The rest are what open-fpl-solver imports, at the versions in its uv.lock at commit
+# ec65f5e2b2be34441cb4b2a9efafea1ec0fe3b79 (https://github.com/solioanalytics/open-fpl-solver/blob/ec65f5e2b2be34441cb4b2a9efafea1ec0fe3b79/uv.lock)
+numpy==2.5.1
+tabulate==0.10.0
+matplotlib==3.11.1
+fuzzywuzzy==0.18.0
+python-Levenshtein==0.27.3
+# Team goals model: de-vig + Dixon-Coles. Source: https://pypi.org/project/penaltyblog/1.13.1/ (MIT, released 2026-10-05)
+penaltyblog==1.13.1

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Uploaded {{ saved }} photo{{ "" if saved == 1 else "s" }}</h1>
+<p>The model tags them in the background. <a href="/review">Review the tags</a>.</p>
+{% if skipped %}<div class="banner warn">Skipped:<ul>{% for s in skipped %}<li>{{ s }}</li>{% endfor %}</ul></div>{% endif %}
+<p><a href="/upload">Upload more</a></p>
+{% endblock %}

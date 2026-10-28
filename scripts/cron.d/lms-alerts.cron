@@ -1,0 +1,1 @@
+*/15 * * * * $R lms-alerts 300 $REPO/scripts/lms-job.sh alerts

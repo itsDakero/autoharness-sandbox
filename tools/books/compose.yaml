@@ -1,0 +1,45 @@
+services:
+  books:
+    build: .
+    image: homelab/books:0.1.1
+    container_name: books
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: ${TZ}
+      DATA_DIR: /data
+    ports:
+      - "8090:8080"
+    volumes:
+      - ${APPDATA_PATH}/books:/data
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://books.lan)
+      - traefik.enable=true
+      - traefik.http.routers.books.rule=Host(`books.${DOMAIN}`)
+      - traefik.http.routers.books.entrypoints=web
+      - traefik.http.services.books.loadbalancer.server.port=8080
+      # Dashboard
+      - homelab.name=Books
+      - homelab.group=Tools
+      - homelab.icon=calibre-web
+      - homelab.audience=admin
+      - "homelab.description=Reading tracker: current book, shelves, Goodreads import"
+      - homelab.port=8090
+      # Uptime Kuma (AutoKuma)
+      - kuma.books.http.name=books
+      - kuma.books.http.url=http://${LAN_IP}:8090/healthz
+
+networks:
+  proxy:
+    external: true

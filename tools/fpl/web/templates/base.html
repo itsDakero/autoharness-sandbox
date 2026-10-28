@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FPL</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<nav>FPL</nav>
+<main>
+{% if msg %}<div class="banner ok">{{ msg }}</div>{% endif %}
+{% block body %}{% endblock %}
+</main>
+<footer>No login: anyone on the LAN or tailnet can open this.</footer>
+</body>
+</html>

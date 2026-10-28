@@ -1,0 +1,53 @@
+# Jellyfin with NVENC/NVDEC on the GTX 970 (Maxwell GM204, driver branch 580).
+# GM204 hardware: decode H.264, MPEG-2, VC-1 (no HEVC, no VP9, no AV1); encode H.264 and HEVC 8-bit.
+# HEVC/10-bit/HDR sources therefore decode (and tone-map) on the CPU. See docs/m2-media.md.
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:12.2.20261005-225228
+    container_name: jellyfin
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    user: "${PUID}:${PGID}"
+    environment:
+      TZ: ${TZ}
+      JELLYFIN_PublishedServerUrl: http://${LAN_IP}:8096
+      NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
+    ports:
+      - "8096:8096"                  # host port = homelab.port
+    volumes:
+      - ${APPDATA_PATH}/jellyfin/config:/config
+      - ${APPDATA_PATH}/jellyfin/cache:/cache
+      - ${MEDIA_PATH}:/mnt/media:ro  # same paths as the arr apps, read-only
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://jellyfin.lan)
+      - traefik.enable=true
+      - traefik.http.routers.jellyfin.rule=Host(`jellyfin.${DOMAIN}`)
+      - traefik.http.routers.jellyfin.entrypoints=web
+      - traefik.http.services.jellyfin.loadbalancer.server.port=8096
+      # Dashboard
+      - homelab.name=Jellyfin
+      - homelab.group=Media
+      - homelab.icon=jellyfin
+      - homelab.audience=family
+      - homelab.description=Watch movies and TV
+      - homelab.port=8096
+      # Uptime Kuma (AutoKuma) – checks the published port, like family devices use it
+      - kuma.jellyfin.http.name=jellyfin
+      - kuma.jellyfin.http.url=http://${LAN_IP}:8096/health
+
+networks:
+  proxy:
+    external: true

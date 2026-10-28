@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/fpl-odds-deadline.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-fpl-odds-deadline.push.name=cron-fpl-odds-deadline
+      - kuma.cron-fpl-odds-deadline.push.push_token=${KUMA_CRON_PUSH_SECRET:-}fploddsdeadline0
+      - kuma.cron-fpl-odds-deadline.push.interval=5400
+      - kuma.cron-fpl-odds-deadline.push.max_retries=0

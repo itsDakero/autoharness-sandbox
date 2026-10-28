@@ -1,0 +1,193 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git *)",
+      "Bash(scripts/dc.sh * config *)",
+      "Bash(scripts/dc.sh * ps *)",
+      "Bash(scripts/dc.sh * logs *)",
+      "Bash(scripts/dc.sh core/dashboard build)",
+      "Bash(scripts/dc.sh core/dashboard build *)",
+      "Bash(scripts/dc.sh core/dashboard up *)",
+      "Bash(scripts/dc.sh core/dashboard restart)",
+      "Bash(scripts/dc.sh core/dashboard restart *)",
+      "Bash(docker compose * config *)",
+      "Bash(docker compose * ps *)",
+      "Bash(docker compose * logs *)",
+      "Bash(curl -s http://localhost:*)",
+      "Bash(curl -sf http://localhost:*)",
+      "Bash(curl -s http://192.168.0.210*)",
+      "Bash(curl -sf http://192.168.0.210*)",
+      "Bash(curl -s http://homelab*)",
+      "Bash(curl -sf http://homelab*)",
+      "Bash(scripts/idea.sh *)",
+      "Bash(scripts/discord.sh *)",
+      "Edit(./.worktrees/**)",
+      "Write(./.worktrees/**)",
+      "Bash(scripts/kuma-status.py*)",
+      "Bash(ss -ltnH*)",
+      "Bash(python3 -m py_compile *)",
+      "Bash(bash -n *)",
+      "WebSearch",
+      "WebFetch(domain:hub.docker.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:ghcr.io)",
+      "WebFetch(domain:docs.linuxserver.io)",
+      "Write(./ideas/proposed/**)",
+      "Bash(docker stats --no-stream*)",
+      "Bash(docker images*)",
+      "Bash(docker ps *)",
+      "Bash(docker system df*)",
+      "Bash(df -h*)",
+      "Bash(du -sh *)",
+      "Bash(nvidia-smi*)",
+      "Bash(journalctl -u homelab-backup*)",
+      "WebFetch(domain:ollama.com)",
+      "WebFetch(domain:huggingface.co)",
+      "WebFetch(domain:lmstudio.ai)",
+      "WebFetch(domain:nousresearch.com)",
+      "WebFetch(domain:hermes-agent.nousresearch.com)",
+      "WebFetch(domain:awesome-selfhosted.net)",
+      "WebFetch(domain:selfh.st)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:pypi.org)"
+    ],
+    "ask": [
+      "Bash(scripts/dc.sh core/adguard* up*)",
+      "Bash(scripts/dc.sh core/docker-socket-proxy* up*)",
+      "Bash(scripts/dc.sh core/ntfy* up*)",
+      "Bash(scripts/dc.sh core/traefik* up*)",
+      "Bash(scripts/dc.sh core/uptime-kuma* up*)",
+      "Bash(scripts/dc.sh media/* up*)",
+      "Bash(scripts/dc.sh tools/* up*)",
+      "Bash(scripts/dc.sh ./* up*)",
+      "Bash(scripts/dc.sh core/adguard* down*)",
+      "Bash(scripts/dc.sh core/docker-socket-proxy* down*)",
+      "Bash(scripts/dc.sh core/ntfy* down*)",
+      "Bash(scripts/dc.sh core/traefik* down*)",
+      "Bash(scripts/dc.sh core/uptime-kuma* down*)",
+      "Bash(scripts/dc.sh media/* down*)",
+      "Bash(scripts/dc.sh tools/* down*)",
+      "Bash(scripts/dc.sh ./* down*)",
+      "Bash(scripts/dc.sh core/adguard* stop*)",
+      "Bash(scripts/dc.sh core/docker-socket-proxy* stop*)",
+      "Bash(scripts/dc.sh core/ntfy* stop*)",
+      "Bash(scripts/dc.sh core/traefik* stop*)",
+      "Bash(scripts/dc.sh core/uptime-kuma* stop*)",
+      "Bash(scripts/dc.sh media/* stop*)",
+      "Bash(scripts/dc.sh tools/* stop*)",
+      "Bash(scripts/dc.sh ./* stop*)",
+      "Bash(scripts/dc.sh core/adguard* restart*)",
+      "Bash(scripts/dc.sh core/docker-socket-proxy* restart*)",
+      "Bash(scripts/dc.sh core/ntfy* restart*)",
+      "Bash(scripts/dc.sh core/traefik* restart*)",
+      "Bash(scripts/dc.sh core/uptime-kuma* restart*)",
+      "Bash(scripts/dc.sh media/* restart*)",
+      "Bash(scripts/dc.sh tools/* restart*)",
+      "Bash(scripts/dc.sh ./* restart*)",
+      "Bash(scripts/dc.sh core/dashboard down*)",
+      "Bash(scripts/dc.sh core/dashboard stop*)",
+      "Bash(docker compose * up *)",
+      "Bash(docker compose * down *)",
+      "Bash(curl * -d *)",
+      "Bash(curl * --data*)",
+      "Bash(curl * -X *)",
+      "Edit(./scripts/backup.sh)",
+      "Edit(./scripts/backup-excludes.txt)",
+      "Edit(./systemd/**)",
+      "Edit(./bootstrap.sh)",
+      "Edit(./.claude/**)",
+      "Bash(scripts/dc.sh core/ha-backups* up*)",
+      "Bash(scripts/dc.sh core/ha-backups* down*)",
+      "Bash(scripts/dc.sh core/ha-backups* stop*)",
+      "Bash(scripts/dc.sh core/ha-backups* restart*)",
+      "Edit(./scripts/docker-user-rules.sh)",
+      "Edit(./core/ha-backups/smb.conf)",
+      "Bash(scripts/dc.sh core/scrutiny* up*)",
+      "Bash(scripts/dc.sh core/scrutiny* down*)",
+      "Bash(scripts/dc.sh core/scrutiny* stop*)",
+      "Bash(scripts/dc.sh core/scrutiny* restart*)",
+      "Bash(scripts/dc.sh core/diun* up*)",
+      "Bash(scripts/dc.sh core/diun* down*)",
+      "Bash(scripts/dc.sh core/diun* stop*)",
+      "Bash(scripts/dc.sh core/diun* restart*)",
+      "Bash(scripts/dc.sh core/omada* up*)",
+      "Bash(scripts/dc.sh core/omada* down*)",
+      "Bash(scripts/dc.sh core/omada* stop*)",
+      "Bash(scripts/dc.sh core/omada* restart*)",
+      "Bash(curl *toggleSpeedLimitsMode*)",
+      "Bash(curl *downloads/limit*)",
+      "Bash(curl * --json*)",
+      "Bash(scripts/deploy-idea.sh*)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(*dc.sh *.worktrees/* up*)",
+      "Bash(*dc.sh *.worktrees/* down*)",
+      "Bash(*dc.sh *.worktrees/* stop*)",
+      "Bash(*dc.sh *.worktrees/* start*)",
+      "Bash(*dc.sh *.worktrees/* restart*)",
+      "Bash(*dc.sh *.worktrees/* build*)",
+      "Bash(*dc.sh *.worktrees/* run*)",
+      "Bash(*dc.sh *.worktrees/* create*)",
+      "Bash(*dc.sh *.worktrees/* exec*)",
+      "Bash(*dc.sh *.worktrees/* kill*)",
+      "Bash(*dc.sh *.worktrees/* rm*)",
+      "Bash(*dc.sh *.worktrees/* pull*)",
+      "Bash(*.worktrees/*/scripts/dc.sh*)",
+      "Read(./.env)",
+      "Read(**/*.env)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Read|Edit|Write|MultiEdit|Grep|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard.py",
+            "timeout": 10,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/compose-check.sh"
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/scripts/loop-alert.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "extraKnownMarketplaces": {
+    "autoharness": {
+      "source": {
+        "source": "github",
+        "repo": "tigerless-labs/autoharness"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "autoharness@autoharness": true
+  }
+}

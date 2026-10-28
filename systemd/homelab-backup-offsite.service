@@ -1,0 +1,13 @@
+[Unit]
+Description=Homelab restic off-site copy to Backblaze B2
+RequiresMountsFor=/mnt/backup
+Wants=network-online.target
+After=network-online.target
+OnFailure=homelab-backup-offsite-failure.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/dan/homelab/scripts/backup.sh offsite
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=6h

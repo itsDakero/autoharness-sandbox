@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wardrobe</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<nav>
+  <a class="brand" href="/">Wardrobe</a>
+  <div class="tabs">
+  {% for href, label in [("/", "Items"), ("/outfits", "Outfits"), ("/worn", "Worn"), ("/gaps", "Gaps"), ("/upload", "Upload"), ("/review", "Review"), ("/wishlist/link", "Pin link"), ("/profile", "Profile")] %}
+  <a href="{{ href }}"{% if path == href %} class="on"{% endif %}>{{ label }}{% if href == "/review" and counts.review %} ({{ counts.review }}){% endif %}</a>
+  {% endfor %}
+  </div>
+</nav>
+{% if tagger.offline and counts.pending %}
+<div class="banner err">Tagger offline, {{ counts.pending }} waiting. Retrying every 5 min ({{ tagger.error }}).</div>
+{% elif counts.pending %}
+<div class="banner warn">Tagging: {{ counts.pending }} waiting (model {{ model }}).</div>
+{% endif %}
+<main>
+{% block body %}{% endblock %}
+</main>
+<footer>No login: anyone on the LAN or tailnet can open this.</footer>
+</body>
+</html>

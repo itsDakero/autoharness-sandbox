@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Today <small>{{ today }}</small></h1>
+{% if msg %}<p class="muted">{{ msg }}</p>{% endif %}
+{% if not checkin %}<a class="card notice" href="/checkin">How are you feeling this morning? Do the check-in →</a>{% endif %}
+{% if rec.warning %}<div class="card notice" style="border-color:var(--warn)"><span class="chip warn">warning</span> Your numbers look like the start of illness: consider an easy day.</div>{% endif %}
+{% if not has_today %}<p class="muted">No data for today yet (the watch has to sync to Garmin Connect first).</p>{% endif %}
+
+<section class="card hero">
+  {% set c = 326.73 %}
+  <svg class="ring" viewBox="0 0 120 120" role="img" aria-label="Training readiness {{ readiness|dash }}">
+    <circle cx="60" cy="60" r="52" class="track" fill="none" stroke-width="10"/>
+    {% if readiness is not none %}
+    <circle cx="60" cy="60" r="52" class="arc {{ readiness_band[1] }}" fill="none" stroke-width="10"
+            stroke-dasharray="{{ '%.1f' % (c * [readiness, 100]|min / 100) }} {{ c }}"/>
+    {% endif %}
+    <text x="60" y="64" text-anchor="middle">{{ readiness|dash }}</text>
+    <text x="60" y="82" text-anchor="middle" class="cap">READINESS</text>
+  </svg>
+  <div class="facts">
+    {% if readiness_band %}<strong>{{ readiness_band[0] }} readiness</strong>
+    <span class="muted">{{ readiness_d7 }} vs your 7-day median</span>{% else %}<strong>No readiness score yet</strong>{% endif %}
+    <span>Training status: <b>{{ (training_status or "–")|replace("_", " ")|capitalize }}</b></span>
+    {% if checkin %}<span>Check-in: feeling <b>{{ checkin.feeling }}/5</b>
+      {% if checkin.ill_neck or checkin.ill_chest %}<span class="chip bad">ill</span>{% endif %}
+      · <a href="/checkin">Edit</a></span>{% endif %}
+  </div>
+</section>
+
+<div class="grid">
+  <div class="card tile">
+    <span class="label">Today's session</span>
+    {% if plan and plan.error %}
+    <span class="value">–</span>
+    <span class="sub">The plan could not be worked out (see the log).</span>
+    {% elif plan and plan.today %}
+    <span class="value" style="font-size:1.25rem">{{ plan.today.title }}</span>
+    <span class="sub">{{ plan.today.target }}</span>
+    {% if plan.today.reason %}<span class="chip warn">{{ plan.today.reason }}</span>{% endif %}
+    <span class="sub">{{ plan.phase|capitalize }} phase, week {{ plan.week_no }}{% if plan.easy %} (easier week){% endif %}. A suggestion from your goal, the week's template and how you feel; <a href="/plan">see the week</a>.</span>
+    {% else %}
+    <span class="value">–</span>
+    <span class="sub"><a href="/settings">Set a goal in Settings</a> to get a plan.</span>
+    {% endif %}
+  </div>
+  <div class="card tile">
+    <span class="label">Recovery</span>
+    {% if rec.score %}
+    <span class="value">{{ rec.score.score }}</span>
+    <span class="chip {{ rec.score.tone }}">{{ rec.score.label }}</span>
+    {% for p in rec.score.parts %}
+    <span class="sub">{{ p.label }}: {% if p.score is none %}no data{% else %}{{ '%.0f' % p.score }} pts{% if p.z is not none %} (z {{ '%+.1f' % p.z }}){% endif %}, weight {{ '%.0f' % (p.weight * 100) }}%{% endif %}</span>
+    {% endfor %}
+    {% for label, delta in rec.score.adjust %}<span class="sub">Check-in: {{ label }} {{ delta }}</span>{% endfor %}
+    {% if rec.score.capped %}<span class="sub">Check-in: ill, capped at 33</span>{% endif %}
+    {% else %}
+    <span class="value">–</span>
+    <span class="sub">No HRV, resting HR or sleep for today yet.</span>
+    {% endif %}
+    {% if rec.red_high_load %}<span class="chip bad">high load on a red day: consider an easier session</span>{% endif %}
+    <span class="sub">Your own score from HRV and resting HR against your normal range, and sleep vs need; check-in flags lower it.</span>
+  </div>
+  <div class="card tile">
+    <span class="label">Sleep debt</span>
+    <span class="value">{% if rec.debt is none %}–{% else %}{{ '%.1f' % (rec.debt / 3600) }}<small>h</small>{% endif %}</span>
+    {% if rec.debt is not none %}<span class="chip {{ rec.debt_tone }}">{{ "low" if rec.debt_tone == "good" else ("some" if rec.debt_tone == "warn" else "high") }}</span>{% endif %}
+    <span class="sub">Hours short of your {{ rec.need_h|round(2) }} h need over the last 7 nights{% if rec.debt is none %} (needs 4 nights of data){% endif %}.</span>
+  </div>
+  <div class="card tile">
+    <span class="label">Sleep consistency</span>
+    {% if rec.consistency %}
+    <span class="value">{{ '%.0f' % rec.consistency.bed_sd }}<small>min</small></span>
+    <span class="chip {{ rec.consistency.tone }}">bedtime {{ rec.consistency.bed_mean }} ± {{ '%.0f' % rec.consistency.bed_sd }} min</span>
+    <span class="sub">Wake {{ rec.consistency.wake_mean }} ± {{ '%.0f' % rec.consistency.wake_sd }} min ({{ rec.consistency.n }} nights)</span>
+    {% else %}
+    <span class="value">–</span>
+    <span class="sub">Needs 5 nights of sleep times in the last 14.</span>
+    {% endif %}
+    <span class="sub">How much bedtime and wake time vary; under 30 min is steady.</span>
+  </div>
+</div>
+
+<h2>Training load <small>Garmin load + FiiT effort</small></h2>
+{% if load.ctl is none %}
+<p class="muted">Not enough data yet: log or sync some training first.</p>
+{% else %}
+<div class="grid">
+  <div class="card tile">
+    <span class="label">Form</span>
+    <span class="value">{{ '%+.0f' % load.tsb }}</span>
+    <span class="chip {{ load.zone[1] }}">{{ load.zone[0] }}</span>
+    <span class="sub">Fitness {{ load.ctl|dash }} · Fatigue {{ load.atl|dash }}</span>
+    <span class="sub">Fitness minus fatigue: negative = building, very negative = consider easing off.</span>
+  </div>
+  <div class="card tile">
+    <span class="label">Load balance</span>
+    <span class="value">{{ load.acwr|dash(2) }}</span>
+    {% if load.acwr is not none %}<span class="chip {{ load.acwr_tone }}">{{ "in range" if load.acwr_tone == "good" else ("low" if load.acwr_tone == "" else "high") }}</span>{% endif %}
+    <span class="sub">This week's load vs your 4-week average; 0.8–1.3 is the sweet spot.</span>
+    <span class="sub">Ramp {% if load.ramp is none %}–{% else %}{{ '%+.1f' % load.ramp }}/wk{% endif %}
+      {% if load.ramp_tone %}<span class="chip warn">consider an easier week</span>{% endif %}</span>
+    <span class="sub">How fast fitness is rising; above +5/week is a quick climb.</span>
+    <span class="sub">Monotony {{ load.monotony|dash(1) }}
+      {% if load.monotony_tone %}<span class="chip warn">consider an easier day</span>{% endif %}</span>
+    <span class="sub">Same load every day; above 2 suggests mixing hard and easy days.</span>
+    <span class="sub">Strain {{ load.strain|dash }}</span>
+    <span class="sub">Weekly load times monotony.</span>
+  </div>
+</div>
+{% if load.days_of_data < 42 %}<p class="muted">Fitness is still building ({{ load.days_of_data }} days of data).</p>{% endif %}
+{% if load.acwr is none %}<p class="muted">Not enough data for the load balance yet (needs 28 days with some load).</p>{% endif %}
+<p class="muted">{% if load.scale_pairs < 3 %}FiiT scale 1.0 (default, fewer than 3 matched classes){% else %}FiiT scale {{ '%.2f' % load.scale }} from {{ load.scale_pairs }} classes{% endif %}</p>
+{% endif %}
+
+<h2>Last night <small>vs your 7-day median</small></h2>
+<div class="grid">
+{% for m in metrics %}
+  <div class="card tile">
+    <span class="label">{{ m.label }}</span>
+    <span class="value">{{ m.value }}{% if m.unit and m.value != "–" %}<small>{{ m.unit }}</small>{% endif %}</span>
+    <span class="chip {{ m.tone }}">{{ m.d7 }}</span>
+    {% if m.band %}{% if m.band.text %}<span class="chip {{ m.band.tone }}" title="60-day normal range">{{ m.band.text }}</span>{% endif %}{% endif %}
+    <span class="sub">7d {{ m.b7 }} · 30d {{ m.b30 }}</span>
+    {{ m.spark|safe }}
+  </div>
+{% endfor %}
+  <div class="card tile">
+    <span class="label">VO2max</span>
+    <span class="value">{{ (vo2.vo2max|dash(1)) if vo2 else "–" }}</span>
+    <span class="sub">{{ vo2.date if vo2 else "no reading yet" }}</span>
+  </div>
+  <div class="card tile">
+    <span class="label">Weight</span>
+    <span class="value">{{ (weight.weight_kg|dash(1)) if weight else "–" }}{% if weight %}<small>kg</small>{% endif %}</span>
+    <span class="sub">{{ weight.date if weight else "no reading yet" }}</span>
+  </div>
+</div>
+<p class="muted">Sparklines: last 14 days. Green/red = better/worse than your 7-day median.</p>
+
+<h2>Sync</h2>
+<div class="card">
+<p style="margin-top:0">Last OK: {{ status.last_ok or "never" }}.
+{% if status.backfill %}Backfill reached {{ status.backfill }}.{% endif %}
+{% if status.running %}A sync is running.{% endif %}</p>
+<form method="post" action="/sync"><button>Sync now</button></form>
+</div>
+{% endblock %}

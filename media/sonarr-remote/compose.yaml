@@ -1,0 +1,50 @@
+# Second Sonarr for the 720p remote library (/mnt/media/tv-720p).
+services:
+  sonarr-remote:
+    image: linuxserver/sonarr:4.0.20.3014-ls326
+    container_name: sonarr-remote
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:8989/ping"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+    ports:
+      - "8990:8989"                  # host port = homelab.port
+    volumes:
+      - ${APPDATA_PATH}/sonarr-remote:/config
+      # Read-write (approved via the guard): imports hardlink from /mnt/media/downloads/tv-remote
+      # into /mnt/media/tv-720p; same path as in qbittorrent, one filesystem.
+      - ${MEDIA_PATH}:/mnt/media
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://sonarr-remote.lan)
+      - traefik.enable=true
+      - traefik.http.routers.sonarr-remote.rule=Host(`sonarr-remote.${DOMAIN}`)
+      - traefik.http.routers.sonarr-remote.entrypoints=web
+      - traefik.http.services.sonarr-remote.loadbalancer.server.port=8989
+      # Dashboard
+      - homelab.name=Sonarr (Remote)
+      - homelab.group=Media
+      - homelab.icon=sonarr
+      - homelab.audience=admin
+      - homelab.description=TV, 720p copies for the remote library
+      - homelab.port=8990
+      # Uptime Kuma (AutoKuma) – checks the published port, like family devices use it
+      - kuma.sonarr-remote.http.name=sonarr-remote
+      - kuma.sonarr-remote.http.url=http://${LAN_IP}:8990/ping
+
+networks:
+  proxy:
+    external: true

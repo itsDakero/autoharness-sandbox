@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>{% if another %}Another outfit{% else %}Today's outfit{% endif %} <small>{{ today }}</small></h1>
+<p>{{ weather_line }}</p>
+{% if note %}<div class="banner warn">{{ note }}</div>{% endif %}
+{% if items %}
+<div class="grid">
+{% for it in items %}
+  <a class="card" href="/item/{{ it.id }}">
+    {% if it.thumb %}<img src="/thumbs/{{ it.thumb }}" alt="" loading="lazy">{% else %}<div class="noimg">no photo</div>{% endif %}
+    <div>{{ item_name(it) }}</div>
+  </a>
+{% endfor %}
+</div>
+<div class="actions">
+  <form method="post" action="/outfits/vote" style="display:inline">
+    <input type="hidden" name="key" value="{{ key }}">
+    <button name="vote" value="1"{% if vote == 1 %} class="on"{% endif %}>👍</button>
+    <button name="vote" value="-1"{% if vote == -1 %} class="on"{% endif %}>👎</button>
+  </form>
+  <form method="post" action="/outfits/wear" style="display:inline">
+    <input type="hidden" name="key" value="{{ key }}">
+    <button>Wore this{% if worn_today %} (logged today){% endif %}</button>
+  </form>
+  <a href="/outfits?another=1"><button type="button">Another</button></a>
+</div>
+{% else %}
+<div class="banner err">{{ note or "No outfit available." }}</div>
+{% endif %}
+{% endblock %}

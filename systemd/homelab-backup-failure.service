@@ -1,0 +1,6 @@
+[Unit]
+Description=ntfy alert: homelab backup failed
+
+[Service]
+Type=oneshot
+ExecStart=/home/dan/homelab/scripts/backup.sh notify-failure

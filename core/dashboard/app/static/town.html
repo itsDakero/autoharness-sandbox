@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Homelab Town</title>
+<style>
+:root {
+  --ground: #a6dcc6; --ground2: #97d1ba; --box: #fbfaf4; --edge: #3a4558; --inner: #c7cfe6;
+  --ink: #2a2f3c; --soft: #66708a; --red: #e0443c;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Courier New", monospace;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--ground); color: var(--ink); }
+body { font: 14px/1.5 var(--mono);
+  background-image: repeating-linear-gradient(135deg, var(--ground) 0 10px, var(--ground2) 10px 20px); }
+.wrap { max-width: 1320px; margin: 0 auto; padding: 14px max(14px, env(safe-area-inset-right)) 28px max(14px, env(safe-area-inset-left)); display: grid; gap: 12px; }
+.box { background: var(--box); border: 3px solid var(--edge); border-radius: 8px; box-shadow: inset 0 0 0 2px var(--inner), 0 3px 0 rgba(42,47,60,.25); }
+header.box { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 8px 14px; }
+header h1 { font-size: 1.1rem; margin: 0; letter-spacing: .04em; }
+header .sp { flex: 1; }
+header a { color: var(--edge); }
+#conn { color: var(--soft); font-size: .85rem; }
+#stage { position: relative; padding: 6px; }
+#field { position: relative; width: 100%; line-height: 0; }
+canvas { width: 100%; height: auto; display: block; image-rendering: pixelated; image-rendering: crisp-edges; border: 2px solid var(--edge); border-radius: 4px; background: #88d070; }
+#ov { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.lbl { position: absolute; transform: translate(-50%, -100%); white-space: nowrap; background: rgba(40,48,64,.88); color: #fff;
+  padding: 0 .35em; border-radius: 2px; line-height: 1.35; }
+.lbl i { display: inline-block; width: .55em; height: .55em; margin-right: .35em; border-radius: 50%; background: #7d8aa6; }
+.lbl i.up { background: #4fcf5a; } .lbl i.down { background: #e8573f; } .lbl i.starting { background: #f2c43a; }
+.lbl.warn { background: #b3362f; }
+.bubble { position: absolute; transform: translate(-50%, -100%); background: #fff; color: var(--ink); border: 2px solid #283040;
+  border-radius: 6px; padding: 0 .4em; line-height: 1.35; max-width: 34%; text-align: center; }
+.bubble[hidden] { display: none; }
+.sign { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); background: #fff7e0; border: 3px solid #5a4a2a;
+  color: #4a3a1a; padding: 6px 14px; border-radius: 4px; font-weight: 700; line-height: 1.4; text-align: center; }
+.sign[hidden] { display: none; }
+#lost { position: absolute; inset: 0; display: none; place-items: center; background: rgba(40,48,64,.6); pointer-events: auto; }
+#lost.on { display: grid; }
+#lost div { background: var(--box); border: 3px solid var(--edge); border-radius: 8px; padding: 14px 20px; text-align: center; line-height: 1.5; }
+#lost a { color: var(--red); font-weight: 700; }
+.cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 900px) { .cols { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); } }
+.dialog { padding: 10px 14px; min-height: 4.4em; font-size: 1rem; }
+.dialog b { color: var(--red); }
+.logbox { padding: 8px 14px; }
+.logbox h2 { margin: 0 0 4px; font-size: .85rem; letter-spacing: .08em; text-transform: uppercase; color: var(--soft); }
+ul#log { list-style: none; margin: 0; padding: 0; font-size: .85rem; }
+ul#log li { display: flex; gap: 10px; padding: 1px 0; }
+ul#log time { color: var(--soft); flex: none; }
+ul#log .bad { color: #b3362f; } ul#log .good { color: #2c7a3a; }
+.legend { padding: 8px 14px; color: var(--soft); font-size: .8rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="box">
+    <h1>Homelab Town</h1>
+    <span id="conn">connecting...</span>
+    <span class="sp"></span>
+    <a href="/admin">Back to admin</a>
+  </header>
+  <div class="box" id="stage">
+    <div id="field">
+      <canvas id="cv" width="640" height="384" aria-label="The homelab drawn as a small town. Services are buildings; the build loop and ops agents are the characters."></canvas>
+      <div id="ov"></div>
+      <div id="sign" class="sign" hidden>Status unavailable</div>
+    </div>
+    <div id="lost"><div>Logged out: <a href="/login">log in again</a></div></div>
+  </div>
+  <div class="cols">
+    <div class="box dialog" id="say" aria-live="polite">Welcome to Homelab Town.</div>
+    <div class="box logbox"><h2>Town log</h2><ul id="log"></ul></div>
+  </div>
+  <div class="box legend">Lit windows = up, flicker = starting, dark with smoke = down, grey = unknown. Read-only: nothing here changes anything.</div>
+</div>
+<script>
+(() => {
+"use strict";
+const W = 640, H = 384, OUT = "#283040";
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+const ov = document.getElementById("ov");
+
+// ---------- Map: roads, avenues, buildings ----------
+const ROAD = { 1: 104, 2: 216, 3: 328 }, BOTTOM = { 1: 96, 2: 208, 3: 320 }, AVE = [104, 296, 456, 600];
+const GATE = { x: 630, y: 104, road: 1 };
+const BLD = [
+  { id: "watchtower", name: "Watchtower", x: 16, w: 32, h: 80, row: 1, kind: "tower", roof: "#4a6fa5" },
+  { id: "hall", name: "Town Hall", x: 64, w: 96, h: 64, row: 1, roof: "#c0573a" },
+  { id: "library", name: "Library", x: 176, w: 64, h: 48, row: 1, roof: "#7a5bb0" },
+  { id: "gym", name: "Gym", x: 256, w: 64, h: 48, row: 1, roof: "#5f8f6a" },
+  { id: "tailor", name: "Tailor", x: 336, w: 48, h: 48, row: 1, roof: "#e07aa0" },
+  { id: "arcade", name: "Arcade", x: 400, w: 48, h: 48, row: 1, roof: "#f08a3a" },
+  { id: "post", name: "Post Office", x: 464, w: 64, h: 48, row: 1, roof: "#e8b03a" },
+  { id: "cinema", name: "Cinema", x: 16, w: 80, h: 56, row: 2, roof: "#6a4aa0" },
+  { id: "warehouse", name: "Arr Warehouse", x: 112, w: 96, h: 48, row: 2, roof: "#9a5a3a" },
+  { id: "tunnel", name: "Tunnel Cave", x: 224, w: 64, h: 48, row: 2, kind: "cave" },
+  { id: "market", name: "Market", x: 304, w: 64, h: 48, row: 2, roof: "#4a7ad6" },
+  { id: "clinic", name: "Clinic", x: 384, w: 64, h: 48, row: 2, roof: "#e0443c" },
+  { id: "guild", name: "Guild Hall", x: 464, w: 96, h: 56, row: 2, roof: "#3e5a9a" },
+  { id: "vault", name: "Vault", x: 16, w: 64, h: 48, row: 3, roof: "#7a8294", steel: true },
+  { id: "site", name: "Construction Site", x: 128, w: 128, h: 48, row: 3, kind: "site" },
+  { id: "clock", name: "Clock Tower", x: 304, w: 32, h: 80, row: 3, kind: "tower", roof: "#8a5a3a", clock: true },
+  { id: "observatory", name: "Observatory", x: 480, w: 80, h: 56, row: 3, kind: "dome", roof: "#5a6a9a" },
+  { id: "wall", name: "City Wall", x: 624, w: 16, h: 384, row: 0, kind: "wall" },
+];
+const byId = Object.fromEntries(BLD.map(b => [b.id, b]));
+BLD.forEach(b => { b.bottom = b.row ? BOTTOM[b.row] : H; b.top = b.bottom - b.h; b.status = "unknown"; b.label = b.name; });
+// Docker container id -> building (for the medic's walks and the log)
+const BUILDING_OF = { "uptime-kuma": "watchtower", dashboard: "hall", books: "library", fitness: "gym", wardrobe: "tailor",
+  leafgreen: "arcade", ntfy: "post", hermes: "post", jellyfin: "cinema", radarr: "warehouse", sonarr: "warehouse",
+  prowlarr: "warehouse", seerr: "warehouse", "radarr-remote": "warehouse", "sonarr-remote": "warehouse",
+  qbittorrent: "tunnel", gluetun: "tunnel", changedetection: "market", adguard: "wall", "mac-mini": "observatory" };
+
+function door(place, dx = 0) {
+  if (place === "gate") return GATE;
+  if (place === "wall") return { x: 600, y: 104, road: 1 };
+  const b = byId[place];
+  return { x: Math.round(b.x + b.w / 2) + dx, y: ROAD[b.row] , road: b.row };
+}
+function route(from, to) {
+  const pts = [];
+  if (from.road !== to.road) {
+    const mid = (from.x + to.x) / 2, ave = AVE.reduce((a, v) => Math.abs(v - mid) < Math.abs(a - mid) ? v : a);
+    pts.push({ x: from.x, y: ROAD[from.road] }, { x: ave, y: ROAD[from.road] }, { x: ave, y: ROAD[to.road] });
+  } else pts.push({ x: from.x, y: ROAD[from.road] });
+  pts.push({ x: to.x, y: ROAD[to.road] });
+  return pts;
+}
+
+// ---------- Drawing helpers ----------
+const rect = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), w, h); };
+const ob = (x, y, w, h, c) => { rect(x - 1, y - 1, w + 2, h + 2, OUT); rect(x, y, w, h, c); };
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.max(0, Math.min(255, Math.round(v * f))));
+  return "#" + c.map(v => v.toString(16).padStart(2, "0")).join("");
+}
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const hash = n => { n = Math.imul(n ^ 61, 2654435761); n ^= n >>> 15; return (n >>> 0) % 1000 / 1000; };
+
+// ---------- Static terrain (drawn once) ----------
+const terrain = document.createElement("canvas"); terrain.width = W; terrain.height = H;
+const tctx = terrain.getContext("2d");
+const PONDS = { cx: 408, cy: 296, rx: 44, ry: 26 };
+function pondDist(x, y) { return Math.hypot((x - PONDS.cx) / PONDS.rx, (y - PONDS.cy) / PONDS.ry); }
+function tree(c, x, y) {
+  const r = (xx, yy, w, h, col) => { c.fillStyle = col; c.fillRect(x + xx, y + yy, w, h); };
+  r(6, 10, 4, 6, OUT); r(7, 10, 2, 5, "#7a5230");
+  const rows = [[5, 6], [3, 10], [2, 12], [1, 14], [1, 14], [1, 14], [2, 12], [3, 10]];
+  rows.forEach(([ox, w], i) => r(ox, 1 + i, w, 1, OUT));
+  [[6, 4], [4, 8], [3, 10], [2, 12], [2, 12], [2, 12], [3, 10], [4, 8]].forEach(([ox, w], i) => r(ox, 1 + i, w, 1, i < 3 ? "#57b55a" : "#3f9a4a"));
+  r(5, 3, 3, 2, "#7bd07a");
+}
+function buildTerrain() {
+  const c = tctx, rnd = rng(7);
+  c.fillStyle = "#88d070"; c.fillRect(0, 0, W, H);
+  for (let i = 0; i < 700; i++) { c.fillStyle = rnd() < .5 ? "#78c262" : "#97dc7e"; c.fillRect(Math.floor(rnd() * W), Math.floor(rnd() * H), 2, 1); }
+  // pond with sandy edge
+  for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) {
+    const d = pondDist(x, y);
+    if (d < 1) { c.fillStyle = d < .86 ? "#5aa8ec" : "#8cc8f8"; c.fillRect(x, y, 2, 2); }
+    else if (d < 1.2) { c.fillStyle = "#e6d39a"; c.fillRect(x, y, 2, 2); }
+  }
+  // roads: path colour, edge pixels, pebbles
+  const road = (x, y, w, h) => {
+    c.fillStyle = "#e6d39a"; c.fillRect(x, y, w, h);
+    c.fillStyle = "#c9ae6c"; if (w > h) { c.fillRect(x, y, w, 1); c.fillRect(x, y + h - 1, w, 1); } else { c.fillRect(x, y, 1, h); c.fillRect(x + w - 1, y, 1, h); }
+    for (let i = 0; i < w * h / 70; i++) { c.fillStyle = "#d4bd80"; c.fillRect(x + 2 + Math.floor(rnd() * (w - 4)), y + 2 + Math.floor(rnd() * (h - 4)), 2, 1); }
+  };
+  for (const r of [1, 2, 3]) road(0, ROAD[r] - 8, 624, 16);
+  for (const a of AVE) { road(a - 8, ROAD[1] - 8, 16, ROAD[3] - ROAD[1] + 16); }
+  // ledges (bottom): a stepped brown band over the lower grass
+  c.fillStyle = "#6b8f3e"; c.fillRect(0, 338, 624, 14);
+  c.fillStyle = "#8a6a3a"; c.fillRect(0, 350, 624, 4); c.fillStyle = OUT; c.fillRect(0, 354, 624, 1);
+  for (let x = 0; x < 624; x += 12) { c.fillStyle = "#5b7d33"; c.fillRect(x, 340, 5, 1); }
+  // tree borders: top row, bottom rows, left column
+  for (let x = 0; x < 624; x += 16) { tree(c, x, 0); tree(c, x, 356); tree(c, x + 8 * (x % 32 ? 0 : 1), 368); }
+  // flower beds
+  const beds = [[168, 76], [232, 90], [392, 86], [452, 90], [90, 196], [374, 196], [450, 196], [12, 300], [90, 300], [260, 300], [280, 308], [570, 150], [570, 250], [540, 330], [564, 70]];
+  for (const [bx, by] of beds) {
+    c.fillStyle = "#5d9a45"; c.fillRect(bx, by, 14, 8); c.fillStyle = OUT; c.fillRect(bx, by + 8, 14, 1);
+    ["#e0443c", "#f2c43a", "#fff", "#e07aa0"].forEach((col, i) => { c.fillStyle = col; c.fillRect(bx + 2 + i * 3, by + 1 + (i % 2) * 3, 2, 2); });
+  }
+  // a few lone trees by the east side
+  for (const [tx, ty] of [[568, 100], [584, 108 + 8], [568, 276], [592, 244], [552, 300]]) if (Math.abs(ty - ROAD[1]) > 12 && Math.abs(ty - ROAD[2]) > 12 && Math.abs(ty - ROAD[3]) > 12) tree(c, tx, ty);
+}
+buildTerrain();
+
+// ---------- Weather of the day (browser clock) ----------
+function tint() {
+  const d = new Date(), h = d.getHours() + d.getMinutes() / 60;
+  if (h >= 7.5 && h < 17) return null;
+  if (h >= 17 && h < 20) return { c: "255,150,60", a: .05 + (h - 17) / 3 * .15, night: h > 19 };
+  if (h >= 20 || h < 5) return { c: "20,30,90", a: .38, night: true };
+  if (h >= 5 && h < 7.5) return { c: "60,70,140", a: .3 - (h - 5) / 2.5 * .3, night: h < 6.5 };
+  return null;
+}
+
+// ---------- Buildings ----------
+let winList = [];
+const WIN = { up: "#ffd86a", unknown: "#7d8aa6", maintenance: "#7fb2e8", down: "#2c2f3e" };
+function winColor(st, i, t) {
+  if (st === "starting") return RM ? "#c9a84a" : (hash(Math.floor(t * 5) * 13 + i * 7) < .55 ? "#ffd86a" : "#2c2f3e");
+  return WIN[st] || WIN.unknown;
+}
+function windowAt(b, x, y, w, h, i, t) {
+  const col = winColor(b.status, i, t);
+  ob(x, y, w, h, col);
+  rect(x + (w >> 1), y, 1, h, "rgba(40,48,64,.5)"); rect(x, y + (h >> 1), w, 1, "rgba(40,48,64,.5)");
+  if (col === "#ffd86a") winList.push([x, y, w, h]);
+}
+function drawRoof(x, y, w, h, col) {
+  const dark = shade(col, .72), light = shade(col, 1.15);
+  for (let r = 0; r < h; r++) {
+    const inset = Math.round((1 - r / (h - 1)) * Math.min(6, w * .1)), rx = x + inset, rw = w - 2 * inset;
+    rect(rx, y + r, rw, 1, (r >> 1) % 2 ? light : col);
+    for (let tx = rx + ((r >> 2) % 2) * 3; tx < rx + rw; tx += 6) rect(tx, y + r, 1, 2, dark);
+    rect(rx - 1, y + r, 1, 1, OUT); rect(rx + rw, y + r, 1, 1, OUT);
+  }
+  rect(x + Math.round(Math.min(6, w * .1)) - 1, y - 1, w - 2 * Math.round(Math.min(6, w * .1)) + 2, 1, OUT);
+  rect(x - 1, y + h, w + 2, 1, OUT); rect(x, y + h - 2, w, 2, dark);
+}
+function drawDoor(cx, bottom, steel) {
+  ob(cx - 4, bottom - 12, 8, 12, steel ? "#9aa2b4" : "#8a5a32");
+  rect(cx + 2, bottom - 6, 1, 1, "#f2c43a");
+  if (steel) rect(cx - 3, bottom - 8, 6, 1, "#5a6070");
+  rect(cx - 7, bottom, 14, 2, "#c0573a"); rect(cx - 7, bottom + 2, 14, 1, OUT);
+}
+function smoke(b, t, cx, top) {
+  if (b.status !== "down") return;
+  for (let k = 0; k < 4; k++) {
+    const ph = ((t * .45 + k / 4 + b.x * .013) % 1), a = 1 - ph;
+    ctx.fillStyle = `rgba(110,108,124,${(a * .75).toFixed(2)})`;
+    const s = 3 + Math.round(ph * 4);
+    ctx.fillRect(Math.round(cx - s / 2 + Math.sin(t + k * 2) * 3), Math.round(top - 2 - ph * 22), s, s);
+  }
+}
+function drawGable(b, t) {
+  const { x, w, h, bottom, top } = b, rh = Math.max(14, Math.round(h * .45)), wall = b.steel ? "#c4c9d4" : "#f6eed6";
+  rect(x + 2, top + rh, w - 4, h - rh, OUT);
+  rect(x + 3, top + rh, w - 6, h - rh - 1, wall);
+  rect(x + 3, bottom - 4, w - 6, 3, shade(wall, .82));
+  drawRoof(x, top, w, rh, b.roof || "#b5523b");
+  const wy = top + rh + 4, n = Math.max(1, Math.floor((w - 12) / 22)), cx = x + w / 2;
+  let i = 0;
+  for (let k = 0; k < n * 2 + 1; k++) {
+    if (k === n) continue;
+    const slot = (w - 8) / (n * 2 + 1); const wx = Math.round(x + 4 + k * slot + slot / 2 - 3);
+    windowAt(b, wx, wy, 6, 6, i++ + b.x, t);
+  }
+  drawDoor(Math.round(cx), bottom - 1, b.steel);
+  smoke(b, t, x + w * .72, top);
+  if (b.id === "clinic") { rect(Math.round(cx) - 4, top + 3, 9, 3, "#fff"); rect(Math.round(cx), top + 1, 1, 7, "#fff"); rect(Math.round(cx) - 1, top + 2, 3, 5, "#fff"); rect(Math.round(cx), top + 1, 1, 7, "#e0443c"); rect(Math.round(cx) - 3, top + 4, 7, 1, "#e0443c"); }
+}
+function drawTower(b, t) {
+  const { x, w, h, bottom, top } = b, cx = x + w / 2, rh = 24;
+  rect(x + 3, top + rh, w - 6, h - rh, OUT);
+  rect(x + 4, top + rh, w - 8, h - rh - 1, "#e8e0c4");
+  for (let y = top + rh + 6; y < bottom - 4; y += 6) rect(x + 4, y, w - 8, 1, "#cfc6a6");
+  // pyramid roof
+  for (let r = 0; r < rh; r++) {
+    const rw = 4 + Math.round(r / (rh - 1) * (w + 2 - 4)), rx = Math.round(cx - rw / 2);
+    rect(rx - 1, top + r, rw + 2, 1, OUT);
+    rect(rx, top + r, rw, 1, (r >> 1) % 2 ? shade(b.roof, 1.15) : b.roof);
+  }
+  if (b.clock) {
+    ob(cx - 7, top + rh + 4, 14, 14, "#fff"); const d = new Date();
+    const a1 = (d.getMinutes() / 60) * Math.PI * 2, a2 = ((d.getHours() % 12) + d.getMinutes() / 60) / 12 * Math.PI * 2;
+    ctx.strokeStyle = OUT; ctx.lineWidth = 1; ctx.beginPath();
+    ctx.moveTo(cx, top + rh + 11); ctx.lineTo(cx + Math.sin(a1) * 5, top + rh + 11 - Math.cos(a1) * 5);
+    ctx.moveTo(cx, top + rh + 11); ctx.lineTo(cx + Math.sin(a2) * 3.5, top + rh + 11 - Math.cos(a2) * 3.5); ctx.stroke();
+  } else {
+    windowAt(b, Math.round(cx) - 3, top + rh + 6, 6, 6, 1, t);
+    windowAt(b, Math.round(cx) - 3, top + rh + 24, 6, 6, 2, t);
+    windowAt(b, Math.round(cx) - 3, top + rh + 42, 6, 6, 3, t);
+  }
+  drawDoor(Math.round(cx), bottom - 1);
+  smoke(b, t, cx, top);
+}
+function drawDome(b, t) {
+  const { x, w, h, bottom, top } = b, cx = x + w / 2, rh = 28;
+  rect(x + 3, top + rh, w - 6, h - rh, OUT); rect(x + 4, top + rh, w - 8, h - rh - 1, "#dcdfec");
+  for (let r = 0; r < rh; r++) {
+    const rr = rh - r, half = Math.round(Math.sqrt(Math.max(0, rh * rh - rr * rr)) * (w / 2 / rh));
+    rect(cx - half - 1, top + r, 2 * half + 2, 1, OUT);
+    rect(cx - half, top + r, 2 * half, 1, r % 6 < 3 ? b.roof : shade(b.roof, 1.2));
+  }
+  rect(cx - 2, top + 2, 4, 14, "#283040");
+  windowAt(b, x + 10, top + rh + 5, 6, 6, 1, t); windowAt(b, x + w - 16, top + rh + 5, 6, 6, 2, t);
+  drawDoor(Math.round(cx), bottom - 1);
+  smoke(b, t, cx, top);
+}
+function drawCave(b, t) {
+  const { x, w, h, bottom, top } = b, cx = x + w / 2;
+  for (let r = 0; r < h; r++) {
+    const f = r / (h - 1), half = Math.round(w / 2 * Math.sqrt(1 - (1 - f) * (1 - f)));
+    rect(cx - half - 1, top + r, 2 * half + 2, 1, OUT);
+    rect(cx - half, top + r, 2 * half, 1, (r + Math.floor(half / 5)) % 7 < 3 ? "#8a8e9c" : "#a3a7b4");
+  }
+  ob(cx - 9, bottom - 20, 18, 20, b.status === "down" ? "#14161e" : "#2a2230");
+  const glow = b.status === "up" ? "#ffd86a" : b.status === "starting" ? winColor("starting", 5, t) : null;
+  if (glow) { rect(cx - 6, bottom - 6, 4, 2, glow); winList.push([cx - 6, bottom - 6, 4, 2]); }
+  rect(cx - 7, bottom, 14, 2, "#c0573a");
+  smoke(b, t, cx, top);
+}
+function drawSite(b, t) {
+  const { x, w, bottom } = b, top = bottom - 36, loop = state.loop;
+  rect(x, bottom - 6, w, 6, "#b79a62"); rect(x, bottom, w, 1, OUT);
+  rect(x + 4, bottom - 8, 8, 3, "#8a5a32"); rect(x + w - 16, bottom - 9, 10, 4, "#7a7e8c");
+  const building = loop && loop.building.length > 0, ready = loop ? loop.ready : [];
+  if (building) {
+    const px = x + 24;
+    for (let i = 0; i < 4; i++) { rect(px + i * 22, top + 8, 2, 30, "#8a5a32"); rect(px + i * 22, top + 22, 22, 2, "#8a5a32"); }
+    rect(px, top + 8, 66, 2, "#8a5a32");
+    for (let i = 0; i < 3; i++) rect(px + 4 + i * 22, top + 12, 18, 10, i <= Math.floor(t / 2) % 4 ? "#c9a96a" : "#e8dcc0");
+    if (!RM) { const sw = Math.floor(t * 3) % 2; rect(px + 70, top + 18 + sw * 3, 3, 8, "#9aa2b4"); }
+  }
+  ready.slice(0, 3).forEach((r, i) => {
+    const fx = x + w - 24 - i * 28, wob = RM ? 0 : Math.round(Math.sin(t * 3 + i) * 1);
+    rect(fx, top + 6, 2, 34, "#4a3a2a"); ob(fx + 2, top + 6 + wob, 14, 9, "#4fcf5a");
+    rect(fx + 5, top + 9 + wob, 8, 1, "#fff");
+  });
+}
+function drawWall(b, t) {
+  const x = b.x;
+  rect(x - 1, 0, 17, H, OUT); rect(x, 0, 15, H, "#a8adb8");
+  for (let y = 0; y < H; y += 8) { rect(x, y, 15, 1, "#8d93a2"); rect(x + (y % 16 ? 4 : 9), y, 1, 8, "#8d93a2"); }
+  for (let y = 0; y < H; y += 16) rect(x - 4, y, 4, 8, "#a8adb8");
+  // gate: posts + wooden doors
+  rect(x - 5, 88, 22, 32, OUT); rect(x - 4, 92, 19, 28, "#e6d39a");
+  rect(x - 4, 88, 4, 32, "#6b4a2a"); rect(x + 11, 88, 4, 32, "#6b4a2a"); rect(x - 4, 86, 19, 5, "#6b4a2a");
+  // lanterns along the wall: the adguard status
+  for (let i = 0; i < 6; i++) {
+    const ly = 28 + i * 56; if (Math.abs(ly - 104) < 20) continue;
+    const col = winColor(b.status, i, t);
+    ob(x + 5, ly, 5, 7, col); if (col === "#ffd86a") winList.push([x + 5, ly, 5, 7]);
+  }
+  if (b.status === "down") smoke(b, t, x + 7, 30);
+}
+function drawBuilding(b, t) {
+  if (b.kind === "wall") drawWall(b, t);
+  else if (b.kind === "site") drawSite(b, t);
+  else if (b.kind === "tower") drawTower(b, t);
+  else if (b.kind === "dome") drawDome(b, t);
+  else if (b.kind === "cave") drawCave(b, t);
+  else drawGable(b, t);
+}
+
+// ---------- Characters and companions ----------
+const SPEED = { planner: 30, builder: 30, reviewer: 30, scout: 46, hermes: 40, medic: 38 };
+const COLORS = {
+  planner: { body: "#8d6fd0", hat: "#4a2f8a", hair: "#4a2f8a" },
+  builder: { body: "#e8833a", hat: "#f6d24a", hair: "#7a4a2a" },
+  reviewer: { body: "#3fb0a6", hat: "#2f3a4a", hair: "#2f3a4a" },
+  scout: { body: "#5aa04a", hat: "#d8483c", hair: "#3a2a20" },
+  hermes: { body: "#3fb8e6", hat: "#ffffff", hair: "#e8c060" },
+  medic: { body: "#ffffff", hat: "#f2a0b8", hair: "#f2a0b8" },
+};
+const NAMES = { planner: "PLANNER", builder: "BUILDER", reviewer: "REVIEWER", scout: "SCOUT", hermes: "HERMES", medic: "MEDIC" };
+const OFFS = { planner: -14, builder: 0, reviewer: 14, scout: 28, hermes: 0, medic: 0 };
+const chars = {};
+function mkChar(id, home) {
+  const el = document.createElement("div"); el.className = "bubble"; el.hidden = true; ov.appendChild(el);
+  const c = { id, home, place: home, x: 0, y: 0, road: 1, path: [], dir: "down", step: 0, hidden: false, q: [], cur: null,
+    el, sayUntil: 0, sayText: "", idleSay: "", working: false, sleeping: false, cx: 0, cy: 0 };
+  Object.assign(c, door(home, OFFS[id])); c.cx = c.x; c.cy = c.y;
+  chars[id] = c; return c;
+}
+["planner", "builder", "reviewer", "scout"].forEach(id => mkChar(id, "guild"));
+mkChar("hermes", "post"); mkChar("medic", "clinic");
+const ghost = { on: false, names: "" };
+
+function drawPerson(c, t) {
+  const col = COLORS[c.id], x = Math.round(c.x), y = Math.round(c.y), moving = c.path.length > 0;
+  const f = moving ? Math.floor(t * 6) % 2 : 0;
+  rect(x - 5, y - 1, 10, 3, "rgba(0,0,0,.18)");
+  // legs
+  const lh = 4, l1 = f ? 1 : 0, l2 = f ? 0 : 1;
+  ob(x - 4, y - lh - l1, 3, lh + l1 - 1 + 1, "#3a3f5a"); ob(x + 1, y - lh - l2, 3, lh + l2 - 1 + 1, "#3a3f5a");
+  // body
+  ob(x - 5, y - 11, 10, 7, col.body);
+  rect(x - 5, y - 8, 10, 1, shade(col.body, .8));
+  if (c.working) { const sw = Math.floor(t * 4) % 2; rect(x + 5, y - 13 - sw * 2, 2, 7, "#8a5a32"); rect(x + 4, y - 14 - sw * 2, 5, 3, "#9aa2b4"); }
+  // head + hair/hat per direction
+  ob(x - 4, y - 18, 8, 7, "#f6c9a0");
+  if (c.dir === "up") rect(x - 4, y - 18, 8, 6, col.hair);
+  else {
+    rect(x - 4, y - 18, 8, 3, col.hat); rect(x - 5, y - 16, 10, 1, col.hat);
+    if (c.dir === "down") { rect(x - 2, y - 14, 1, 2, OUT); rect(x + 1, y - 14, 1, 2, OUT); }
+    else { rect(c.dir === "left" ? x - 3 : x + 2, y - 14, 1, 2, OUT); rect(c.dir === "left" ? x + 2 : x - 4, y - 15, 2, 3, col.hair); }
+  }
+  if (c.id === "hermes") rect(x + 4, y - 19, 2, 2, "#ffd86a");
+}
+// companions: small creatures that follow
+function drawCompanion(c, t) {
+  const x = Math.round(c.cx), y = Math.round(c.cy), bob = RM ? 0 : Math.round(Math.sin(t * 5 + c.x * .1) * (c.path.length ? 1 : 0.4));
+  rect(x - 4, y - 1, 8, 2, "rgba(0,0,0,.18)");
+  const by = y - 7 + bob;
+  switch (c.id) {
+    case "scout": // fox
+      ob(x - 4, by + 2, 8, 5, "#e8833a"); ob(x + (c.dir === "left" ? -6 : 3), by - 1, 4, 4, "#e8833a");
+      rect(x + (c.dir === "left" ? -6 : 5), by - 3, 1, 2, "#e8833a"); rect(x - 5 + (c.dir === "left" ? 8 : 0), by + 1, 3, 3, "#fff");
+      rect(x + (c.dir === "left" ? 4 : -7), by + 3, 3, 2, "#fff"); break;
+    case "reviewer": // turtle
+      ob(x - 4, by + 1, 8, 5, "#3f9a4a"); rect(x - 2, by + 2, 2, 2, "#7bd07a"); rect(x + 1, by + 2, 2, 2, "#7bd07a");
+      ob(x + (c.dir === "left" ? -7 : 4), by + 3, 3, 3, "#a8d890"); break;
+    case "hermes": { // spark
+      const s = c.sleeping ? 0 : (RM ? 1 : (Math.floor(t * 4) % 2));
+      const col = c.sleeping ? "#b9a64a" : "#ffd86a";
+      rect(x - 1, by - 1, 3, 7, OUT); rect(x - 3, by + 1, 7, 3, OUT); rect(x, by, 1, 5, col); rect(x - 2, by + 2, 5, 1, col);
+      if (s) { rect(x - 4, by - 2, 1, 1, col); rect(x + 4, by + 5, 1, 1, col); } break; }
+    case "planner": // owl
+      ob(x - 3, by, 7, 7, "#a58fd8"); rect(x - 3, by - 2, 2, 2, "#a58fd8"); rect(x + 2, by - 2, 2, 2, "#a58fd8");
+      rect(x - 2, by + 1, 2, 2, "#fff"); rect(x + 1, by + 1, 2, 2, "#fff"); rect(x - 1, by + 2, 1, 1, OUT); rect(x + 2, by + 2, 1, 1, OUT); break;
+    case "builder": // beaver
+      ob(x - 4, by + 2, 8, 5, "#9a6a3a"); ob(x + (c.dir === "left" ? -6 : 3), by, 4, 4, "#9a6a3a");
+      rect(x + (c.dir === "left" ? -5 : 4), by + 3, 2, 1, "#fff"); ob(x + (c.dir === "left" ? 3 : -8), by + 4, 5, 2, "#5a3a1a"); break;
+    case "medic": // blob with a heart
+      ob(x - 4, by + 1, 8, 6, "#f2a0b8"); rect(x - 2, by + 3, 1, 2, OUT); rect(x + 1, by + 3, 1, 2, OUT);
+      rect(x - 1, by - 2, 1, 2, "#e0443c"); rect(x + 1, by - 2, 1, 2, "#e0443c"); rect(x - 1, by - 1, 3, 1, "#e0443c"); break;
+  }
+}
+function drawGhost(t) {
+  const b = byId.clock, x = b.x - 14, y = b.bottom + 4 + (RM ? 0 : Math.round(Math.sin(t * 2) * 2));
+  ctx.globalAlpha = .8;
+  ob(x - 6, y - 22, 12, 14, "#f4f6ff"); rect(x - 6, y - 8, 4, 3, "#f4f6ff"); rect(x - 1, y - 8, 4, 4, "#f4f6ff"); rect(x + 3, y - 8, 3, 3, "#f4f6ff");
+  rect(x - 3, y - 18, 2, 3, OUT); rect(x + 1, y - 18, 2, 3, OUT); rect(x - 1, y - 13, 2, 2, OUT);
+  ctx.globalAlpha = 1;
+}
+
+// ---------- Task queue per character ----------
+const MAXQ = 2;
+function enqueue(c, tasks) { c.q.push(tasks); while (c.q.length > MAXQ) c.q.shift(); }
+function goTo(c, place) {
+  const to = door(place, OFFS[c.id]);
+  c.path = route(c, to).filter((p, i, a) => i === 0 || p.x !== a[i - 1].x || p.y !== a[i - 1].y);
+  c.place = place;
+}
+function say(c, text, secs) { c.sayText = text; c.sayUntil = now + secs; }
+function startTask(c, k) {
+  switch (k.t) {
+    case "go": goTo(c, k.place); break;
+    case "say": say(c, k.text, k.secs || 2.4); k.until = now + (k.secs || 2.4); if (k.dialog !== false) dialog(NAMES[c.id], k.text); break;
+    case "wait": k.until = now + k.secs; break;
+    case "hide": c.hidden = true; c.el.hidden = true; break;
+    case "show": c.hidden = false; break;
+    case "warp": Object.assign(c, door(k.place, OFFS[c.id])); c.cx = c.x; c.cy = c.y; c.path = []; c.place = k.place; break;
+  }
+}
+function taskDone(c, k) {
+  if (k.t === "go") return c.path.length === 0;
+  if (k.t === "say" || k.t === "wait") return now >= k.until;
+  return true;
+}
+function update(c, dt) {
+  // follow the path
+  if (c.path.length) {
+    const p = c.path[0], dx = p.x - c.x, dy = p.y - c.y, d = Math.hypot(dx, dy), step = SPEED[c.id] * dt;
+    if (d <= step) { c.x = p.x; c.y = p.y; c.path.shift(); if (!c.path.length) { c.road = door(c.place).road; } }
+    else { c.x += dx / d * step; c.y += dy / d * step; }
+    if (d > 0.01) c.dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "up" : "down");
+  } else if (c.dir !== "down" && !c.cur && !c.working) c.dir = "down";
+  // companion trails behind
+  const tx = c.x + (c.dir === "left" ? 11 : c.dir === "right" ? -11 : 9), ty = c.y + (c.dir === "up" ? 7 : c.dir === "down" ? -1 : 0);
+  const k = Math.min(1, dt * 5); c.cx += (tx - c.cx) * k; c.cy += (ty - c.cy) * k;
+  // tasks
+  if (!c.cur && c.q.length) { c.cur = { list: c.q.shift(), i: 0 }; startTask(c, c.cur.list[0]); }
+  if (c.cur) {
+    while (c.cur && taskDone(c, c.cur.list[c.cur.i])) {
+      c.cur.i++;
+      if (c.cur.i >= c.cur.list.length) { c.cur = null; break; }
+      startTask(c, c.cur.list[c.cur.i]);
+    }
+  } else if (!c.path.length && !c.hidden && c.place !== c.home) goTo(c, c.home);
+  if (c.id === "builder") c.working = c.home === "site" && c.place === "site" && !c.path.length;
+  // bubble
+  const idle = !c.cur && !c.path.length && c.place === c.home && c.idleSay;
+  const text = now < c.sayUntil ? c.sayText : (idle ? c.idleSay : "");
+  if (text && !c.hidden) { if (c.el.textContent !== text) c.el.textContent = text; c.el.hidden = false; } else c.el.hidden = true;
+}
+
+// ---------- Dialogue box, town log ----------
+const sayEl = document.getElementById("say"), logEl = document.getElementById("log");
+let full = "", shown = 0, who = "";
+function dialog(w, text) { who = w; full = text; shown = RM ? text.length : 0; paintSay(); }
+function paintSay() {
+  sayEl.textContent = "";
+  if (who) { const b = document.createElement("b"); b.textContent = who + ": "; sayEl.appendChild(b); }
+  sayEl.appendChild(document.createTextNode(full.slice(0, Math.floor(shown))));
+}
+function hhmm(d = new Date()) { return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
+function log(text, cls, speak = true) {
+  const li = document.createElement("li"), tm = document.createElement("time"), sp = document.createElement("span");
+  tm.textContent = hhmm(); sp.textContent = text; if (cls) sp.className = cls;
+  li.append(tm, sp); logEl.prepend(li);
+  while (logEl.children.length > 14) logEl.lastChild.remove();
+  if (speak) dialog("", text);
+}
+
+// ---------- Frame loop ----------
+let now = 0, last = performance.now(), scale = 1;
+const state = { loop: null };
+const labels = {};
+function label(b) {
+  if (!labels[b.id]) { const el = document.createElement("div"); el.className = "lbl"; ov.appendChild(el); labels[b.id] = el; }
+  return labels[b.id];
+}
+function frame(ts) {
+  const dt = Math.min(.1, (ts - last) / 1000); last = ts; now += dt;
+  scale = cv.clientWidth / W;
+  const fs = Math.max(8, Math.round(scale * 6.2));
+  ctx.clearRect(0, 0, W, H);
+  ctx.drawImage(terrain, 0, 0);
+  winList = [];
+  const t = now;
+  // pond glints
+  if (!RM) for (let i = 0; i < 4; i++) {
+    const ph = (t * .6 + i * .25) % 1, gx = PONDS.cx - 24 + i * 16 + Math.sin(t + i) * 3, gy = PONDS.cy - 8 + (i % 2) * 14;
+    rect(gx, gy, 5, 1, `rgba(255,255,255,${(.7 * (1 - Math.abs(ph - .5) * 2)).toFixed(2)})`);
+  }
+  for (const b of BLD.slice().sort((a, b2) => a.bottom - b2.bottom)) drawBuilding(b, t);
+  // characters sorted by y
+  const all = Object.values(chars).filter(c => !c.hidden);
+  for (const c of Object.values(chars)) update(c, dt);
+  all.sort((a, b2) => a.y - b2.y);
+  if (ghost.on) drawGhost(t);
+  for (const c of all) { if (c.dir === "up") { drawCompanion(c, t); drawPerson(c, t); } else { drawPerson(c, t); drawCompanion(c, t); } }
+  // day / evening / night
+  const tn = tint();
+  if (tn) {
+    ctx.fillStyle = `rgba(${tn.c},${tn.a.toFixed(3)})`; ctx.fillRect(0, 0, W, H);
+    if (tn.night) for (const [x, y, w, h] of winList) { ctx.fillStyle = "rgba(255,226,120,.35)"; ctx.fillRect(x - 1, y - 1, w + 2, h + 2); ctx.fillStyle = "#ffe98a"; ctx.fillRect(x, y, w, h); }
+  }
+  // overlay text
+  for (const b of BLD) {
+    const el = label(b);
+    const txt = b.label, st = b.status;
+    if (el.dataset.t !== txt + st + fs) {
+      el.textContent = ""; const dot = document.createElement("i"); dot.className = st; el.append(dot, document.createTextNode(txt));
+      el.classList.toggle("warn", !!b.warn); el.dataset.t = txt + st + fs;
+    }
+    el.style.fontSize = fs + "px";
+    if (b.kind === "wall") { el.style.left = (b.x - 24) * scale + "px"; el.style.top = 12 * scale + "px"; el.style.transform = "translate(-50%, 0)"; }
+    else { el.style.left = (b.x + b.w / 2) * scale + "px"; el.style.top = Math.max(b.top - 1, 10) * scale + "px"; }
+  }
+  for (const c of Object.values(chars)) {
+    c.el.style.fontSize = fs + "px";
+    c.el.style.left = Math.min(Math.max(c.x * scale, 60 * scale), (W - 60) * scale) + "px"; c.el.style.top = (c.y - 24) * scale + "px";
+  }
+  if (ghost.on) {
+    const g = labels.ghost || (labels.ghost = Object.assign(document.createElement("div"), { className: "bubble" }));
+    if (!g.parentNode) ov.appendChild(g);
+    g.textContent = "cron: " + ghost.names; g.hidden = false; g.style.fontSize = fs + "px";
+    g.style.left = (byId.clock.x - 14) * scale + "px"; g.style.top = (byId.clock.bottom - 22) * scale + "px";
+  } else if (labels.ghost) labels.ghost.hidden = true;
+  if (shown < full.length) { shown = Math.min(full.length, shown + dt * 45); paintSay(); }
+  requestAnimationFrame(frame);
+}
+
+// ---------- Live data ----------
+const UNHEALTHY = { down: "is unhealthy", starting: "is starting", up: "is back up" };
+let prev = null, seenOps = new Set(), pollTimer = null, stopped = false, fails = 0;
+const connEl = document.getElementById("conn"), signEl = document.getElementById("sign");
+
+function opsKey(o) { return o.time + "|" + o.service + "|" + o.action; }
+function applyHomes(d) {
+  const L = d.loop && d.loop.ok ? d.loop : null;
+  state.loop = L;
+  if (L) {
+    const hasQ = L.queued.length > 0, hasB = L.building.length > 0;
+    chars.planner.home = hasQ && !hasB ? "hall" : "guild";
+    chars.planner.idleSay = hasQ && !hasB ? "Reading " + L.queued[0] : "";
+    chars.builder.home = hasB ? "site" : "guild"; 
+    chars.builder.idleSay = hasB ? "Building " + L.building[0] : "";
+    const g = byId.guild; g.label = L.runner === "ok" ? "Guild Hall" : "Guild Hall: runner not reporting"; g.warn = L.runner !== "ok";
+    const s = byId.site;
+    s.label = L.ready.length ? "Ready: " + (L.ready[0].slug || L.ready[0].title) + (L.ready.length > 1 ? " +" + (L.ready.length - 1) : "")
+      : L.building.length ? "Building " + L.building[0] : "Construction Site";
+  }
+  const h = chars.hermes; h.sleeping = d.hermes && d.hermes.status === "down"; h.idleSay = h.sleeping ? "Zzz" : "";
+  const clinic = byId.clinic, paused = d.ops && d.ops.ok && d.ops.paused;
+  clinic.label = paused ? "Clinic: CLOSED" : "Clinic"; clinic.warn = !!paused;
+}
+function diff(d, p) {
+  const first = !p;
+  const svcOk = d.services && d.services.ok;
+  // building statuses
+  const map = d.buildings && d.buildings.ok ? d.buildings.map : {};
+  for (const b of BLD) b.status = svcOk ? (map[b.id] || "unknown") : "unknown";
+  signEl.hidden = svcOk; signEl.textContent = "Status unavailable";
+  if (svcOk && !d.services.kuma) { signEl.hidden = false; signEl.textContent = "Kuma unavailable: some buildings are grey"; signEl.style.top = "8%"; } else signEl.style.top = "42%";
+  // cron ghost
+  const crons = d.cron && d.cron.ok && svcOk ? d.cron.items.filter(c => c.status === "down").map(c => c.name) : [];
+  const was = ghost.on; ghost.on = crons.length > 0; ghost.names = crons.slice(0, 3).join(", ") + (crons.length > 3 ? " +" + (crons.length - 3) : "");
+  if (!first && ghost.on && !was) log("A ghost appeared by the Clock Tower: " + ghost.names, "bad");
+  if (!first && !ghost.on && was) log("The ghost faded away: cron jobs are reporting again", "good");
+  applyHomes(d);
+  if (first) {
+    for (const c of Object.values(chars)) { Object.assign(c, door(c.home, OFFS[c.id])); c.cx = c.x; c.cy = c.y; c.place = c.home; }
+    if (d.ops && d.ops.ok) { d.ops.recent.slice(-5).forEach(o => log(`${o.service}: ${o.action} ${o.result}`, o.result === "ok" ? "good" : "", false)); d.ops.recent.forEach(o => seenOps.add(opsKey(o))); }
+    log("The town is awake.", "", true); return;
+  }
+  // service status changes
+  if (svcOk && p.services && p.services.ok) {
+    const before = Object.fromEntries(p.services.items.map(s => [s.id, s.status]));
+    for (const s of d.services.items) {
+      if (before[s.id] && before[s.id] !== s.status && UNHEALTHY[s.status]) log(`${s.name} ${UNHEALTHY[s.status]}`, s.status === "down" ? "bad" : s.status === "up" ? "good" : "");
+    }
+  }
+  // build loop
+  const L = d.loop && d.loop.ok ? d.loop : null, PL = p.loop && p.loop.ok ? p.loop : null;
+  if (L && PL) {
+    const readySlugs = new Set(L.ready.map(r => r.slug)), prevReady = new Set(PL.ready.map(r => r.slug));
+    for (const slug of L.building) if (!PL.building.includes(slug)) {
+      log(`Build started: ${slug}`);
+      enqueue(chars.planner, [{ t: "go", place: "hall" }, { t: "say", text: "Reading " + slug, secs: 2 }, { t: "go", place: "guild" }, { t: "say", text: "BUILD " + slug, dialog: false, secs: 1.6 }]);
+      enqueue(chars.builder, [{ t: "go", place: "site" }, { t: "say", text: "Building " + slug, secs: 2.4 }]);
+    }
+    for (const r of L.ready) if (!prevReady.has(r.slug)) {
+      log(`Ready to deploy: ${r.title || r.slug}`, "good");
+      enqueue(chars.reviewer, [{ t: "go", place: "site" }, { t: "say", text: "Reviewing " + r.slug, secs: 2.4 }, { t: "say", text: "PASS: ready to deploy", secs: 2.4 }]);
+    }
+    for (const slug of [...PL.building, ...PL.ready.map(r => r.slug)]) if (!L.building.includes(slug) && !readySlugs.has(slug)) log(`${slug} left the site`);
+  }
+  // scout
+  const S = d.scout && d.scout.ok ? d.scout : null, PS = p.scout && p.scout.ok ? p.scout : null;
+  if (S && PS && (S.proposed > PS.proposed || S.last_run !== PS.last_run)) {
+    const n = S.proposed;
+    log(`The scout is back: ${n} proposal${n === 1 ? "" : "s"} on the board`, "good");
+    enqueue(chars.scout, [{ t: "go", place: "gate" }, { t: "hide" }, { t: "wait", secs: 1.5 }, { t: "warp", place: "gate" }, { t: "show" }, { t: "go", place: "hall" }, { t: "say", text: n + " proposal" + (n === 1 ? "" : "s"), secs: 3 }]);
+  }
+  // medic: new audit entries
+  if (d.ops && d.ops.ok) {
+    for (const o of d.ops.recent) {
+      const k = opsKey(o); if (seenOps.has(k)) continue;
+      seenOps.add(k); if (seenOps.size > 300) seenOps.delete(seenOps.values().next().value);
+      const text = `${o.service}: ${o.action} ${o.result}`;
+      log(text, o.result === "ok" ? "good" : "bad", false);
+      const place = BUILDING_OF[o.service];
+      const tasks = place ? [{ t: "go", place }] : [];
+      tasks.push({ t: "say", text: `${o.action}: ${o.result}`, secs: 2.8 });
+      enqueue(chars.medic, tasks);
+    }
+  }
+  // hermes
+  if (p.hermes && d.hermes && p.hermes.status !== d.hermes.status && d.hermes.ok) log(d.hermes.status === "down" ? "Hermes fell asleep (container down)" : "Hermes is awake", d.hermes.status === "down" ? "bad" : "good");
+}
+async function poll() {
+  pollTimer = null;
+  if (stopped || document.hidden) return;
+  const ac = new AbortController(), to = setTimeout(() => ac.abort(), 8000);
+  try {
+    const r = await fetch("/api/town", { cache: "no-store", signal: ac.signal, credentials: "same-origin", headers: { Accept: "application/json" } });
+    if (r.status === 401 || r.redirected) { stopped = true; document.getElementById("lost").classList.add("on"); connEl.textContent = "logged out"; return; }
+    if (!r.ok) throw new Error(String(r.status));
+    const d = await r.json();
+    diff(d, prev); prev = d; fails = 0;
+    connEl.textContent = "live, updated " + hhmm();
+  } catch (e) {
+    fails++; connEl.textContent = "connection lost, retrying" + (fails > 2 ? " (" + fails + ")" : "");
+  } finally { clearTimeout(to); }
+  if (!stopped && !document.hidden && !pollTimer) pollTimer = setTimeout(poll, 5000);
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) { clearTimeout(pollTimer); pollTimer = null; }
+  else if (!stopped && !pollTimer) poll();
+});
+poll();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

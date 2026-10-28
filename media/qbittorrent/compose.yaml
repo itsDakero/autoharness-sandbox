@@ -1,0 +1,93 @@
+# qBittorrent behind Gluetun (NordVPN WireGuard/NordLynx, UK). qBittorrent shares Gluetun's network
+# namespace: its only way out is the VPN tunnel, and Gluetun's firewall is the kill switch.
+# Both live in one file because network_mode: service: needs them in the same project.
+# Settings: scripts/qbit-setup.py (see docs/m2-media.md).
+services:
+  gluetun:
+    image: qmcgaw/gluetun:v3.41.3
+    container_name: gluetun
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      TZ: ${TZ}
+      VPN_SERVICE_PROVIDER: nordvpn
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY: ${NORDVPN_WIREGUARD_PRIVATE_KEY:?set in .env}
+      SERVER_COUNTRIES: United Kingdom
+      # qBittorrent Web UI, reached through the published port and from the proxy network.
+      FIREWALL_INPUT_PORTS: "8083"
+    ports:
+      - "8083:8083"                  # qBittorrent Web UI; host port = homelab.port
+    volumes:
+      - ${APPDATA_PATH}/gluetun:/gluetun
+    networks:
+      - proxy
+    labels:
+      # Uptime Kuma (AutoKuma): down when Gluetun's healthcheck says unhealthy (tunnel down, not
+      # reconnecting) or the container is stopped. Named qbittorrent-* so the qbittorrent tile shows it.
+      # 60 s checks, down after 5 failures in a row, so the ~45 s self-heal doesn't page.
+      - kuma.qbittorrent-vpn.docker.name=qbittorrent-vpn
+      - kuma.qbittorrent-vpn.docker.docker_container=gluetun
+      - kuma.qbittorrent-vpn.docker.docker_host_name=socket-proxy
+      - kuma.qbittorrent-vpn.docker.interval=60
+      - kuma.qbittorrent-vpn.docker.retry_interval=60
+      - kuma.qbittorrent-vpn.docker.max_retries=4
+
+  qbittorrent:
+    image: linuxserver/qbittorrent:5.2.4_v2.0.15-ls479
+    container_name: qbittorrent
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:8083/"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    network_mode: service:gluetun
+    depends_on:
+      gluetun:
+        condition: service_healthy
+        restart: true                # recreate with Gluetun so it rejoins the new namespace
+    environment:
+      TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      WEBUI_PORT: "8083"
+    volumes:
+      - ${APPDATA_PATH}/qbittorrent:/config
+      # Read-write, downloads only (approved via the guard). Same path as in the arr apps (which
+      # mount all of /mnt/media, one filesystem), so their imports are hardlinks.
+      - ${MEDIA_PATH}/downloads:/mnt/media/downloads
+    labels:
+      # Traefik (bonus http://qbittorrent.lan); Traefik reaches it via Gluetun's proxy-network IP
+      - traefik.enable=true
+      - traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.${DOMAIN}`)
+      - traefik.http.routers.qbittorrent.entrypoints=web
+      - traefik.http.services.qbittorrent.loadbalancer.server.port=8083
+      # Dashboard
+      - homelab.name=qBittorrent
+      - homelab.group=Media
+      - homelab.icon=qbittorrent
+      - homelab.audience=admin
+      - homelab.description=Torrent downloads via NordVPN
+      - homelab.port=8083
+      # Uptime Kuma (AutoKuma) – Web UI; Gluetun still serves it with the tunnel down (see gluetun's qbittorrent-vpn)
+      - kuma.qbittorrent.http.name=qbittorrent
+      - kuma.qbittorrent.http.url=http://${LAN_IP}:8083/
+
+networks:
+  proxy:
+    external: true

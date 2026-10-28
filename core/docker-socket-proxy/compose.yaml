@@ -1,0 +1,37 @@
+# Read-only Docker API for Traefik, AutoKuma, Uptime Kuma (docker monitors), the dashboard and Dozzle.
+# The only place docker.sock is mounted. No UI, so no Traefik/dashboard/Kuma labels.
+services:
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy:v0.5.0
+    container_name: docker-socket-proxy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:2375/_ping | grep -q OK"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      # Allowed (GET only): what Traefik, AutoKuma, the dashboard and Dozzle need.
+      CONTAINERS: 1
+      EVENTS: 1
+      INFO: 1                        # Dozzle (host name, engine info)
+      PING: 1
+      VERSION: 1
+      # Everything else denied, including all writes.
+      POST: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - socket-proxy
+
+networks:
+  socket-proxy:
+    external: true

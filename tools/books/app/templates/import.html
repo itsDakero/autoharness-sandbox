@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Import from Goodreads</h1>
+{% if result %}
+<div class="ok">Added {{ result.added|length }}, updated {{ result.updated|length }}, skipped {{ result.skipped|length }}.</div>
+{% if result.added %}<h2>Added</h2><ul class="plain">{% for t, s in result.added %}<li>{{ t }} ({{ SHELF_NAMES[s] }})</li>{% endfor %}</ul>{% endif %}
+{% if result.updated %}<h2>Updated</h2><ul class="plain">{% for t, why in result.updated %}<li>{{ t }}: {{ why }}</li>{% endfor %}</ul>{% endif %}
+{% if result.skipped %}<h2>Skipped</h2><ul class="plain">{% for t, why in result.skipped %}<li>{{ t }}: {{ why }}</li>{% endfor %}</ul>{% endif %}
+<p><a class="btn" href="/library">Library</a></p>
+{% else %}
+<p class="muted">Goodreads: My Books, Import and export, Export Library. Importing again is safe: books already here are
+skipped and your edits are never overwritten.</p>
+<form method="post" action="/import" enctype="multipart/form-data">
+  <input type="file" name="file" accept=".csv,text/csv" required>
+  <p><button type="submit">Import</button></p>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Size and budget</h1>
+<form method="post" action="/profile">
+  {% for k, label in size_keys %}<label>{{ label }} <input name="{{ k }}" value="{{ prof.get(k, '') }}" maxlength="20"></label>{% endfor %}
+  <label>Currency <input name="currency" value="{{ prof.get('currency', 'GBP') }}" maxlength="3"></label>
+  <h2>Max price per category</h2>
+  {% for c in CATEGORIES %}<label>{{ c }} <input name="max_price_{{ c }}" value="{{ prof.get('max_price_' ~ c, '') }}" inputmode="decimal"></label>{% endfor %}
+  <h2>Outfits</h2>
+  <label>Latitude <input name="lat" value="{{ prof.get('lat', '') }}" inputmode="decimal"></label>
+  <label>Longitude <input name="lon" value="{{ prof.get('lon', '') }}" inputmode="decimal"></label>
+  <small>For the daily forecast (Open-Meteo). Blank = use the month.</small>
+  <label>No-repeat days <input name="repeat_days" value="{{ prof.get('repeat_days', '') }}" inputmode="numeric" placeholder="{{ repeat_default }}"></label>
+  <label><input type="checkbox" name="daily_discord" value="1"{% if prof.get('daily_discord') == '1' %} checked{% endif %}> Daily Discord line (07:00)</label>
+  <button>Save</button>
+</form>
+{% endblock %}

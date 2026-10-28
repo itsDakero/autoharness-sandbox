@@ -1,0 +1,45 @@
+# DNS publishes 53 directly (not via Traefik) so AdGuard sees real client IPs.
+services:
+  adguard:
+    image: adguard/adguardhome:v0.107.79
+    container_name: adguard
+    restart: unless-stopped
+    # Runs as root (image default): on first launch AdGuard requires root or an
+    # ambient CAP_NET_BIND_SERVICE, which Docker can't give a non-root user.
+    environment:
+      TZ: ${TZ}
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "3000:3000"                  # host port = homelab.port (keep 3000 in the setup wizard)
+    volumes:
+      - ${APPDATA_PATH}/adguard/work:/opt/adguardhome/work
+      - ${APPDATA_PATH}/adguard/conf:/opt/adguardhome/conf
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    labels:
+      # Traefik
+      - traefik.enable=true
+      - traefik.http.routers.adguard.rule=Host(`adguard.${DOMAIN}`)
+      - traefik.http.routers.adguard.entrypoints=web
+      - traefik.http.services.adguard.loadbalancer.server.port=3000
+      # Dashboard
+      - homelab.name=AdGuard Home
+      - homelab.group=Infrastructure
+      - homelab.icon=adguard-home
+      - homelab.audience=admin
+      - homelab.description=DNS and ad blocking
+      - homelab.port=3000
+      # Uptime Kuma (AutoKuma)
+      - kuma.adguard.http.name=adguard
+      - kuma.adguard.http.url=http://${LAN_IP}:3000/
+      - kuma.adguard-dns.dns.name=adguard-dns
+      - kuma.adguard-dns.dns.hostname=traefik.${DOMAIN}
+      - kuma.adguard-dns.dns.dns_resolve_server=${LAN_IP}
+      - kuma.adguard-dns.dns.port=53
+
+networks:
+  proxy:
+    external: true

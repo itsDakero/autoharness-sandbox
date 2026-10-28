@@ -1,0 +1,1 @@
+0 18 * * * $R fpl-deadline 1800 $REPO/scripts/fpl-web-job.sh deadline

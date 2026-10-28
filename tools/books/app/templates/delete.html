@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Delete this book?</h1>
+<p><strong>{{ b.title }}</strong> by {{ b.authors }}</p>
+<form method="post" action="/book/{{ b.id }}/delete">
+  <button type="submit" class="danger">Yes, delete</button>
+  <a class="btn alt" href="/book/{{ b.id }}">Cancel</a>
+</form>
+{% endblock %}

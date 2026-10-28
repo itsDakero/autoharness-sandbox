@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "macros.html" import cover %}
+{% block content %}
+<div class="card big">
+  {{ cover(b) }}
+  <div class="body">
+    <h1 style="margin-top:0">{{ b.title }}</h1>
+    <div class="muted">{{ b.authors }}</div>
+    <div>{{ SHELF_NAMES[b.shelf] }}{% if b.rating %} &middot; {{ '★' * b.rating }}{% endif %}</div>
+    {% if b.shelf == 'reading' %}<p><a class="btn" href="/book/{{ b.id }}/finish">Finished</a></p>{% endif %}
+  </div>
+</div>
+<h2>Edit</h2>
+<form method="post" action="/book/{{ b.id }}">
+  <label>Title<input type="text" name="title" value="{{ b.title }}" required></label>
+  <label>Author<input type="text" name="authors" value="{{ b.authors }}"></label>
+  <label>Shelf
+    <select name="shelf">{% for s in SHELVES %}<option value="{{ s }}" {{ 'selected' if s == b.shelf }}>{{ SHELF_NAMES[s] }}</option>{% endfor %}</select>
+  </label>
+  <label>Rating (1-5, blank for none)<input type="number" name="rating" min="1" max="5" inputmode="numeric" value="{{ b.rating or '' }}"></label>
+  <label>Pages<input type="number" name="pages" min="1" inputmode="numeric" value="{{ b.pages or '' }}"></label>
+  <label>Current page<input type="number" name="current_page" min="0" inputmode="numeric" value="{{ b.current_page if b.current_page is not none else '' }}"></label>
+  <label>ISBN13<input type="text" name="isbn13" value="{{ b.isbn13 or '' }}" inputmode="numeric"></label>
+  <label>Started<input type="date" name="date_started" value="{{ b.date_started or '' }}"></label>
+  <label>Finished<input type="date" name="date_finished" value="{{ b.date_finished or '' }}"></label>
+  <label>Notes<textarea name="notes">{{ b.notes or '' }}</textarea></label>
+  <label>Review<textarea name="review">{{ b.review or '' }}</textarea></label>
+  <button type="submit">Save</button>
+  <a class="btn danger" href="/book/{{ b.id }}/delete">Delete</a>
+</form>
+<p class="muted">Added {{ b.date_added or b.created_at[:10] }}{% if b.goodreads_id %} &middot; Goodreads id {{ b.goodreads_id }}{% endif %}</p>
+{% endblock %}

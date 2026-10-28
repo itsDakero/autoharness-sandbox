@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Runs</h1>
+<div class="grid">
+  <div class="card tile"><span class="label">This week</span>
+    <span class="value">{{ "%.1f" % week.dist }}<small>{{ unit }}</small></span>
+    <span class="sub">{{ week.runs }} run{{ "" if week.runs == 1 else "s" }} · 4-week avg {{ "%.1f" % week.avg4 }} {{ unit }}</span></div>
+  <div class="card tile"><span class="label">Longest run</span>
+    <span class="value">{{ fmt_dist(longest, unit) if longest else "–" }}</span>
+    <span class="sub">last 200 runs</span></div>
+  <div class="card tile"><span class="label">Streak</span>
+    <span class="value">{{ streak if streak is not none else "–" }}{% if streak is not none %}<small>week{{ "" if streak == 1 else "s" }}</small>{% endif %}</span>
+    <span class="sub">weeks in a row with 2+ runs</span></div>
+</div>
+<h2>Last 12 weeks</h2>
+{% if summary %}
+<div class="card table scroll">
+<table>
+<tr><th>Week</th><th>Dist</th><th>Time</th><th>Runs</th><th>FiiT</th><th>Long run share</th></tr>
+{% for w in summary %}
+<tr><td>{{ w.week }}</td><td>{{ fmt_dist(w.dist_m, unit) if w.dist_m else "–" }}</td><td>{{ fmt_dur(w.time_s) if w.time_s else "–" }}</td>
+<td>{{ w.runs }}</td><td>{{ w.fiit }}</td>
+<td>{% if w.long_share is none %}–{% else %}<span class="chip {{ w.long_tone }}">{{ (w.long_share * 100)|round|int }}%</span>{% endif %}</td></tr>
+{% endfor %}
+</table>
+</div>
+<p class="what">Long run share above 35% of the week's distance raises injury risk; consider spreading the distance. A suggestion, not medical advice.</p>
+{% else %}<p class="muted">No weekly summary yet.</p>{% endif %}
+{% if not acts %}<p class="muted">No runs yet.</p>{% else %}
+{% set maxd = acts|map(attribute="distance_m")|select|max %}
+<div class="card table scroll">
+<table>
+<tr><th>Date</th><th>Name</th><th>Dist</th><th>Time</th><th>Pace</th><th>HR</th></tr>
+{% for a in acts %}
+<tr><td><a href="/runs/{{ a.id }}?unit={{ unit }}">{{ (a.start_local or "–")[:10] }}</a></td><td>{{ a.name or "–" }}</td>
+<td>{{ fmt_dist(a.distance_m, unit) }}{% if a.distance_m and maxd %}<span class="bar" style="width:{{ (40 * a.distance_m / maxd)|round|int }}px"></span>{% endif %}</td>
+<td>{{ fmt_dur(a.duration_s) }}</td><td>{{ fmt_pace(a.distance_m, a.duration_s, unit) }}</td><td>{{ a.avg_hr|dash }}</td></tr>
+{% endfor %}
+</table>
+</div>{% endif %}
+{% endblock %}

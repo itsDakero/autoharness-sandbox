@@ -1,0 +1,1 @@
+25 * * * * $R fpl-teams 1800 $REPO/scripts/fpl-web-job.sh teams

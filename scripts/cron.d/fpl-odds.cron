@@ -1,0 +1,1 @@
+0 7 * * * $R fpl-odds 720 $REPO/scripts/fpl-job.sh odds 2 600

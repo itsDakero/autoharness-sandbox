@@ -1,0 +1,1 @@
+40 * * * * $R fpl-players 1800 $REPO/scripts/fpl-web-job.sh players

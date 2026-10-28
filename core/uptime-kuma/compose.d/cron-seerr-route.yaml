@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/seerr-route.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-seerr-route.push.name=cron-seerr-route
+      - kuma.cron-seerr-route.push.push_token=${KUMA_CRON_PUSH_SECRET:-}seerrroute000000
+      - kuma.cron-seerr-route.push.interval=600
+      - kuma.cron-seerr-route.push.max_retries=0

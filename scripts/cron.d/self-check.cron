@@ -1,0 +1,1 @@
+15 9 * * * $R self-check 600 --ok 0,1 $REPO/scripts/install-cron.sh --check --notify

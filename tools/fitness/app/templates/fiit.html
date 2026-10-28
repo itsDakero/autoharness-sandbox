@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>FiiT log</h1>
+<form method="post" action="/fiit" class="card stack">
+  <div class="row2">
+    <label class="field">Date <input type="date" name="date" value="{{ today }}" required></label>
+    <label class="field">Start time <input type="time" name="start_time"></label>
+    <label class="field">Type <select name="type"><option>strength</option><option>hiit</option><option>mobility</option><option>other</option></select></label>
+    <label class="field">Minutes <input type="number" name="minutes" min="1" max="300" value="45" required></label>
+    <label class="field">Effort 1-10 <input type="number" name="effort" min="1" max="10" required></label>
+  </div>
+  <button>Log class</button>
+</form>
+<div class="card table scroll">
+<table>
+<tr><th>Date</th><th>Type</th><th>Min</th><th>RPE</th><th>sRPE</th><th>Garmin activity</th><th></th></tr>
+{% for r in rows %}
+<tr><td>{{ r.date }} {{ r.start_time or "" }}</td><td>{{ r.type }}</td><td>{{ r.minutes }}</td><td>{{ r.effort }}</td><td>{{ r.srpe }}</td>
+<td>
+  <form method="post" action="/fiit/{{ r.id }}/match" class="inline">
+    <select name="activity" onchange="this.form.submit()">
+      <option value="auto" {{ "selected" if not r.match_manual and not r.activity_id }}>{{ "(auto: none found)" if not r.match_manual else "auto" }}</option>
+      <option value="none" {{ "selected" if r.match_manual and not r.activity_id }}>none</option>
+      {% for o in options[r.id] %}<option value="{{ o.id }}" {{ "selected" if o.id == r.activity_id }}>{{ (o.start_local or "")[11:16] }} {{ o.type }}</option>{% endfor %}
+    </select>
+  </form>
+</td>
+<td><form method="post" action="/fiit/{{ r.id }}/delete" class="inline" onsubmit="return confirm('Delete?')"><button class="link">x</button></form></td></tr>
+{% endfor %}
+</table>
+</div>
+{% endblock %}

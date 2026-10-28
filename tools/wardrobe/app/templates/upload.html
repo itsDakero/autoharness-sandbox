@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Upload photos</h1>
+<form method="post" action="/upload" enctype="multipart/form-data">
+  <label>Photos <input type="file" name="files" accept="image/*" multiple required></label>
+  <label>These are
+    <select name="kind"><option value="owned">clothes I own</option><option value="wishlist">wishlist</option></select></label>
+  <button>Upload</button>
+</form>
+<p>Up to {{ max_files }} photos, {{ max_mb }} MB each, {{ max_batch_mb }} MB per upload. HEIC works. Photos are resized and location data is removed; originals are not kept.</p>
+{% endblock %}

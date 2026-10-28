@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Add a Pinterest pin to the wishlist</h1>
+<form method="post" action="/wishlist/link">
+  <label>Pin link <input name="url" type="url" placeholder="https://www.pinterest.com/pin/..." required></label>
+  <button>Add</button>
+</form>
+<p>Only pinterest.com and pin.it links work. If the image can't be fetched the item is still saved and you can upload the picture on its page.</p>
+{% endblock %}

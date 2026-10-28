@@ -1,0 +1,54 @@
+# SMB share for Home Assistant backups (M4 stage C). HA OS on the Pi (192.168.0.78) adds it as network
+# storage; restic already backs up /srv/homelab, so the files reach /mnt/backup and B2 with no extra step.
+# Not HTTP: no Traefik labels and no homelab.port (the tile would link to http://host:445/).
+# Access: published on the LAN IP only; smb.conf "hosts allow" plus the DOCKER-USER rule
+# (scripts/docker-user-rules.sh) limit it to the Pi.
+services:
+  ha-backups:
+    image: dockurr/samba:4.23.10
+    container_name: ha-backups
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      USER: hass
+      PASS: ${HA_BACKUP_SMB_PASSWORD}
+      UID: ${PUID}                   # files land as dan, so scripts/ha-backup-check.sh can read them
+      GID: ${PGID}
+    ports:
+      - "${LAN_IP}:445:445"          # LAN IP only: not Tailscale, not IPv6. Never forward on the router.
+    volumes:
+      - ${APPDATA_PATH}/ha-backups:/shared
+      - ./smb.conf:/etc/samba/smb.conf:ro   # used as-is by the image (SMB3, no guest, Pi only)
+    # The image's check logs in anonymously, which "restrict anonymous = 2" rejects; just check smbd runs.
+    healthcheck:
+      test: ["CMD-SHELL", "pidof smbd > /dev/null"]
+      interval: 60s
+      timeout: 15s
+      start_period: 30s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+    labels:
+      # Dashboard (no homelab.port: not a web service, so the tile is not a link)
+      - homelab.name=HA backups
+      - homelab.group=Infrastructure
+      - homelab.icon=home-assistant
+      - homelab.audience=admin
+      - homelab.description=SMB share for Home Assistant backups (Pi only)
+      # Uptime Kuma (AutoKuma): TCP check. smbd accepts, then "hosts allow" closes it, so this stays up;
+      # each probe logs one "Denied connection" line, hence 5 minutes.
+      - kuma.ha-backups.port.name=ha-backups
+      - kuma.ha-backups.port.hostname=${LAN_IP}
+      - kuma.ha-backups.port.port=445
+      - kuma.ha-backups.port.interval=300
+
+networks:
+  proxy:
+    external: true

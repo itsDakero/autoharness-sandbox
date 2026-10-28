@@ -1,0 +1,255 @@
+{
+  "area": "nugget",
+  "beaten": {
+    "misty": true,
+    "rival3": true
+  },
+  "boss": null,
+  "done": {
+    "cerulean:i:0": true,
+    "cerulean:i:1": true,
+    "cerulean:i:2": true,
+    "cerulean:i:4": true,
+    "cerulean:i:5": true,
+    "cerulean:t:0": true,
+    "cerulean:t:1": true,
+    "cerulean:t:2": true,
+    "cerulean:t:3": true,
+    "cerulean:tr:picnicker_diana": true,
+    "cerulean:tr:swimmer_male_luis": true,
+    "mtmoon:i:0": true,
+    "mtmoon:i:1": true,
+    "mtmoon:i:10": true,
+    "mtmoon:i:11": true,
+    "mtmoon:i:12": true,
+    "mtmoon:i:13": true,
+    "mtmoon:i:2": true,
+    "mtmoon:i:3": true,
+    "mtmoon:i:4": true,
+    "mtmoon:i:5": true,
+    "mtmoon:i:6": true,
+    "mtmoon:i:7": true,
+    "mtmoon:i:8": true,
+    "mtmoon:i:9": true,
+    "mtmoon:t:0": true,
+    "mtmoon:t:1": true,
+    "mtmoon:t:2": true,
+    "mtmoon:t:3": true,
+    "mtmoon:t:4": true,
+    "mtmoon:t:5": true,
+    "mtmoon:tr:bug_catcher_kent": true,
+    "mtmoon:tr:bug_catcher_robby": true,
+    "mtmoon:tr:hiker_marcos": true,
+    "mtmoon:tr:lass_iris": true,
+    "mtmoon:tr:lass_miriam": true,
+    "mtmoon:tr:super_nerd_jovan": true,
+    "mtmoon:tr:super_nerd_miguel": true,
+    "mtmoon:tr:team_rocket_grunt": true,
+    "mtmoon:tr:team_rocket_grunt_2": true,
+    "mtmoon:tr:team_rocket_grunt_3": true,
+    "mtmoon:tr:team_rocket_grunt_4": true,
+    "mtmoon:tr:youngster_josh": true,
+    "nugget:i:0": true,
+    "nugget:i:1": true,
+    "nugget:t:0": true,
+    "nugget:t:1": true,
+    "nugget:tr:bug_catcher_cale": true,
+    "nugget:tr:camper_ethan": true,
+    "nugget:tr:hiker_wayne": true,
+    "nugget:tr:lass_ali": true,
+    "nugget:tr:lass_reli": true,
+    "nugget:tr:youngster_timmy": true
+  },
+  "itemFilter": "all",
+  "nuz": true,
+  "open": null,
+  "savedAt": 1791838445334,
+  "starter": "bulbasaur",
+  "tab": "team",
+  "team": [
+    {
+      "box": false,
+      "lv": 11,
+      "moves": [
+        100,
+        168
+      ],
+      "nick": "Abro",
+      "sp": 63
+    },
+    {
+      "box": false,
+      "lv": 17,
+      "moves": [
+        5,
+        43,
+        67,
+        2
+      ],
+      "nick": "Curious",
+      "sp": 56
+    },
+    {
+      "box": false,
+      "lv": 5,
+      "moves": [
+        150
+      ],
+      "nick": "Magers",
+      "sp": 129
+    },
+    {
+      "box": false,
+      "lv": 20,
+      "moves": [
+        79,
+        77,
+        73,
+        22
+      ],
+      "nick": "Rex",
+      "sp": 2
+    },
+    {
+      "box": false,
+      "lv": 15,
+      "moves": [
+        25,
+        45,
+        227,
+        47
+      ],
+      "nick": "Adularia",
+      "sp": 36
+    },
+    {
+      "box": true,
+      "lv": 8,
+      "moves": [
+        141,
+        310
+      ],
+      "sp": 41
+    },
+    {
+      "box": true,
+      "dead": true,
+      "lv": 18,
+      "moves": [
+        222,
+        111,
+        300,
+        88
+      ],
+      "nick": "Geodzilla",
+      "sp": 74
+    },
+    {
+      "box": true,
+      "lv": 10,
+      "moves": [
+        40,
+        81,
+        31
+      ],
+      "nick": "Sting",
+      "sp": 15
+    },
+    {
+      "box": true,
+      "lv": 8,
+      "moves": [
+        10,
+        78,
+        331
+      ],
+      "nick": "Wiggles",
+      "sp": 46
+    },
+    {
+      "box": true,
+      "dead": true,
+      "lv": 13,
+      "moves": [
+        45,
+        64,
+        43,
+        31
+      ],
+      "nick": "KENTUCKY",
+      "sp": 21
+    },
+    {
+      "box": true,
+      "lv": 5,
+      "moves": [
+        33,
+        39
+      ],
+      "sp": 19
+    },
+    {
+      "box": true,
+      "lv": 5,
+      "moves": [
+        106
+      ],
+      "nick": "Kakella",
+      "sp": 14
+    },
+    {
+      "box": true,
+      "lv": 4,
+      "moves": [
+        33,
+        81
+      ],
+      "nick": "Twig",
+      "sp": 10
+    },
+    {
+      "box": true,
+      "lv": 8,
+      "moves": [
+        33,
+        28
+      ],
+      "nick": "Pidkins",
+      "sp": 16
+    },
+    {
+      "box": true,
+      "dead": true,
+      "lv": 5,
+      "moves": [
+        45,
+        84
+      ],
+      "nick": "Volt",
+      "sp": 25
+    },
+    {
+      "box": true,
+      "lv": 13,
+      "moves": [
+        22,
+        74,
+        35
+      ],
+      "nick": "Toxie",
+      "sp": 69
+    },
+    {
+      "box": false,
+      "lv": 10,
+      "moves": [
+        10,
+        111,
+        28
+      ],
+      "nick": "Dusty",
+      "sp": 27
+    }
+  ],
+  "v": 1
+}

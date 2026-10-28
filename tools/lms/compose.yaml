@@ -1,0 +1,46 @@
+services:
+  lms:
+    build: .
+    image: homelab/lms:0.1.0
+    container_name: lms
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: ${TZ}
+      DATA_DIR: /data
+      ODDS_API_KEY: ${ODDS_API_KEY:-}
+    ports:
+      - "8093:8080"
+    volumes:
+      - ${APPDATA_PATH}/lms:/data
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://lms.lan)
+      - traefik.enable=true
+      - traefik.http.routers.lms.rule=Host(`lms.${DOMAIN}`)
+      - traefik.http.routers.lms.entrypoints=web
+      - traefik.http.services.lms.loadbalancer.server.port=8080
+      # Dashboard
+      - homelab.name=Last Man Standing
+      - homelab.group=Tools
+      - homelab.icon=sportarr
+      - homelab.audience=admin
+      - homelab.description=Safest LMS pick each round from bookmaker odds
+      - homelab.port=8093
+      # Uptime Kuma (AutoKuma)
+      - kuma.lms.http.name=lms
+      - kuma.lms.http.url=http://${LAN_IP}:8093/healthz
+
+networks:
+  proxy:
+    external: true

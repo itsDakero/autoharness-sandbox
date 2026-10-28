@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/card-prices.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-card-prices.push.name=cron-card-prices
+      - kuma.cron-card-prices.push.push_token=${KUMA_CRON_PUSH_SECRET:-}cardprices000000
+      - kuma.cron-card-prices.push.interval=93600
+      - kuma.cron-card-prices.push.max_retries=0

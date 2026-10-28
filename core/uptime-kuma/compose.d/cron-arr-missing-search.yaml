@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/arr-missing-search.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-arr-missing-search.push.name=cron-arr-missing-search
+      - kuma.cron-arr-missing-search.push.push_token=${KUMA_CRON_PUSH_SECRET:-}arrmissingsearch
+      - kuma.cron-arr-missing-search.push.interval=691200
+      - kuma.cron-arr-missing-search.push.max_retries=0

@@ -1,0 +1,13 @@
+[Unit]
+Description=Homelab restic backup to /mnt/backup
+RequiresMountsFor=/mnt/backup
+After=docker.service
+OnFailure=homelab-backup-failure.service
+OnSuccess=homelab-backup-offsite.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/dan/homelab/scripts/backup.sh
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=2h

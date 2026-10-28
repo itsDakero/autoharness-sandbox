@@ -1,0 +1,4 @@
+{% macro cover(b, big=false) -%}
+{% if b.cover_status == 'ok' %}<img class="cover" src="/covers/{{ b.id }}.jpg" alt="" loading="lazy">
+{% else %}<div class="ph">{{ b.title }}</div>{% endif %}
+{%- endmacro %}

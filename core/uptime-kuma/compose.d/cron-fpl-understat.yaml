@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/fpl-understat.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-fpl-understat.push.name=cron-fpl-understat
+      - kuma.cron-fpl-understat.push.push_token=${KUMA_CRON_PUSH_SECRET:-}fplunderstat0000
+      - kuma.cron-fpl-understat.push.interval=691200
+      - kuma.cron-fpl-understat.push.max_retries=0

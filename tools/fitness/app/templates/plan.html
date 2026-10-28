@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Plan</h1>
+{% if plan and plan.error %}
+<p class="card notice">The plan could not be worked out (see the log).</p>
+{% elif not plan %}
+<p class="card notice"><a href="/settings">Set a goal in Settings</a> to get a plan.</p>
+{% else %}
+<section class="card">
+  <p style="margin:0"><b>Goal:</b> {{ plan.goal.distance if plan.goal.distance != "custom" else (plan.goal.distance_m|int ~ " m") }}
+    in {{ fmt_dur(plan.goal.target_s) }}, {% if plan.goal.race_date %}race on {{ plan.goal.race_date }}{% else %}no race date (rolling 4-week cycles){% endif %}.</p>
+  {% if plan.phase %}
+  <p style="margin:.4rem 0 0"><span class="chip good">{{ plan.phase|capitalize }} · week {{ plan.week_no }}</span>
+    {% if plan.easy %}<span class="chip warn">easier week</span>{% endif %}</p>
+  <p class="muted" style="margin:.4rem 0 0">Base builds easy mileage, build adds tempo and intervals, sharpen is race-pace work, taper rests you for the race.</p>
+  {% else %}
+  <p class="muted" style="margin:.4rem 0 0">No plan week stored for this week yet.</p>
+  {% endif %}
+</section>
+{% for w in plan.weeks %}
+<h2>{{ w.label }} <small>{{ w.start }} · {{ w.phase }}</small></h2>
+<div class="card">
+  <table class="weektbl">
+    {% for d in w.days %}
+    <tr{% if d.date == today_iso %} class="now"{% endif %}>
+      <td>{{ d.dow[:3] }} <span class="muted">{{ d.date[5:] }}</span></td>
+      <td><b>{{ d.title }}</b><br><span class="muted">{{ d.target }}{% if d.reason %} · {{ d.reason }}{% endif %}</span></td>
+      <td>{% if d.status == "done" %}<span class="chip good">done</span>
+        {% elif d.status == "missed" %}<span class="chip bad">missed</span>
+        {% elif d.status == "planned" %}<span class="chip">planned</span>
+        {% elif d.status == "optional" %}<span class="chip">optional</span>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endfor %}
+{% if plan.timeline %}
+<h2>Block</h2>
+<div class="card">{{ plan.timeline|safe }}
+  <p class="muted" style="margin:.4rem 0 0">Each box is a week; the outlined one is this week. Weeks are stored when you save a goal, so daily changes never rewrite the block.</p>
+</div>
+{% endif %}
+<p class="muted">Wednesday's work run club never moves. A missed weekend run can move to Sunday, never into next week. Your check-in overrides the numbers. These are suggestions, not medical advice.</p>
+{% endif %}
+{% endblock %}

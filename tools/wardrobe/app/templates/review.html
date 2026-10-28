@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_form.html" import fields %}
+{% block body %}
+<h1>Review tags</h1>
+{% if not items %}<p>Nothing to review.</p>{% endif %}
+{% for it in items %}
+<section class="rev">
+  {% if it.photo %}<img src="/photos/{{ it.photo }}" alt="">{% endif %}
+  <div>
+    {% if it.tag_status == "failed" %}<div class="banner err">Tagging failed: {{ it.tag_error }}</div>{% endif %}
+    <form method="post" action="/item/{{ it.id }}/save">
+      <input type="hidden" name="next" value="/review">
+      {{ fields(it) }}
+      <button>Save</button>
+    </form>
+    {% if it.photo %}
+    <form method="post" action="/item/{{ it.id }}/retry"><input type="hidden" name="next" value="/review"><button>Retry tagging</button></form>
+    {% endif %}
+    <a href="/item/{{ it.id }}">Open</a>
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

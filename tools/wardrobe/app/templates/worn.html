@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Never worn</h1>
+{% if not never %}<p>Every owned item has been worn at least once (or nothing is tagged yet).</p>{% endif %}
+<div class="grid">
+{% for days, it in never %}
+  <a class="card" href="/item/{{ it.id }}">
+    {% if it.thumb %}<img src="/thumbs/{{ it.thumb }}" alt="" loading="lazy">{% else %}<div class="noimg">no photo</div>{% endif %}
+    <div>{{ item_name(it) }}</div>
+    <small>{{ days }} days owned</small>
+  </a>
+{% endfor %}
+</div>
+<h1>Wear log</h1>
+{% if not rows %}<p>Nothing logged yet. Use "Wore this" on <a href="/outfits">Outfits</a>.</p>{% endif %}
+{% for r in rows %}
+<div class="rev">
+  <div><strong>{{ r.date }}</strong>
+    <form method="post" action="/worn/{{ r.id }}/delete"><button class="danger">delete entry</button></form></div>
+  {% for it in r["items"] %}
+    {% if it %}<a class="card" href="/item/{{ it.id }}" style="width:120px">
+      {% if it.thumb %}<img src="/thumbs/{{ it.thumb }}" alt="" loading="lazy">{% else %}<div class="noimg">no photo</div>{% endif %}
+      <small>{{ item_name(it) }}</small></a>
+    {% else %}<div class="card" style="width:120px"><div class="noimg">(deleted)</div></div>{% endif %}
+  {% endfor %}
+</div>
+{% endfor %}
+{% endblock %}

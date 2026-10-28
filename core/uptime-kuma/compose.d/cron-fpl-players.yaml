@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/fpl-players.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-fpl-players.push.name=cron-fpl-players
+      - kuma.cron-fpl-players.push.push_token=${KUMA_CRON_PUSH_SECRET:-}fplplayers000000
+      - kuma.cron-fpl-players.push.interval=5400
+      - kuma.cron-fpl-players.push.max_retries=0

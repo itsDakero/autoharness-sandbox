@@ -1,0 +1,1 @@
+5 9 * * * $R scrutiny-check 600 --ok 0,1 $REPO/scripts/scrutiny-check.sh

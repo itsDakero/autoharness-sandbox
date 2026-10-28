@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/idea-actions.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-idea-actions.push.name=cron-idea-actions
+      - kuma.cron-idea-actions.push.push_token=${KUMA_CRON_PUSH_SECRET:-}ideaactions00000
+      - kuma.cron-idea-actions.push.interval=600
+      - kuma.cron-idea-actions.push.max_retries=0

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Trends <small>180 days</small></h1>
+<p class="legend"><span>Dots along the bottom: check-ins</span>
+{% for i in range(1, 6) %}<span><span class="dotf" style="background:{{ feel_colours[i] }}"></span>{{ i }}</span>{% endfor %}
+<span><b style="color:var(--bad)">+</b> illness (neck or chest)</span></p>
+<p class="legend"><span><b style="color:var(--acc)">—</b> Fitness (42-day)</span>
+<span><b style="color:var(--warn)">- -</b> Fatigue (7-day)</span>
+<span><span class="dotf" style="background:var(--acc)"></span>Form: fresh</span>
+<span><span class="dotf" style="background:var(--muted)"></span>neutral</span>
+<span><span class="dotf" style="background:var(--good)"></span>optimal</span>
+<span><span class="dotf" style="background:var(--bad)"></span>high risk</span></p>
+<p class="legend"><span><span class="dotf" style="background:var(--acc-soft);border:1px solid var(--acc)"></span>shaded = normal range (60-day mean &plusmn; 1 SD)</span>
+<span><b style="color:var(--acc)">—</b> 7-day average</span>
+<span><span class="dotf" style="background:var(--muted)"></span>grey bars = daily load</span>
+<span><b style="color:var(--acc)">—</b> recovery score (dashed: 33 and 67)</span>
+<span><span class="dotf" style="background:var(--bad)"></span>high load on a red recovery day</span></p>
+<p class="legend"><span>Heatmap: darker = higher daily load; grey = rest day</span>
+<span>Cadence: steps per minute on easy runs; a slow rise often comes with better form. No target is implied.</span></p>
+{% if rn %}
+<h2>Running</h2>
+{% if rn.need_max_hr %}<p class="card notice">Set max HR in <a href="/settings">Settings</a> to see zones and VO2max.</p>{% endif %}
+<div class="grid">
+  <div class="card tile"><span class="label">80/20 check</span>
+    <span class="value">{{ (rn.easy_share * 100)|round|int if rn.easy_share is not none else "–" }}{% if rn.easy_share is not none %}<small>% easy</small>{% endif %}</span>
+    {% if rn.easy_share is not none %}<span class="chip {{ rn.easy_tone }}">{{ "on track" if rn.easy_tone == "good" else "a bit hard" if rn.easy_tone == "warn" else "mostly hard" }}</span>{% endif %}
+    <span class="what">Share of running time in zones 1-2, last 28 days. Aim for about 80%; consider slowing easy runs if it is low.</span></div>
+  <div class="card tile"><span class="label">Easy-run efficiency</span>
+    <span class="value">{% if rn.ef_trend %}{{ "%+.1f"|format(rn.ef_trend[2]) }}<small>%</small>{% else %}–{% endif %}</span>
+    <span class="what">Speed per heartbeat on easy runs, last 28 days vs the 28 before. Up means a fitter aerobic engine.</span></div>
+</div>
+{% endif %}
+<div class="charts">{% for c in charts %}{{ c|safe }}{% endfor %}</div>
+<h2>Illness warning accuracy</h2>
+<div class="card">
+{% if acc.enabled %}
+<p style="margin-top:0">{{ acc.hits }} of {{ acc.starts }} illness starts had a warning 1-3 days before.</p>
+<p>{{ acc.false }} warnings with no illness in the next 3 days.</p>
+<p class="muted">Measured on your own check-ins; a suggestion, not a diagnosis.</p>
+{% else %}
+<p class="muted" style="margin:0">Shows after 60 check-ins (now {{ acc.n }}).</p>
+{% endif %}
+</div>
+{% endblock %}

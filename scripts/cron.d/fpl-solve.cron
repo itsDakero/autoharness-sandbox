@@ -1,0 +1,1 @@
+45 6 * * * $R fpl-solve 1800 $REPO/scripts/fpl-web-job.sh solve

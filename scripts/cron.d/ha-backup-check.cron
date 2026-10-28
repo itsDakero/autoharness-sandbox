@@ -1,0 +1,1 @@
+0 9 * * * $R ha-backup-check 600 --ok 0,1 $REPO/scripts/ha-backup-check.sh

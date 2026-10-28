@@ -1,0 +1,1 @@
+15 * * * * $R fpl-odds-deadline 720 $REPO/scripts/fpl-job.sh odds-deadline 3 600

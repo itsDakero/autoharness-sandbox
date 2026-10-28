@@ -1,0 +1,1 @@
+10 9 * * 1 $R image-check 1800 $REPO/scripts/image-check.py --propose

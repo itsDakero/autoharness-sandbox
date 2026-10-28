@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/fpl-bootstrap.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-fpl-bootstrap.push.name=cron-fpl-bootstrap
+      - kuma.cron-fpl-bootstrap.push.push_token=${KUMA_CRON_PUSH_SECRET:-}fplbootstrap0000
+      - kuma.cron-fpl-bootstrap.push.interval=9000
+      - kuma.cron-fpl-bootstrap.push.max_retries=0

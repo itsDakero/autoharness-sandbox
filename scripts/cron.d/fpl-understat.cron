@@ -1,0 +1,1 @@
+0 4 * * 1 $R fpl-understat 3720 $REPO/scripts/fpl-job.sh understat 1 3600

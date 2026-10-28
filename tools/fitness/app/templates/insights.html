@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Insights <small>weekly summary</small></h1>
+<p class="legend"><span>Written by the Mac mini's model from the numbers under each week only; a suggestion, not advice.</span></p>
+{% for s in items %}
+<div class="card">
+  <h2 style="margin-top:0">Week of {{ s.week_start }}
+    {% if s.status == "skipped" %}<span class="chip warn">skipped</span>{% elif s.status == "failed" %}<span class="chip bad">failed</span>{% endif %}</h2>
+  {% if s.status != "ok" %}<p class="muted">{{ s.reason }}</p>{% endif %}
+  {% if s.bullets %}<ul>{% for b in s.bullets %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+  {% if s.facts %}<details><summary>Numbers the model saw</summary><pre>{{ s.facts }}</pre></details>{% endif %}
+</div>
+{% else %}
+<p class="card muted">First summary on Sunday evening.</p>
+{% endfor %}
+<h2>Illness warning accuracy</h2>
+<div class="card">
+{% if acc.enabled %}
+<p style="margin-top:0">{{ acc.hits }} of {{ acc.starts }} illness starts had a warning 1-3 days before.</p>
+<p>{{ acc.false }} warnings with no illness in the next 3 days.</p>
+<p class="muted">Measured on your own check-ins; a suggestion, not a diagnosis.</p>
+{% else %}
+<p class="muted" style="margin:0">Shows after 60 check-ins (now {{ acc.n }}).</p>
+{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+# restic --exclude-file for scripts/backup.sh. Caches, logs and anything re-downloadable.
+# /mnt/media is never a source; listed only as a safety net.
+/mnt/media
+/srv/homelab/jellyfin/cache
+/srv/homelab/jellyfin/config/log
+/srv/homelab/jellyfin/config/data/transcodes
+/srv/homelab/*/MediaCover
+/srv/homelab/*/logs
+/srv/homelab/*/logs.db*
+/srv/homelab/*/Sentry
+/srv/homelab/*/*.pid
+/srv/homelab/gluetun/servers.json
+/srv/homelab/adguard/work/data/querylog*
+/srv/homelab/scrutiny/influxdb
+/srv/homelab/omada/data/db
+/home/dan/homelab/scripts/__pycache__
+# Forensic test data and evidence: never off-site (B2 copies every nightly snapshot)
+/srv/homelab/forensics
+/home/dan/homelab/forensics/.venv
+# Claude Code home: backup.sh uses an allow-list; these must never reach restic or B2 (OAuth token, transcripts)
+/home/dan/.claude/.credentials.json
+/home/dan/.claude/**/*.jsonl
+/home/dan/.claude/history.jsonl
+/home/dan/.claude/file-history
+/home/dan/.claude/cache
+/home/dan/.claude/paste-cache
+/home/dan/.claude/session-env
+/home/dan/.claude/shell-snapshots
+/home/dan/.claude/sessions
+/home/dan/.claude/plugins/marketplaces
+/home/dan/.claude/plugins/plugin-directory-cache-v2.json

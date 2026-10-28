@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "macros.html" import cover %}
+{% block content %}
+<h1>Currently reading</h1>
+{% for b in reading %}
+<div class="card">
+  {{ cover(b) }}
+  <div class="body">
+    <a class="title" href="/book/{{ b.id }}">{{ b.title }}</a>
+    <div class="muted">{{ b.authors }}</div>
+    <div class="muted">
+      {% if b.current_page is not none %}page {{ b.current_page }}{% if b.pages %} of {{ b.pages }}{% endif %}{% endif %}
+      {% set p = percent_of(b) %}{% if p is not none %} ({{ p }}%){% endif %}
+    </div>
+    <form method="post" action="/book/{{ b.id }}/progress" class="row">
+      <input type="number" name="page_no" min="0" inputmode="numeric" placeholder="Page" aria-label="Page">
+      <button type="submit" class="alt">Update</button>
+    </form>
+    <form method="post" action="/book/{{ b.id }}/progress" class="row" style="margin-top:6px">
+      <input type="number" name="percent" min="0" max="100" inputmode="numeric" placeholder="%" aria-label="Percent">
+      <button type="submit" class="alt">Set %</button>
+      <a class="btn" href="/book/{{ b.id }}/finish">Finished</a>
+    </form>
+  </div>
+</div>
+{% else %}
+<p class="muted">Nothing on the go. Start one from Want to read below, or <a href="/add">add a book</a>.</p>
+{% endfor %}
+
+<h2>Want to read ({{ want|length }})</h2>
+{% for b in want %}
+<div class="card">
+  {{ cover(b) }}
+  <div class="body">
+    <a class="title" href="/book/{{ b.id }}">{{ b.title }}</a>
+    <div class="muted">{{ b.authors }}</div>
+    <form method="post" action="/book/{{ b.id }}/start"><button type="submit" class="alt">Start reading</button></form>
+  </div>
+</div>
+{% else %}
+<p class="muted">Empty.</p>
+{% endfor %}
+
+<h2>Read this year: {{ stats.read_this_year }}</h2>
+<p><a class="btn" href="/library?shelf=read&year={{ year }}">{{ year }} books</a>
+   <a class="btn alt" href="/library">Full library</a></p>
+{% endblock %}

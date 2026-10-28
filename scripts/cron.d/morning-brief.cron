@@ -1,0 +1,1 @@
+0 7 * * * $R morning-brief 600 $REPO/scripts/morning-brief.py

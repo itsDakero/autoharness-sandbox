@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "macros.html" import cover %}
+{% block content %}
+<h1>Library ({{ books|length }})</h1>
+<form method="get" action="/library">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search title or author" aria-label="Search">
+  <select name="shelf" aria-label="Shelf">
+    <option value="">All shelves</option>
+    {% for s in SHELVES %}<option value="{{ s }}" {{ 'selected' if s == shelf }}>{{ SHELF_NAMES[s] }}</option>{% endfor %}
+  </select>
+  <select name="year" aria-label="Year finished">
+    <option value="">Any year finished</option>
+    {% for y in years %}<option value="{{ y }}" {{ 'selected' if y == year }}>{{ y }}</option>{% endfor %}
+  </select>
+  <button type="submit">Filter</button>
+  <a class="btn alt" href="/library">Clear</a>
+</form>
+{% for b in books %}
+<div class="card">
+  {{ cover(b) }}
+  <div class="body">
+    <a class="title" href="/book/{{ b.id }}">{{ b.title }}</a>
+    <div class="muted">{{ b.authors }}</div>
+    <div class="muted">{{ SHELF_NAMES[b.shelf] }}{% if b.rating %} &middot; {{ '★' * b.rating }}{% endif %}{% if b.date_finished %} &middot; {{ b.date_finished }}{% endif %}</div>
+  </div>
+</div>
+{% else %}
+<p class="muted">No books match.</p>
+{% endfor %}
+{% endblock %}

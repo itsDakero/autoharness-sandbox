@@ -1,0 +1,1680 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<!-- Tile links send no Referer: qBittorrent's CSRF check answers a cross-origin Referer with 401 -->
+<meta name="referrer" content="no-referrer">
+<title>Home</title>
+<style>
+  :root {
+    --bg: #f4f5f7; --card: #ffffff; --text: #1b1d21; --muted: #6b7280; --border: #e3e5e9;
+    --up: #16a34a; --down: #dc2626; --pending: #d97706; --unknown: #9ca3af; --accent: #2563eb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111316; --card: #1b1e23; --text: #e8eaed; --muted: #9aa0a8; --border: #2a2e35;
+      --up: #22c55e; --down: #ef4444; --pending: #f59e0b; --unknown: #6b7280; --accent: #60a5fa;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: max(16px, env(safe-area-inset-top)) 16px 32px;
+  }
+  main { max-width: 960px; margin: 0 auto; }
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  h1 { font-size: 1.5rem; margin: 0; }
+  h2 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 24px 0 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .tile {
+    position: relative; display: flex; flex-direction: column; gap: 8px; min-height: 120px;
+    padding: 14px; border-radius: 14px; background: var(--card); border: 1px solid var(--border);
+    color: inherit; text-decoration: none; transition: transform .1s;
+  }
+  a.tile:active { transform: scale(.97); }
+  a.tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tile img, .tile .letter { width: 40px; height: 40px; border-radius: 8px; }
+  .tile .letter {
+    display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 600; font-size: 1.2rem;
+  }
+  .tile .name { font-weight: 600; }
+  .tile .desc { font-size: .85rem; color: var(--muted); }
+  .dot { position: absolute; top: 14px; right: 14px; width: 10px; height: 10px; border-radius: 50%; background: var(--unknown); }
+  .dot.up { background: var(--up); } .dot.down { background: var(--down); } .dot.pending { background: var(--pending); }
+  .msg { color: var(--muted); padding: 24px 0; }
+  .msg.error { color: var(--down); }
+  /* Widgets */
+  .widgets { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .widgets:empty { display: none; }
+  .card { padding: 14px; border-radius: 14px; background: var(--card); border: 1px solid var(--border); min-width: 0; }
+  .card h3 { margin: 0 0 10px; font-size: 1rem; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .card h3 small { font-weight: 400; font-size: .8rem; color: var(--muted); }
+  .unavailable { color: var(--muted); font-style: italic; }
+  .badge { display: inline-block; white-space: nowrap; flex: none; font-size: .75rem; padding: 2px 8px; border-radius: 999px; background: var(--border); color: var(--text); }
+  .badge.warn { background: color-mix(in srgb, var(--pending) 22%, transparent); color: var(--pending); }
+  .badge.ok { background: color-mix(in srgb, var(--up) 18%, transparent); color: var(--up); }
+  .badge.bad { background: color-mix(in srgb, var(--down) 18%, transparent); color: var(--down); }
+  /* Evening-limit pill: a big tap target on phones and PCs */
+  .badge.toggle { font: inherit; font-size: .9rem; font-weight: 600; font-style: normal; min-height: 44px;
+                  padding: 8px 16px; border: 0; cursor: pointer; touch-action: manipulation; }
+  .badge.toggle:disabled { cursor: default; opacity: .7; }
+  .badge.toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .dl { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .dl .t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .9rem; }
+  .dl .meta { font-size: .8rem; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+  .bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; margin: 4px 0; }
+  .bar > span { display: block; height: 100%; background: var(--accent); }
+  .row { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: .85rem; color: var(--muted); margin-bottom: 12px; }
+  .big { font-size: 1.4rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .big .dot { position: static; width: 12px; height: 12px; }
+  .sub { color: var(--muted); font-size: .9rem; margin-top: 4px; }
+  .card.wide { grid-column: 1 / -1; }
+  .card.wide .items, .card.span2 .items { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  @media (min-width: 640px) { .card.span2 { grid-column: span 2; } }
+  .gauges { display: grid; gap: 10px; }
+  .gauge .lbl { display: flex; justify-content: space-between; gap: 8px; font-size: .85rem; }
+  .gauge .lbl b { font-weight: 500; }
+  .gauge .lbl span { color: var(--muted); white-space: nowrap; }
+  .gauge .bar { height: 8px; }
+  .gauge .bar.warn > span { background: var(--pending); }
+  .gauge .bar.crit > span { background: var(--down); }
+  .gauge .s { font-size: .8rem; color: var(--muted); }
+  .np-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: .8rem; color: var(--muted); }
+  .poster { flex: none; border-radius: 6px; object-fit: cover; background: var(--border); display: grid; place-items: center;
+            color: var(--muted); font-weight: 600; overflow: hidden; }
+  .items { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .item { display: flex; gap: 10px; align-items: center; min-width: 0; }
+  .item .poster { width: 40px; height: 60px; }
+  .item .txt { min-width: 0; flex: 1; }
+  .item .t { font-size: .9rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item .s { font-size: .8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card h4 { margin: 12px 0 8px; font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .card h4:first-child { margin-top: 0; }
+  .shelf { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 6px; }
+  .shelf figure { margin: 0; width: 104px; flex: none; scroll-snap-align: start; }
+  .shelf .poster { width: 104px; height: 156px; font-size: 2rem; }
+  .shelf figcaption { font-size: .8rem; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .shelf figcaption small { display: block; color: var(--muted); }
+  /* Family view: big, simple */
+  body.family .card h3 { font-size: 1.25rem; }
+  body.family .widgets { margin-top: 16px; }
+  .posters { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; }
+  .posters a, .posters div.p { color: inherit; text-decoration: none; display: block; min-width: 0; }
+  .posters .poster { width: 100%; height: auto; aspect-ratio: 2 / 3; font-size: 2.5rem; border-radius: 10px; }
+  .posters .pt { margin-top: 6px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .posters .ps { font-size: .85rem; color: var(--muted); }
+  .asks { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .asks li { display: flex; gap: 14px; align-items: center; min-width: 0; }
+  .asks .poster { width: 64px; height: 96px; font-size: 1.6rem; border-radius: 8px; }
+  .asks .at { font-size: 1.05rem; font-weight: 600; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis;
+              display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .pill { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: .9rem; font-weight: 600; }
+  .pill.ready { background: color-mix(in srgb, var(--up) 18%, transparent); color: var(--up); }
+  .pill.coming { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+  .pill.waiting { background: color-mix(in srgb, var(--pending) 20%, transparent); color: var(--pending); }
+  body.family .tile .name { font-size: 1.15rem; }
+  body.family .tile .desc { font-size: .95rem; }
+  /* Idea box */
+  .ideas { list-style: none; margin: 0 0 12px; padding: 0; display: grid; gap: 6px; font-size: .9rem; }
+  .ideas li { display: flex; justify-content: space-between; gap: 8px; min-width: 0; }
+  .ideas .t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ideas .s { flex: none; font-size: .8rem; color: var(--muted); }
+  .idea-form { display: grid; gap: 8px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .idea-form input, .idea-form textarea {
+    font: inherit; font-size: 16px; color: var(--text); background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; width: 100%;
+  }
+  .idea-form textarea { min-height: 90px; resize: vertical; }
+  .idea-form input:focus-visible, .idea-form textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .idea-form .acts { display: flex; align-items: center; gap: 12px; }
+  .idea-form button {
+    font: inherit; font-weight: 600; min-height: 44px; padding: 8px 18px; border: 0; border-radius: 999px;
+    background: var(--accent); color: #fff; cursor: pointer; touch-action: manipulation;
+  }
+  .idea-form button:disabled { opacity: .6; cursor: default; }
+  .idea-form .note { font-size: .85rem; color: var(--muted); }
+  .idea-form .note.error { color: var(--down); }
+  .idea-form .score { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: .9rem; color: var(--muted); }
+  .idea-form select {
+    font: inherit; font-size: 16px; color: var(--text); background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 6px 8px; margin-left: 6px;
+  }
+  footer { margin-top: 32px; font-size: .85rem; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; }
+  footer a { color: var(--accent); }
+  footer { flex-wrap: wrap; }
+  footer .links { display: flex; gap: 16px; white-space: nowrap; margin-left: auto; }
+  footer form { display: inline; margin: 0; }
+  footer form[hidden] { display: none; }
+  footer button { font: inherit; color: var(--accent); background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; }
+  /* Admin: left nav, one tab at a time (a top bar on phones) */
+  .tabs { display: none; }
+  body.admin .shell { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 28px; max-width: 1200px; margin: 0 auto; }
+  body.admin main { margin: 0; min-width: 0; }
+  body.admin .tabs { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 16px; align-self: start; }
+  .tabs .brand { font-weight: 700; padding: 6px 12px 14px; }
+  .tabs button {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px;
+    font: inherit; text-align: left; color: var(--text); background: none; border: 0; border-radius: 10px;
+    cursor: pointer; touch-action: manipulation;
+  }
+  .tabs button:hover { background: color-mix(in srgb, var(--border) 60%, transparent); }
+  .tabs button[aria-current="page"] { background: var(--card); box-shadow: inset 0 0 0 1px var(--border); color: var(--accent); font-weight: 600; }
+  .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .tabs .count { font-size: .75rem; font-weight: 600; min-width: 22px; padding: 1px 7px; border-radius: 999px; text-align: center;
+                 background: color-mix(in srgb, var(--pending) 22%, transparent); color: var(--pending); }
+  .tabs .count:empty { display: none; }
+  .panel[hidden] { display: none; }
+  .panel > .widgets { margin-bottom: 12px; }
+  @media (max-width: 760px) {
+    body.admin .shell { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+    body.admin .tabs { flex-direction: row; overflow-x: auto; top: 0; z-index: 5; background: var(--bg);
+                       margin: 0 -16px; padding: 6px 16px 10px; scrollbar-width: none; }
+    .tabs .brand { display: none; }
+    .tabs button { flex: none; }
+  }
+  /* Parked / Deploy: one item at a time */
+  .deck-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .deck-head .pos { font-size: .9rem; color: var(--muted); }
+  .steps { margin: 8px 0 0; padding-left: 1.4em; }
+  .steps li { margin: 10px 0; }
+  .steps li > .sub { margin-top: 4px; }
+  .deck-head .moves { display: flex; gap: 6px; }
+  .btn {
+    font: inherit; font-weight: 600; min-height: 44px; padding: 8px 18px; border: 0; border-radius: 999px;
+    background: var(--accent); color: #fff; cursor: pointer; touch-action: manipulation;
+  }
+  .btn.ghost { background: var(--border); color: var(--text); }
+  .btn.ghost.danger { color: var(--down); }
+  .linkbtn { font: inherit; font-size: .85rem; background: none; border: 0; padding: 4px 0; color: var(--accent); cursor: pointer; }
+  .ideas[hidden] { display: none; }
+  .ideas .why { display: block; font-size: .8rem; color: var(--muted); overflow-wrap: anywhere; }
+  .btn.small { min-height: 36px; padding: 4px 14px; font-size: .9rem; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .slide h3 { font-size: 1.15rem; align-items: center; flex-wrap: wrap; }
+  .slide .meta { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .9rem; color: var(--muted); margin: 0 0 8px; }
+  .slide .where { font-size: .85rem; color: var(--muted); margin: -4px 0 8px; overflow-wrap: anywhere; }
+  .slide textarea {
+    font: inherit; font-size: 16px; color: var(--text); background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 12px; width: 100%; min-height: 140px; resize: vertical;
+  }
+  .slide textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .slide .acts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 10px; }
+  .slide details { margin: 8px 0; }
+  .slide summary { cursor: pointer; color: var(--accent); font-size: .9rem; padding: 6px 0; }
+  .slide.enter { animation: slidein .35s ease-out, glow 1.4s ease-out .3s; }
+  @keyframes slidein { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+  @keyframes glow { from { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 55%, transparent); } to { box-shadow: 0 0 0 0 transparent; } }
+  @media (prefers-reduced-motion: reduce) { .slide.enter { animation: none; } }
+  .box { border-radius: 10px; padding: 10px 12px; margin: 8px 0; background: var(--bg); border: 1px solid var(--border); min-width: 0; }
+  .box.q { border-left: 4px solid var(--accent); }
+  .box.warn { border-color: color-mix(in srgb, var(--pending) 50%, var(--border)); background: color-mix(in srgb, var(--pending) 9%, var(--card)); }
+  .box.bad { border-color: color-mix(in srgb, var(--down) 50%, var(--border)); background: color-mix(in srgb, var(--down) 8%, var(--card)); }
+  .box.ok { border-color: color-mix(in srgb, var(--up) 50%, var(--border)); background: color-mix(in srgb, var(--up) 9%, var(--card)); }
+  .box > b:first-child { display: block; margin-bottom: 4px; }
+  .box ul { margin: 4px 0 0; padding-left: 20px; }
+  .box label { display: flex; gap: 8px; align-items: center; margin-top: 8px; font-weight: 500; cursor: pointer; }
+  .box label input { width: 20px; height: 20px; }
+  .flash { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; animation: slidein .3s ease-out; }
+  .flash button { flex: none; font: inherit; background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 1.2rem; line-height: 1; }
+  .status { font-size: .9rem; margin-top: 10px; }
+  .status.bad { color: var(--down); }
+  .status.ok { color: var(--up); }
+  .md p { margin: 0 0 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .md p:last-child { margin-bottom: 0; }
+  .md h5 { margin: 12px 0 6px; font-size: .95rem; }
+  .md h5:first-child { margin-top: 0; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .md code, .box code { font-size: .85em; background: color-mix(in srgb, var(--border) 70%, transparent); padding: 1px 4px; border-radius: 4px; overflow-wrap: anywhere; }
+  pre.out { font-size: .78rem; line-height: 1.45; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+            padding: 10px 12px; margin: 6px 0; overflow-x: auto; max-height: 480px; white-space: pre; }
+  pre.out .add { color: var(--up); } pre.out .del { color: var(--down); } pre.out .hunk { color: var(--accent); }
+  pre.out .file { font-weight: 700; }
+  .commits { list-style: none; margin: 0; padding: 0; font-size: .85rem; display: grid; gap: 4px; }
+  .commits code { color: var(--muted); margin-right: 6px; }
+  .cmd { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .cmd code { flex: 1; min-width: 0; display: block; padding: 8px 10px; border-radius: 8px; background: var(--card);
+              border: 1px solid var(--border); font-size: .85rem; overflow-x: auto; white-space: nowrap; }
+  .empty { text-align: center; padding: 40px 16px; }
+  .empty .big { justify-content: center; }
+  /* Admin command-center look: everything below is scoped to body.admin (the family view is untouched) */
+  body.admin {
+    --bg: #0a0d13; --card: #111620; --text: #e6e9ef; --muted: #8b94a7; --border: #1e2533;
+    --accent: #5b8cff; --accent2: #22d3ee; --up: #34d399; --down: #f87171; --pending: #fbbf24; --unknown: #64748b;
+    color-scheme: dark; font-variant-numeric: tabular-nums;
+    background:
+      radial-gradient(ellipse 60% 40% at 0% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, color-mix(in srgb, var(--accent2) 6%, transparent), transparent),
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px) 0 0 / 32px 32px,
+      var(--bg);
+    background-attachment: fixed;
+  }
+  body.admin .card {
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0)), var(--card);
+    box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 8px 24px rgba(0,0,0,.35);
+  }
+  body.admin .card h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  body.admin .card h3 small { text-transform: none; letter-spacing: normal; }
+  body.admin .bar { height: 8px; background: rgba(255,255,255,.06); }
+  body.admin .bar > span { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  body.admin .gauge .bar.warn > span { background: var(--pending); }
+  body.admin .gauge .bar.crit > span { background: var(--down); }
+  body.admin .gauge .lbl span { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  body.admin .tabs .brand { display: flex; align-items: center; gap: 8px; }
+  body.admin .tabs .brand::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--up); flex: none; }
+  body.admin .tabs button[aria-current="page"] {
+    box-shadow: inset 3px 0 0 var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--text);
+  }
+  body.admin .grid { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  body.admin .tile {
+    display: grid; grid-template-columns: 36px minmax(0, 1fr); column-gap: 12px; row-gap: 2px; align-content: center;
+    min-height: 72px; padding: 14px 32px 14px 14px; border-radius: 14px;
+  }
+  body.admin .tile img, body.admin .tile .letter { width: 36px; height: 36px; grid-row: 1 / span 2; align-self: center; }
+  body.admin .tile .name, body.admin .tile .desc { grid-column: 2; min-width: 0; }
+  body.admin .tile .name { align-self: end; }
+  body.admin .tile .desc { align-self: start; }
+  body.admin .dot.up { box-shadow: 0 0 8px var(--up); }
+  body.admin .dot.pending { background: var(--pending); }
+  body.admin .big .dot { position: static; }
+  .hstat { display: flex; align-items: center; gap: 12px; font-size: .85rem; color: var(--muted); }
+  .hstat #sys { padding: 3px 10px; border-radius: 999px; font-weight: 600; background: var(--border); color: var(--muted); }
+  .hstat #sys.ok { background: color-mix(in srgb, var(--up) 16%, transparent); color: var(--up); }
+  .hstat #sys.bad { background: color-mix(in srgb, var(--down) 16%, transparent); color: var(--down); }
+  .hstat #clock { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 12px; }
+  .kpi {
+    padding: 12px 14px; border-radius: 16px; border: 1px solid var(--border); min-width: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,0)), var(--card);
+    box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 8px 24px rgba(0,0,0,.35);
+  }
+  .kpi .l { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .kpi .v { font-size: 1.6rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.3; }
+  .kpi .v.ok { color: var(--up); } .kpi .v.bad { color: var(--down); } .kpi .v.warn { color: var(--pending); }
+  .kpi .mini { height: 4px; border-radius: 2px; background: rgba(255,255,255,.06); overflow: hidden; margin-top: 4px; }
+  .kpi .mini > span { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .kpi .mini.warn > span { background: var(--pending); }
+  .kpi .mini.crit > span { background: var(--down); }
+  @media (min-width: 760px) {
+    body.admin header { position: sticky; top: 0; z-index: 4; padding: 8px 0; margin-top: -8px;
+      background: color-mix(in srgb, var(--bg) 80%, transparent); backdrop-filter: blur(8px); }
+  }
+  @media (max-width: 760px) {
+    body.admin .tabs { background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(8px); }
+    body.admin .tabs .brand { display: none; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    body.admin .card { transition: border-color .15s; }
+    body.admin .card:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
+    body.admin .tabs .brand::before { animation: pulse-up 2s infinite; }
+    body.admin .dot.down { animation: pulse-down 1.5s infinite; }
+    @keyframes pulse-up { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--up) 60%, transparent); } 100% { box-shadow: 0 0 0 8px transparent; } }
+    @keyframes pulse-down { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--down) 70%, transparent); } 100% { box-shadow: 0 0 0 8px transparent; } }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body.admin .dot.down { box-shadow: 0 0 8px var(--down); }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+<nav id="tabs" class="tabs" aria-label="Sections"></nav>
+<main>
+  <header>
+    <h1 id="title">Home</h1>
+  </header>
+  <section id="widgets" class="widgets"></section>
+  <div id="content"><p class="msg">Loading…</p></div>
+  <footer>
+    <span id="updated"></span>
+    <span class="links">
+      <a id="town" href="/town" hidden>Town</a>
+      <a id="switch" href="/admin">Admin view</a>
+      <form id="logout" method="post" action="/logout" hidden><button type="submit">Log out</button></form>
+    </span>
+  </footer>
+</main>
+</div>
+<script>
+const ADMIN = location.pathname.replace(/\/+$/, "") === "/admin";
+const ICON_BASE = "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/";
+
+document.getElementById("title").textContent = ADMIN ? "Homelab admin" : "Home";
+if (!ADMIN) {
+  document.body.classList.add("family");
+  // Family: the app tiles first, then what's new and requests
+  document.getElementById("widgets").before(document.getElementById("content"));
+}
+document.title = ADMIN ? "Homelab admin" : "Home";
+const sw = document.getElementById("switch");
+sw.href = ADMIN ? "/" : "/admin";
+sw.textContent = ADMIN ? "Family view" : "Admin view";
+document.getElementById("logout").hidden = !ADMIN;
+document.getElementById("town").hidden = !ADMIN;
+// Session expired or logged out elsewhere -> back to the login page
+const toLogin = () => location.replace("/login");
+
+// ---- Admin tabs: a left nav, one panel at a time; the URL keeps the choice (/admin#deploy) ----
+const TABS = [
+  { id: "overview", label: "Overview" },
+  { id: "media", label: "Media" },
+  { id: "services", label: "Services" },
+  { id: "ideas", label: "Ideas" },
+  { id: "proposed", label: "Proposed" },
+  { id: "parked", label: "Parked" },
+  { id: "deploy", label: "Deploy" },
+];
+const PANELS = {};
+let TAB = null;
+const KPI = { services: null, health: null, vpn: null };  // admin KPI strip inputs
+const KPIS = {};  // its tiles
+if (ADMIN) {
+  document.body.classList.add("admin");
+  const nav = document.getElementById("tabs"), footer = document.querySelector("main > footer");
+  nav.append(el("div", "brand", "Homelab"));
+  for (const t of TABS) {
+    const b = el("button");
+    b.type = "button";
+    t.countEl = el("span", "count");
+    b.append(el("span", null, t.label), t.countEl);
+    b.addEventListener("click", () => showTab(t.id));
+    t.button = b;
+    nav.append(b);
+    const p = el("section", "panel");
+    p.id = "tab-" + t.id;
+    p.hidden = true;
+    p.grid = el("div", "widgets");
+    p.append(p.grid);
+    footer.before(p);
+    PANELS[t.id] = p;
+  }
+  PANELS.services.append(document.getElementById("content"));
+
+  // Header: overall status pill + clock
+  const hstat = el("div", "hstat"), sys = el("span", null, "…"), clock = el("span", null, "");
+  sys.id = "sys"; clock.id = "clock";
+  hstat.append(sys, clock);
+  document.querySelector("main > header").append(hstat);
+  const tick = () => { clock.textContent = new Date().toLocaleTimeString(); };
+  tick();
+  setInterval(tick, 1000);
+
+  // KPI strip at the top of Overview
+  const kpis = el("div", "kpis");
+  kpis.id = "kpis";
+  for (const [key, label, bar] of [["services", "Services", false], ["cpu", "CPU", true], ["ram", "RAM", true],
+                                   ["gpu", "GPU", true], ["vpn", "VPN", false]]) {
+    const box = el("div", "kpi"), v = el("div", "v", "–");
+    box.append(el("div", "l", label), v);
+    KPIS[key] = { v };
+    if (bar) {
+      const mini = el("div", "mini"), fill = el("span");
+      mini.append(fill); box.append(mini);
+      KPIS[key].mini = mini; KPIS[key].fill = fill;
+    }
+    kpis.append(box);
+  }
+  PANELS.overview.grid.before(kpis);
+}
+
+function updateSys() {
+  const sys = document.getElementById("sys"), list = window.SERVICES || [];
+  if (!sys) return;
+  const down = list.filter(s => s.status === "down").length, pending = list.filter(s => s.status === "pending").length;
+  let text = down ? `${down} down` : "All systems operational";
+  if (pending) text += ` · ${pending} pending`;
+  sys.textContent = text;
+  sys.className = down ? "bad" : "ok";
+}
+
+function updateKpis() {
+  const setPct = (k, pct) => {
+    const t = KPIS[k];
+    if (!t) return;
+    if (pct == null || isNaN(pct)) { t.v.textContent = "–"; t.fill.style.width = "0"; t.mini.className = "mini"; return; }
+    t.v.textContent = Math.round(pct) + "%";
+    t.fill.style.width = Math.min(100, pct) + "%";
+    t.mini.className = "mini" + (pct >= 90 ? " crit" : pct >= 75 ? " warn" : "");
+  };
+  const sv = KPIS.services, list = KPI.services;
+  if (sv) {
+    if (!list) { sv.v.textContent = "–"; sv.v.className = "v"; }
+    else {
+      const up = list.filter(s => s.status === "up").length, down = list.some(s => s.status === "down");
+      sv.v.textContent = `${up}/${list.length}`;
+      sv.v.className = "v" + (down ? " bad" : "");
+    }
+  }
+  const h = KPI.health;
+  setPct("cpu", h ? h.cpu : null);
+  setPct("ram", h && h.memory && h.memory.total ? 100 * h.memory.used / h.memory.total : null);
+  setPct("gpu", h && h.gpu ? h.gpu.util : null);
+  const vp = KPIS.vpn;
+  if (vp) {
+    const d = KPI.vpn;
+    vp.v.textContent = d ? (d.protected ? "Protected" : "Not protected") : "–";
+    vp.v.className = "v" + (d ? (d.protected ? " ok" : " bad") : "");
+  }
+}
+
+function showTab(id, updateUrl = true) {
+  if (!PANELS[id]) id = "overview";
+  if (id === TAB) return;
+  TAB = id;
+  for (const t of TABS) {
+    PANELS[t.id].hidden = t.id !== id;
+    if (t.id === id) t.button.setAttribute("aria-current", "page");
+    else t.button.removeAttribute("aria-current");
+  }
+  TABS.find(t => t.id === id).button.scrollIntoView({ block: "nearest", inline: "nearest" });  // phone top bar
+  document.getElementById("title").textContent = TABS.find(t => t.id === id).label;
+  if (updateUrl && location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
+  try { localStorage.setItem("admin-tab", id); } catch (e) { /* private mode: fine */ }
+  WIDGETS.filter(w => w.tab === id).forEach(pollWidget);  // hidden widgets don't poll; catch up now
+}
+
+function setCount(tab, n) {
+  const t = TABS.find(t => t.id === tab);
+  if (t) t.countEl.textContent = n ? String(n) : "";
+}
+
+function startTabs() {
+  let saved = null;
+  try { saved = localStorage.getItem("admin-tab"); } catch (e) { /* private mode */ }
+  showTab(location.hash.slice(1) || saved || "overview", false);
+  window.addEventListener("hashchange", () => showTab(location.hash.slice(1), false));
+}
+
+// Opened via a .lan name -> link to the service's .lan name.
+// Otherwise (IP, "homelab", ...) -> same host, service's own port.
+function serviceUrl(s) {
+  const host = location.hostname;
+  if (host.endsWith(".lan") && s.lan_host) return `http://${s.lan_host}/`;
+  const h = host.includes(":") ? `[${host}]` : host;  // IPv6 literal
+  if (s.port) return `http://${h}:${s.port}/`;
+  return s.lan_host ? `http://${s.lan_host}/` : null;
+}
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text) e.textContent = text;
+  return e;
+}
+
+function letter(name) { return el("div", "letter", (name[0] || "?").toUpperCase()); }
+
+function tile(s) {
+  const url = serviceUrl(s);
+  const t = el(url ? "a" : "div", "tile");
+  if (url) t.href = url;
+  if (s.icon) {
+    const img = el("img");
+    img.src = ICON_BASE + encodeURIComponent(s.icon) + ".svg";
+    img.alt = "";
+    img.loading = "lazy";
+    img.onerror = () => img.replaceWith(letter(s.name));
+    t.append(img);
+  } else {
+    t.append(letter(s.name));
+  }
+  t.append(el("span", "name", s.name));
+  if (s.description) t.append(el("span", "desc", s.description));
+  if (ADMIN) {  // family tiles stay simple: no status dots
+    const dot = el("span", "dot " + s.status);
+    dot.title = dot.ariaLabel = "Status: " + s.status;
+    t.append(dot);
+  }
+  return t;
+}
+
+function render(services) {
+  const content = document.getElementById("content");
+  const list = ADMIN ? services : services.filter(s => s.audience === "family");
+  content.replaceChildren();
+  if (!list.length) {
+    content.append(el("p", "msg", ADMIN ? "No services found." : "Nothing here yet."));
+    return;
+  }
+  if (!ADMIN) {
+    const grid = el("div", "grid");
+    list.slice().sort((a, b) => a.name.localeCompare(b.name)).forEach(s => grid.append(tile(s)));
+    content.append(grid);
+    return;
+  }
+  const groups = new Map();
+  list.forEach(s => (groups.get(s.group) || groups.set(s.group, []).get(s.group)).push(s));
+  for (const [name, items] of groups) {
+    const grid = el("div", "grid");
+    items.forEach(s => grid.append(tile(s)));
+    content.append(el("h2", null, `${name} · ${items.filter(s => s.status === "up").length}/${items.length} up`), grid);
+  }
+}
+
+async function refresh() {
+  try {
+    const r = await fetch("/api/services", { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    if (ADMIN && !data.admin) return toLogin();
+    window.SERVICES = data.services;
+    render(data.services);
+    if (ADMIN) { KPI.services = data.services; updateSys(); updateKpis(); }
+    document.getElementById("updated").textContent =
+      "Updated " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) +
+      (data.kuma ? "" : " · status unavailable");
+  } catch (e) {
+    const content = document.getElementById("content");
+    if (!content.querySelector(".tile")) {
+      content.replaceChildren(el("p", "msg error", "Can't reach the homelab right now."));
+    }
+    document.getElementById("updated").textContent = "Offline, retrying…";
+  }
+}
+
+setInterval(refresh, 30000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refresh(); });
+// ---- Live widgets: each polls its own endpoint; any failure shows "unavailable" in that card only ----
+const LIVE = 5000, SLOW = 30000;
+const WIDGETS = ADMIN ? [
+  { id: "downloads", tab: "overview", title: "Downloads", every: LIVE, render: renderDownloads, fail: downloadsFail },
+  { id: "now-playing", tab: "overview", title: "Now playing", every: LIVE, render: renderNowPlaying },
+  { id: "health", tab: "overview", title: "Server health", every: LIVE, render: renderHealth },
+  { id: "vpn", tab: "overview", title: "VPN", every: SLOW, render: renderVpn },
+  { id: "requests", tab: "media", title: "Requests", every: SLOW, render: renderRequests, wide: true },
+  { id: "recently-added", tab: "media", title: "Recently added", every: SLOW, render: renderRecent, wide: true },
+  { id: "ideas", tab: "ideas", title: "Ideas", every: SLOW, render: renderIdeas, form: ideaForm, wide: true },
+] : [
+  { id: "family/recently-added", title: "New to watch", every: SLOW, render: renderFamilyRecent, wide: true },
+  { id: "family/requests", title: "Requests", every: SLOW, render: renderFamilyRequests, wide: true },
+];
+
+function fmtRate(b) {
+  if (b < 1024) return `${b} B/s`;
+  if (b < 1024 ** 2) return `${Math.round(b / 1024)} KiB/s`;
+  return `${(b / 1024 ** 2).toFixed(1)} MiB/s`;
+}
+
+function fmtEta(s) {
+  if (s == null) return "—";
+  if (s < 60) return "<1m";
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
+}
+
+const QBIT_STATE = {
+  downloading: null, forcedDL: null, metaDL: "Fetching metadata", forcedMetaDL: "Fetching metadata",
+  stalledDL: "Stalled", queuedDL: "Queued", checkingDL: "Checking", checkingResumeData: "Checking",
+  allocating: "Allocating", moving: "Moving", stoppedDL: "Stopped", error: "Error", missingFiles: "Missing files",
+};
+
+function renderDownloads(d, body, head) {
+  head.textContent = `↓ ${fmtRate(d.down)} · ↑ ${fmtRate(d.up)}`;
+  const row = el("div", "row");
+  row.append(limitPill(d));
+  if (d.seeding) row.append(el("span", null, `${d.seeding} seeding`));
+  body.append(row);
+  if (DL.manualUntil > Date.now())
+    body.append(el("p", "sub", "Manual: lasts until the next scheduled switch or a qBittorrent restart"));
+  if (!d.items.length) { body.append(el("p", "sub", "Nothing downloading.")); return; }
+  const ul = el("ul", "dl");
+  for (const t of d.items) {
+    const li = el("li");
+    const pct = Math.floor(t.progress * 1000) / 10;
+    const bar = el("div", "bar"), fill = el("span");
+    fill.style.width = pct + "%";
+    bar.append(fill);
+    bar.setAttribute("role", "progressbar");
+    bar.setAttribute("aria-valuenow", pct);
+    bar.setAttribute("aria-label", t.name);
+    const meta = el("div", "meta");
+    const label = QBIT_STATE[t.state];
+    meta.append(el("span", null, `${pct}%` + (label ? ` · ${label}` : ` · ${fmtRate(t.speed)}`)),
+                el("span", null, `ETA ${fmtEta(t.eta)}`));
+    const name = el("div", "t", t.name);
+    name.title = t.name;
+    li.append(name, bar, meta);
+    ul.append(li);
+  }
+  body.append(ul);
+  if (d.more) body.append(el("p", "sub", `+${d.more} more`));
+}
+
+// ---- Evening-limit pill: tap flips qBittorrent's alternative speed mode (schedule untouched) ----
+const DL = WIDGETS.find(w => w.id === "downloads") || {};
+
+function limitPill(d) {
+  const b = el("button", d.evening_limit ? "badge warn toggle" : "badge toggle",
+               d.evening_limit ? `Evening limit on · ${fmtRate(d.limit)}` : "Full speed");
+  b.type = "button";
+  b.title = "Tap to switch";
+  b.setAttribute("aria-pressed", String(d.evening_limit));
+  b.setAttribute("aria-live", "polite");
+  b.addEventListener("click", () => toggleLimit(b, d.evening_limit));
+  return b;
+}
+
+function downloadsFail(body) {  // qBittorrent unreachable: state unknown, nothing to tap
+  const row = el("div", "row"), b = el("button", "badge toggle", "unknown");
+  b.type = "button";
+  b.disabled = true;
+  row.append(b);
+  body.prepend(row);
+}
+
+async function toggleLimit(b, from) {
+  if (DL.switching) return;
+  DL.switching = true;  // polls keep running but don't redraw the card meanwhile
+  b.disabled = true;
+  b.className = "badge toggle";
+  b.textContent = "Switching…";
+  let d = null;
+  try {
+    const r = await fetch("/api/widgets/downloads/limit", {
+      method: "POST", cache: "no-store",
+      referrerPolicy: "same-origin",  // the page's no-referrer would send "Origin: null"
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ from }),
+    });
+    if (r.status === 401) return toLogin();
+    if (r.ok) d = await r.json();
+  } catch (e) { /* network error -> unknown */ }
+  DL.switching = false;
+  if (!d || !d.ok) { b.textContent = "unknown"; return; }  // the next poll redraws it
+  if (d.evening_limit !== from) DL.manualUntil = Date.now() + 60000;
+  DL.gen = (DL.gen || 0) + 1;  // a poll already in flight has the old state: discard it
+  if (!DL.busy) pollWidget(DL);
+}
+
+const fmtPct = f => f < 0.1 ? `${Math.floor(f * 1000) / 10}%` : `${Math.floor(f * 100)}%`;
+
+function fmtTime(s) {
+  if (s == null) return "–";
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), sec = String(s % 60).padStart(2, "0");
+  return h ? `${h}:${String(m).padStart(2, "0")}:${sec}` : `${m}:${sec}`;
+}
+
+function ago(iso) {
+  const s = (Date.now() - new Date(iso)) / 1000;
+  if (!(s >= 0)) return "";
+  if (s < 3600) return `${Math.max(1, Math.round(s / 60))}m ago`;
+  if (s < 86400) return `${Math.round(s / 3600)}h ago`;
+  return `${Math.round(s / 86400)}d ago`;
+}
+
+// Poster image, or the title's first letter if there's none or it fails to load.
+function poster(src, title) {
+  const ph = el("div", "poster", (title || "?")[0].toUpperCase());
+  if (!src) return ph;
+  const img = el("img", "poster");
+  img.src = src; img.alt = ""; img.loading = "lazy";
+  img.onerror = () => img.replaceWith(ph);
+  return img;
+}
+
+const jfImage = id => id ? `/api/img/jellyfin/${encodeURIComponent(id)}` : null;
+
+function itemRow(img, title, sub, extra) {
+  const li = el("li", "item"), txt = el("div", "txt");
+  const t = el("div", "t", title); t.title = title;
+  txt.append(t, el("div", "s", sub));
+  if (extra) txt.append(extra);
+  li.append(img, txt);
+  return li;
+}
+
+function renderNowPlaying(d, body, head) {
+  if (d.items.length) head.textContent = `${d.items.length} playing`;
+  if (!d.items.length) { body.append(el("p", "sub", "Nobody is watching.")); return; }
+  const ul = el("ul", "items");
+  for (const p of d.items) {
+    const extra = el("div");
+    if (p.runtime) {
+      const bar = el("div", "bar"), fill = el("span");
+      fill.style.width = Math.min(100, 100 * (p.position || 0) / p.runtime) + "%";
+      bar.append(fill); extra.append(bar);
+    }
+    const meta = el("div", "np-meta");
+    meta.append(el("span", null, (p.paused ? "Paused · " : "") + `${fmtTime(p.position)} / ${fmtTime(p.runtime)}`),
+                el("span", p.mode.startsWith("Transcoding") ? "badge warn" : "badge", p.mode));
+    extra.append(meta);
+    const sub = [p.user, p.device].filter(Boolean).join(" · ") + (p.subtitle ? ` — ${p.subtitle}` : "");
+    ul.append(itemRow(poster(jfImage(p.image), p.title), p.title, sub, extra));
+  }
+  body.append(ul);
+}
+
+function renderRequests(d, body, head) {
+  head.textContent = d.pending_total ? `${d.pending_total} waiting` : "";
+  const section = (label, list, total, sub) => {
+    if (!list.length) return;
+    body.append(el("h4", null, total > list.length ? `${label} (${total})` : label));
+    const ul = el("ul", "items");
+    for (const r of list) {
+      const name = r.year ? `${r.title} (${r.year})` : r.title;
+      ul.append(itemRow(poster(r.poster, r.title), name, sub(r)));
+    }
+    body.append(ul);
+  };
+  section("Waiting for approval", d.pending, d.pending_total, r => `${r.user} · ${ago(r.updated)}`);
+  section("In progress", d.processing, d.processing_total, r =>
+    `${r.user} · ` + (r.progress != null ? `Downloading ${fmtPct(r.progress)}`
+                       : r.downloading ? "Downloading" : "Searching"));
+  section("Recently available", d.available, d.available.length, r => `${r.user} · ${ago(r.updated)}`);
+  if (!body.childElementCount) body.append(el("p", "sub", "No requests."));
+}
+
+function renderRecent(d, body) {
+  if (!d.items.length) { body.append(el("p", "sub", "Nothing yet.")); return; }
+  const shelf = el("div", "shelf");
+  for (const i of d.items) {
+    const fig = el("figure"), cap = el("figcaption", null, i.title);
+    cap.title = i.title;
+    const note = [i.type === "series" ? (i.episodes > 1 ? `${i.episodes} new episodes` : "New episode") : i.year,
+                  i.remote ? "720p" : null, ago(i.added)].filter(Boolean).join(" · ");
+    cap.append(el("small", null, note));
+    fig.append(poster(jfImage(i.id), i.title), cap);
+    shelf.append(fig);
+  }
+  body.append(shelf);
+}
+
+function fmtBytes(b) {
+  const u = ["B", "KB", "MB", "GB", "TB"];
+  let i = 0;
+  while (b >= 1000 && i < u.length - 1) { b /= 1000; i++; }
+  return `${b >= 100 || i === 0 ? Math.round(b) : b.toFixed(1)} ${u[i]}`;
+}
+
+function fmtUptime(s) {
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60);
+  return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
+}
+
+// label, percent (0-100 or null), right-hand text, optional detail line
+function gauge(label, pct, value, detail) {
+  const g = el("div", "gauge"), lbl = el("div", "lbl");
+  lbl.append(el("b", null, label), el("span", null, value));
+  g.append(lbl);
+  if (pct != null) {
+    const bar = el("div", "bar" + (pct >= 90 ? " crit" : pct >= 75 ? " warn" : "")), fill = el("span");
+    fill.style.width = Math.min(100, pct) + "%";
+    bar.setAttribute("role", "meter");
+    bar.setAttribute("aria-valuenow", Math.round(pct));
+    bar.setAttribute("aria-label", label);
+    bar.append(fill);
+    g.append(bar);
+  }
+  if (detail) g.append(el("div", "s", detail));
+  return g;
+}
+
+function renderHealth(d, body, head) {
+  if (ADMIN) { KPI.health = d; updateKpis(); }
+  head.textContent = `Up ${fmtUptime(d.uptime)}`;
+  const box = el("div", "gauges");
+  box.append(gauge("CPU", d.cpu, `${Math.round(d.cpu)}%`,
+    [`${d.cores} cores`, `load ${d.load.map(x => x.toFixed(2)).join(" ")}`,
+     d.cpu_temp != null ? `${Math.round(d.cpu_temp)}°C` : null].filter(Boolean).join(" · ")));
+  const m = d.memory;
+  box.append(gauge("RAM", 100 * m.used / m.total, `${fmtBytes(m.used)} / ${fmtBytes(m.total)}`));
+  const g = d.gpu;
+  if (g) {
+    box.append(gauge("GPU", g.util, g.util != null ? `${Math.round(g.util)}%` : "–",
+      [g.name.replace(/^NVIDIA (GeForce )?/, ""),
+       g.encoder != null ? `enc ${Math.round(g.encoder)}%` : null,
+       g.decoder != null ? `dec ${Math.round(g.decoder)}%` : null,
+       g.mem_used != null && g.mem_total ? `VRAM ${Math.round(g.mem_used)} / ${Math.round(g.mem_total)} MiB` : null,
+       g.temp != null ? `${Math.round(g.temp)}°C` : null,
+       g.power != null ? `${Math.round(g.power)} W` : null,
+       g.sessions ? `${g.sessions} encode${g.sessions > 1 ? "s" : ""}` : null].filter(Boolean).join(" · ")));
+  } else {
+    box.append(gauge("GPU", null, "unavailable"));
+  }
+  for (const k of d.disks) {
+    box.append(k.total ? gauge(`Disk · ${k.label}`, 100 * k.used / k.total,
+                               `${fmtBytes(k.used)} / ${fmtBytes(k.total)}`, `${fmtBytes(k.total - k.used)} free`)
+                       : gauge(`Disk · ${k.label}`, null, "unavailable"));
+  }
+  body.append(box);
+}
+
+function friendlyAgo(iso) {
+  const days = Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(iso).setHours(0, 0, 0, 0)) / 86400000);
+  if (!(days >= 0)) return "";
+  if (days === 0) return "Added today";
+  if (days === 1) return "Added yesterday";
+  if (days < 7) return `Added ${days} days ago`;
+  if (days < 14) return "Added last week";
+  return days < 60 ? `Added ${Math.floor(days / 7)} weeks ago` : "Added a while ago";
+}
+
+// Jellyfin's page for an item, on whichever host this page was opened with (the tile's own logic).
+function jellyfinLink(id) {
+  const jf = (window.SERVICES || []).find(s => s.id === "jellyfin");
+  const base = jf && serviceUrl(jf);
+  return base ? `${base}web/#/details?id=${encodeURIComponent(id)}` : null;
+}
+
+function renderFamilyRecent(d, body) {
+  if (!d.items.length) { body.append(el("p", "sub", "Nothing new yet.")); return; }
+  const grid = el("div", "posters");
+  for (const i of d.items) {
+    const href = jellyfinLink(i.id);
+    const a = el(href ? "a" : "div", "p");
+    if (href) a.href = href;
+    const t = el("div", "pt", i.title); t.title = i.title;
+    a.append(poster(jfImage(i.id), i.title), t,
+             el("div", "ps", (i.series ? "New episodes · " : "") + friendlyAgo(i.added)));
+    grid.append(a);
+  }
+  body.append(grid);
+}
+
+const ASK_STATE = { ready: "Ready to watch", coming: "On its way", waiting: "Waiting for approval" };
+
+function renderFamilyRequests(d, body) {
+  if (!d.items.length) { body.append(el("p", "sub", "Nothing asked for right now.")); return; }
+  const ul = el("ul", "asks");
+  for (const r of d.items) {
+    const li = el("li"), txt = el("div");
+    txt.style.minWidth = "0";
+    const name = r.year ? `${r.title} (${r.year})` : r.title;
+    const t = el("div", "at", name); t.title = name;
+    txt.append(t, el("span", `pill ${r.state}`, ASK_STATE[r.state] || ""));
+    li.append(poster(r.poster, r.title), txt);
+    ul.append(li);
+  }
+  body.append(ul);
+}
+
+function renderVpn(d, body) {
+  if (ADMIN) { KPI.vpn = d; updateKpis(); }
+  const big = el("div", "big");
+  big.append(el("span", "dot " + (d.protected ? "up" : "down")), d.protected ? "Protected" : "Not protected");
+  body.append(big);
+  const where = [d.city, d.country].filter(Boolean).join(", ");
+  body.append(el("div", "sub", where ? `Exit: ${where}` : "Exit location unknown"));
+}
+
+// ---- Idea box: the queue for the background build loop (/build-ideas) ----
+let SHOW_REJECTED = false;  // rejected builds stay hidden until asked for; survives the card's polls
+function renderIdeas(d, body, head) {
+  head.textContent = d.done ? `${d.done} built` : "";
+  if (!d.ideas.length) body.append(el("div", "sub", "No ideas queued."));
+  const ul = el("ul", "ideas");
+  for (const i of d.ideas) {
+    const li = el("li");
+    const t = el("span", "t", i.title);
+    t.title = "ideas/" + i.file;
+    li.append(t, el("span", "s", i.on ? "waits on " + i.on : ago(i.added)));
+    ul.append(li);
+  }
+  if (d.ideas.length) body.append(ul);
+  if (d.proposed) {
+    const h = el("h4", null, `Proposed: ${d.proposed} waiting for your yes or no · `);
+    const a = el("a", null, "review them");
+    a.href = "#proposed";
+    h.append(a);
+    body.append(h);
+  }
+  if (d.parked && d.parked.length) {
+    const h = el("h4", null, "Parked: questions for you · ");
+    const a = el("a", null, "answer them");
+    a.href = "#parked";
+    h.append(a);
+    body.append(h);
+    const pl = el("ul", "ideas");
+    for (const i of d.parked) {
+      const li = el("li");
+      const t = el("span", "t", i.title);
+      t.title = "ideas/parked/" + i.file;
+      li.append(t, el("span", "badge warn", "parked"));
+      pl.append(li);
+    }
+    body.append(pl);
+  }
+  if (d.waiting && d.waiting.length) {
+    body.append(el("h4", null, "Waiting on another idea"));
+    const wl = el("ul", "ideas");
+    for (const i of d.waiting) {
+      const li = el("li"), t = el("span", "t", i.title);
+      t.title = "ideas/waiting/" + i.file;
+      let st;
+      if (i.state === "ready") st = el("span", "s", "ready");
+      else if (i.state === "waiting") st = el("span", "s", "waits on " + i.on);
+      else if (i.state === "rejected") st = el("span", "badge warn", `waits on ${i.on} (rejected)`);
+      else if (i.state === "unknown") st = el("span", "badge warn", `waits on ${i.on}: no such idea`);
+      else st = el("span", "badge warn", "no Depends on: line");
+      li.append(t, st);
+      wl.append(li);
+    }
+    body.append(wl);
+  }
+  if (d.rejected && d.rejected.length) {
+    const toggle = btn("", "linkbtn"), rl = el("ul", "ideas");
+    const sync = () => {
+      toggle.textContent = `${SHOW_REJECTED ? "Hide" : "Show"} rejected (${d.rejected.length})`;
+      toggle.setAttribute("aria-expanded", SHOW_REJECTED);
+      rl.hidden = !SHOW_REJECTED;
+    };
+    toggle.addEventListener("click", () => { SHOW_REJECTED = !SHOW_REJECTED; sync(); });
+    for (const i of d.rejected) {
+      const li = el("li"), t = el("span", "t");
+      t.append(i.title, el("span", "why", i.reason ? `Why: ${i.reason}` : "No reason given"));
+      t.title = "ideas/rejected/" + i.file;
+      t.style.whiteSpace = "normal";
+      li.append(t, el("span", "s", i.date ? `rejected ${i.date}` : "rejected"));
+      rl.append(li);
+    }
+    sync();
+    body.append(toggle, rl);
+  }
+}
+
+function ideaForm(w) {
+  const f = el("form", "idea-form");
+  const title = el("input");
+  title.name = "title"; title.required = true; title.maxLength = 100;
+  title.placeholder = "New idea, e.g. Audiobookshelf for the family";
+  title.setAttribute("aria-label", "Idea title");
+  const details = el("textarea");
+  details.name = "details"; details.maxLength = 4000;
+  details.placeholder = "Details (optional): what it should do, who uses it";
+  details.setAttribute("aria-label", "Idea details");
+  // Optional score, the same scale as the scout's proposals (score = value x (6 - effort))
+  const pick = (label, hint) => {
+    const lab = el("label", null, label), sel = el("select");
+    sel.title = hint;
+    sel.append(new Option("–", ""));
+    for (let i = 1; i <= 5; i++) sel.append(new Option(String(i), String(i)));
+    lab.append(sel);
+    return [lab, sel];
+  };
+  const [valueLab, value] = pick("Value", "How much it helps you or the family: 1 a little, 5 a lot");
+  const [effortLab, effort] = pick("Effort", "1 = one script … 5 = a multi-stage milestone");
+  const score = el("div", "score");
+  score.append(valueLab, effortLab, el("span", null, "optional"));
+  // Unsure it can be done: the planner researches feasibility and size, then parks it for you to read
+  const researchLab = el("label", null, " Research first");
+  const research = el("input");
+  research.type = "checkbox";
+  research.title = "Not sure it's doable? The planner checks that and how big it is, then parks it for you";
+  researchLab.prepend(research);
+  score.append(researchLab);
+  const btn = el("button", null, "Add idea");
+  btn.type = "submit";
+  const note = el("span", "note", "Built in the background by /build-ideas");
+  note.setAttribute("aria-live", "polite");
+  const acts = el("div", "acts");
+  acts.append(btn, note);
+  f.append(title, details, score, acts);
+  f.addEventListener("submit", async (ev) => {
+    ev.preventDefault();
+    btn.disabled = true;
+    note.className = "note";
+    note.textContent = "Saving…";
+    let d = null;
+    try {
+      const r = await fetch("/api/ideas", {
+        method: "POST", cache: "no-store",
+        referrerPolicy: "same-origin",  // the page's no-referrer would send "Origin: null"
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: title.value, details: details.value,
+                               value: value.value ? +value.value : null, effort: effort.value ? +effort.value : null,
+                               research: research.checked }),
+      });
+      if (r.status === 401) return toLogin();
+      if (r.ok) d = await r.json();
+    } catch (e) { /* network error */ }
+    btn.disabled = false;
+    if (d && d.ok) {
+      f.reset();
+      note.textContent = `Saved as ideas/${d.file}`;
+      w.gen = (w.gen || 0) + 1;  // a poll already in flight has the old list: discard it
+      if (!w.busy) pollWidget(w);
+    } else {
+      note.className = "note error";
+      note.textContent = (d && d.error) || "Not saved. Try again.";
+    }
+  });
+  return f;
+}
+
+// ---- Parked and Deploy tabs: one item at a time, carousel style; Skip sends one to the back of the line.
+// The buttons only queue a request: scripts/idea-actions.py (cron on the server, every minute) does the git
+// and docker work, and its results come back through the same endpoints. ----
+const DECKS = [
+  { id: "proposed", tab: "proposed", key: "items", render: renderProposed, local: true,
+    empty: "No proposals: the scout adds a few each Friday." },
+  { id: "parked", tab: "parked", key: "items", render: renderParked,
+    empty: "No parked ideas: nothing is waiting for your answers." },
+  { id: "deploys", tab: "deploy", key: "ready", render: renderDeploy,
+    empty: "No builds waiting to deploy." },
+];
+const DONE = { answer: "Answers saved", requeue: "Requeued", deploy: "Deployed", reject: "Rejected" };
+
+const btn = (text, cls) => { const b = el("button", cls, text); b.type = "button"; return b; };
+const editing = d => d.root.contains(document.activeElement) && document.activeElement.matches("textarea, input");
+const lastAction = (d, slug) => d.data.actions.find(a => a.slug === slug);
+const deckSig = d => JSON.stringify([d.failed, d.data, d.order, d.cur, !!d.flash]);
+
+function mountDecks() {
+  for (const d of DECKS) {
+    Object.assign(d, { order: [], cur: null, items: {}, drafts: {}, checks: {}, errors: {}, done: {}, open: new Set(),
+                       data: null, failed: false, sig: "", flash: null, enter: true });
+    d.root = el("div", "deck");
+    d.root.append(el("p", "msg", "Loading…"));
+    PANELS[d.tab].append(d.root);
+    // A poll that changed things while you were typing redraws once you leave the box
+    d.root.addEventListener("focusout", () => setTimeout(() => { if (d.stale && !editing(d)) drawDeck(d); }, 0));
+    pollDeck(d);
+  }
+  document.addEventListener("keydown", e => {
+    const d = DECKS.find(x => x.tab === TAB);
+    if (!d || e.altKey || e.ctrlKey || e.metaKey || document.activeElement.matches("textarea, input")) return;
+    if (e.key === "ArrowRight") step(d, 1);
+    if (e.key === "ArrowLeft") step(d, -1);
+  });
+}
+
+async function pollDeck(d) {
+  clearTimeout(d.timer);
+  if (!document.hidden) {
+    try {
+      const r = await fetch(`/api/widgets/${d.id}`, { cache: "no-store" });
+      if (r.status === 401) return toLogin();
+      if (!r.ok) throw new Error(r.status);
+      const data = await r.json();
+      if (!data.ok) throw new Error("unavailable");
+      reconcile(d, data);
+      d.failed = false;
+    } catch (e) {
+      d.failed = true;
+    }
+    if (d.data) setCount(d.tab, d.data[d.key].length);
+    const sig = deckSig(d);
+    if (sig !== d.sig) {
+      d.sig = sig;
+      if (editing(d)) d.stale = true; else drawDeck(d);
+    }
+  }
+  const busy = d.data && d.data.actions.some(a => a.state === "queued" || a.state === "running");
+  d.timer = setTimeout(() => pollDeck(d), busy ? 3000 : 30000);
+}
+
+// Keep your order (skips stay skipped); new items join at the back. When the one on screen is finished,
+// the next one slides in at the same place.
+function reconcile(d, data) {
+  const list = data[d.key], slugs = list.map(i => i.slug);
+  const pos = Math.max(0, d.order.indexOf(d.cur));
+  const gone = d.cur && !slugs.includes(d.cur) ? d.cur : null;
+  const prev = gone && d.items[gone];
+  d.data = data;
+  d.order = d.order.filter(s => slugs.includes(s));
+  for (const s of slugs) if (!d.order.includes(s)) d.order.push(s);
+  d.items = Object.fromEntries(list.map(i => [i.slug, i]));
+  if (gone) {
+    const a = lastAction(d, gone), ok = a && a.state === "done";
+    const name = prev ? prev.title : gone;
+    d.flash = d.done[gone] ? { ok: true, text: `✓ ${d.done[gone]}: ${name}` }  // Proposed: done on the spot
+      : { ok, text: ok ? `✓ ${DONE[a.action] || "Done"}: ${name}` : `${name} isn't here any more.`,
+          manual: ok && a.action === "deploy" && prev ? prev.manual : "" };
+    delete d.done[gone];
+    d.cur = d.order[Math.min(pos, d.order.length - 1)] || null;
+    d.enter = true;
+  } else if (!d.cur) {
+    d.cur = d.order[0] || null;
+  }
+}
+
+function step(d, k) {
+  const n = d.order.length;
+  if (n < 2) return;
+  d.cur = d.order[(d.order.indexOf(d.cur) + k + n) % n];
+  d.enter = true;
+  drawDeck(d);
+}
+
+function skip(d) {
+  const i = d.order.indexOf(d.cur), n = d.order.length;
+  if (n < 2) return;
+  d.order.splice(i, 1);
+  d.order.push(d.cur);
+  d.cur = d.order[i === n - 1 ? 0 : i];
+  d.enter = true;
+  drawDeck(d);
+}
+
+function drawDeck(d) {
+  d.stale = false;
+  d.sig = deckSig(d);
+  const root = d.root;
+  root.replaceChildren();
+  if (d.flash) root.append(flashBox(d));
+  if (!d.data) {
+    root.append(el("p", "msg error", "Can't load this right now."));
+    return;
+  }
+  if (d.failed) root.append(el("p", "sub", "Can't refresh right now; showing the last list."));
+  if (!d.local) runnerNote(d, root);
+  const n = d.order.length;
+  if (!n) {
+    const c = el("div", "card empty"), big = el("div", "big");
+    big.append(el("span", "dot up"), "All clear");
+    c.append(big, el("p", "sub", d.empty));
+    root.append(c);
+  } else {
+    const head = el("div", "deck-head"), moves = el("div", "moves");
+    head.append(el("span", "pos", `${d.order.indexOf(d.cur) + 1} of ${n}`));
+    const mv = (label, fn, title) => {
+      const b = btn(label, "btn ghost small");
+      b.title = title;
+      b.disabled = n < 2;
+      b.addEventListener("click", fn);
+      return b;
+    };
+    moves.append(mv("‹ Prev", () => step(d, -1), "Previous (←)"),
+                 mv("Skip", () => skip(d), "Come back to this one later: sends it to the back of the line"),
+                 mv("Next ›", () => step(d, 1), "Next (→)"));
+    head.append(moves);
+    const card = el("article", "card slide" + (d.enter ? " enter" : ""));
+    d.enter = false;
+    d.render(d, d.items[d.cur], card);
+    root.append(head, card);
+  }
+  if (d.id === "deploys" && d.data.building.length)
+    root.append(el("p", "sub", `Still building: ${d.data.building.join(", ")}`));
+}
+
+function flashBox(d) {
+  const f = d.flash, box = el("div", "box flash " + (f.ok ? "ok" : "warn")), txt = el("div");
+  txt.append(el("b", null, f.text));
+  if (f.manual) txt.append(el("div", "sub", "Your manual steps for it:"), md(f.manual));
+  const x = btn("×");
+  x.setAttribute("aria-label", "Dismiss");
+  x.addEventListener("click", () => { d.flash = null; drawDeck(d); });
+  box.append(txt, x);
+  if (!f.manual && !f.timer)  // manual steps stay until dismissed
+    f.timer = setTimeout(() => { if (d.flash === f) { d.flash = null; if (!editing(d)) drawDeck(d); } }, 8000);
+  return box;
+}
+
+function runnerNote(d, root) {
+  if (d.data.runner === "ok") return;
+  const box = el("div", "box warn");
+  if (d.data.runner === "missing") {
+    box.append(el("b", null, "The action runner isn't installed yet, so these buttons can't do anything."),
+               el("div", null, "On the server, in the repo:"), cmdRow("scripts/install-cron.sh"));
+  } else {
+    box.append(el("b", null, "The action runner hasn't run for a few minutes, so actions will wait."),
+               el("div", null, "Check its cron entry and log on the server:"),
+               cmdRow("crontab -l | grep idea-actions"), cmdRow("journalctl -t idea-actions -n 20"));
+  }
+  root.append(box);
+}
+
+function actionStatus(d, slug) {
+  if (d.errors[slug]) return { cls: "status bad", text: d.errors[slug] };
+  const a = lastAction(d, slug);
+  if (!a) return null;
+  if (a.state === "queued")
+    return { busy: true, cls: "status", text: "Queued. The server picks it up within a minute…" };
+  if (a.state === "running")
+    return { busy: true, cls: "status", text: a.action === "deploy" ? "Deploying… this can take a few minutes."
+                                            : a.action === "reject" ? "Rejecting…" : "Working on it…" };
+  if (a.state === "failed")
+    return { cls: "status bad", text: `${DONE[a.action] ? a.action[0].toUpperCase() + a.action.slice(1) : "Action"} failed: ${a.message}`,
+             log: a.log };
+  if (a.action === "answer") return { cls: "status ok", text: "✓ Answers saved in the note." };
+  return null;
+}
+
+function statusLine(st) {
+  const box = el("div");
+  if (!st) return box;
+  box.className = st.cls;
+  box.setAttribute("role", "status");
+  box.append(el("span", null, st.text));
+  if (st.log) {
+    const det = el("details");
+    det.append(el("summary", null, "Output"), el("pre", "out", st.log));
+    box.append(det);
+  }
+  return box;
+}
+
+async function send(d, slug, body, buttons) {
+  delete d.errors[slug];
+  buttons.forEach(b => b.disabled = true);
+  let res = null;
+  try {
+    const r = await fetch("/api/ideas/actions", {
+      method: "POST", cache: "no-store",
+      referrerPolicy: "same-origin",  // the page's no-referrer would send "Origin: null"
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug, ...body }),
+    });
+    if (r.status === 401) return toLogin();
+    if (r.ok) res = await r.json();
+  } catch (e) { /* network error */ }
+  if (res && res.ok) {
+    d.drafts[slug] = "";  // the answers are in the request now
+  } else {
+    d.errors[slug] = (res && res.error) || "Not sent. Try again.";
+  }
+  drawDeck(d);
+  pollDeck(d);
+}
+
+// Collapsible section, built when first opened; stays open across redraws
+function fold(d, slug, key, label, build) {
+  const det = el("details"), id = `${slug}:${key}`;
+  det.append(el("summary", null, label));
+  const fill = () => { if (det.childElementCount < 2) det.append(build()); };
+  if (d.open.has(id)) { det.open = true; fill(); }
+  det.addEventListener("toggle", () => {
+    if (det.open) { d.open.add(id); fill(); } else d.open.delete(id);
+  });
+  return det;
+}
+
+// Just enough Markdown for idea notes: ## headings, paragraphs, `code`, **bold**. Text only, never HTML.
+function md(text) {
+  const box = el("div", "md");
+  let para = [];
+  const flush = () => {
+    if (!para.length) return;
+    const p = el("p");
+    inline(p, para.join("\n"));
+    box.append(p);
+    para = [];
+  };
+  let fence = null;  // ``` block: kept as is
+  for (const line of (text || "").split("\n")) {
+    if (line.trimStart().startsWith("```")) {
+      if (fence) { box.append(el("pre", "out", fence.join("\n"))); fence = null; }
+      else { flush(); fence = []; }
+      continue;
+    }
+    if (fence) { fence.push(line); continue; }
+    const h = line.match(/^#{1,6}\s+(.*)$/);
+    if (h) { flush(); box.append(el("h5", null, h[1])); }
+    else if (!line.trim()) flush();
+    // Notes are hard-wrapped at ~100 columns: join wrapped lines; list items start a new line
+    else if (!para.length || /^\s*([-*]|\d+[.)])\s/.test(line)) para.push(line.trimEnd());
+    else para[para.length - 1] += " " + line.trim();
+  }
+  if (fence) box.append(el("pre", "out", fence.join("\n")));
+  flush();
+  return box;
+}
+
+function inline(parent, s) {
+  for (const part of s.split(/(`[^`\n]+`|\*\*[^*\n]+\*\*)/)) {
+    if (!part) continue;
+    if (part.startsWith("`") && part.endsWith("`") && part.length > 1) parent.append(el("code", null, part.slice(1, -1)));
+    else if (part.startsWith("**") && part.endsWith("**") && part.length > 4) parent.append(el("b", null, part.slice(2, -2)));
+    else parent.append(document.createTextNode(part));
+  }
+}
+
+function diffView(text) {
+  const pre = el("pre", "out");
+  for (const line of text.split("\n")) {
+    const cls = line.startsWith("diff --git") ? "file" : line.startsWith("@@") ? "hunk"
+              : line.startsWith("+") && !line.startsWith("+++") ? "add"
+              : line.startsWith("-") && !line.startsWith("---") ? "del" : null;
+    pre.append(cls ? el("span", cls, line) : document.createTextNode(line), "\n");
+  }
+  return pre;
+}
+
+function fileList(files) {
+  const ul = el("ul");
+  for (const f of files) { const li = el("li"); li.append(el("code", null, f)); ul.append(li); }
+  return ul;
+}
+
+// http:// isn't a secure context, so navigator.clipboard is often missing: fall back to execCommand
+function copyText(text, b) {
+  const done = ok => { b.textContent = ok ? "Copied" : "Select + copy"; setTimeout(() => b.textContent = "Copy", 1500); };
+  const fallback = () => {
+    const ta = el("textarea");
+    ta.value = text;
+    ta.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+    document.body.append(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { /* not allowed */ }
+    ta.remove();
+    done(ok);
+  };
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(() => done(true), fallback);
+  else fallback();
+}
+
+function cmdRow(text) {
+  const row = el("div", "cmd"), b = btn("Copy", "btn ghost small");
+  row.append(el("code", null, text), b);
+  b.addEventListener("click", () => copyText(text, b));
+  return row;
+}
+
+function renderParked(d, it, card) {
+  const st = actionStatus(d, it.slug), busy = !!(st && st.busy);
+  const h = el("h3", null, it.title);
+  if (it.parked) h.append(el("span", "badge warn", `Parked ${it.parked}`));
+  card.append(h, el("div", "where", `ideas/parked/${it.slug}.md`));
+  if (it.research) {
+    card.append(el("h4", null, "Research"));
+    const r = el("div", "box");
+    r.append(md(it.research));
+    card.append(r);
+  }
+  card.append(el("h4", null, "Questions"));
+  const q = el("div", "box q");
+  q.append(it.questions ? md(it.questions) : el("p", "sub", "No Questions section: see the full note."));
+  card.append(q);
+  if (it.answers.length) {
+    card.append(el("h4", null, "Answers so far"));
+    for (const a of it.answers) {
+      const b = el("div", "box ok");
+      b.append(el("b", null, a.heading), md(a.text));
+      card.append(b);
+    }
+  }
+  card.append(fold(d, it.slug, "note", "Full note", () => md(it.note)));
+  const ta = el("textarea");
+  ta.maxLength = 8000;
+  ta.placeholder = "One line per question, e.g.\n1. Yes, build A first.\n2. Internal addresses.";
+  ta.setAttribute("aria-label", "Your answers");
+  ta.value = d.drafts[it.slug] || "";
+  ta.disabled = busy;
+  const requeue = btn("", "btn"), save = btn("Save answers", "btn ghost");
+  const sync = () => {
+    const has = ta.value.trim() !== "";
+    requeue.textContent = has ? "Save + requeue" : "Requeue";
+    requeue.disabled = busy;
+    save.disabled = busy || !has;
+  };
+  ta.addEventListener("input", () => { d.drafts[it.slug] = ta.value; sync(); });
+  save.title = "Adds your answers to the note; it stays parked";
+  requeue.title = "Adds your answers, then puts it back in the build queue";
+  save.addEventListener("click", () => send(d, it.slug, { action: "answer", text: ta.value }, [requeue, save]));
+  requeue.addEventListener("click", () => {
+    if (!ta.value.trim() && !it.answers.length &&
+        !confirm("Requeue without any answers? The planner will probably park it again.")) return;
+    send(d, it.slug, { action: "requeue", text: ta.value }, [requeue, save]);
+  });
+  const no = btn("Reject", "btn ghost danger");
+  no.disabled = busy;
+  no.title = "Don't build it: files the idea under ideas/rejected/ with your reason";
+  no.addEventListener("click", () => {
+    const why = prompt(`Reject "${it.title}"?\n\nA short reason (kept in the note, so it isn't proposed again ` +
+                       "unless something changes):");
+    if (why === null) return;
+    if (!why.trim()) { d.errors[it.slug] = "Not rejected: give a short reason."; drawDeck(d); return; }
+    send(d, it.slug, { action: "reject", text: why.trim().slice(0, 300) }, [requeue, save, no]);
+  });
+  sync();
+  const acts = el("div", "acts");
+  acts.append(requeue, save, no);
+  card.append(el("h4", null, "Your answers"), ta, acts, statusLine(st));
+}
+
+// Proposed: notes the scout or the assistant wrote; nothing reaches the build queue without Approve.
+// Approve/Dismiss/Later move files inside ideas/ straight away (no runner), so there's no queued state.
+async function decide(d, it, body, buttons) {
+  delete d.errors[it.slug];
+  buttons.forEach(b => b.disabled = true);
+  let res = null;
+  try {
+    const r = await fetch("/api/ideas/proposed", {
+      method: "POST", cache: "no-store",
+      referrerPolicy: "same-origin",  // the page's no-referrer would send "Origin: null"
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug: it.slug, ...body }),
+    });
+    if (r.status === 401) return toLogin();
+    if (r.ok) res = await r.json();
+  } catch (e) { /* network error */ }
+  if (!res || !res.ok) {
+    d.errors[it.slug] = (res && res.error) || "Not done. Try again.";
+    drawDeck(d);
+    return;
+  }
+  if (body.action === "later") skip(d);
+  else d.done[it.slug] = body.action === "approve" ? "Approved, in the build queue" : "Dismissed";
+  pollDeck(d);
+}
+
+function renderProposed(d, it, card) {
+  const h = el("h3", null, it.title);
+  if (it.score != null) h.append(el("span", "badge ok", `Score ${it.score}`));
+  if (it.risk >= 4) h.append(el("span", "badge bad", `Risk ${it.risk}`));
+  if (it.later) h.append(el("span", "badge", "Later"));
+  card.append(h, el("div", "where", `ideas/proposed/${it.slug}.md`));
+  const meta = el("div", "meta");
+  for (const [k, v] of [["Value", it.value], ["Effort", it.effort], ["Risk", it.risk]])
+    if (v != null) meta.append(el("span", null, `${k} ${v}/5`));
+  if (it.source) meta.append(el("span", null, `From ${it.source}`));
+  if (meta.childElementCount) card.append(meta);
+  if (it.risk >= 4) {
+    const box = el("div", "box warn");
+    box.append(el("b", null, "High risk: it touches media, secrets, the network or data. Read the full note first."));
+    card.append(box);
+  }
+  if (it.problem || it.proposal) {
+    for (const [k, v] of [["Problem", it.problem], ["Proposal", it.proposal]]) {
+      if (!v) continue;
+      card.append(el("h4", null, k));
+      const b = el("div", "box q");
+      b.append(md(v));
+      card.append(b);
+    }
+    card.append(fold(d, it.slug, "note", "Full note (tools checked, rough plan)", () => md(it.note)));
+  } else {
+    card.append(md(it.note));
+  }
+  const yes = btn("Approve", "btn"), later = btn("Later", "btn ghost"), no = btn("Dismiss", "btn ghost danger");
+  const all = [yes, later, no];
+  yes.title = "Moves it to ideas/: the build loop plans it like your own ideas";
+  later.title = "Keeps it here, at the back of the line";
+  no.title = "Moves it to ideas/dismissed/; the scout reads those and won't propose it again";
+  yes.addEventListener("click", () => {
+    if (confirm(`Approve "${it.title}"?\n\nIt joins the build queue; the loop plans and builds it, then waits for your Deploy.`))
+      decide(d, it, { action: "approve" }, all);
+  });
+  later.addEventListener("click", () => decide(d, it, { action: "later" }, all));
+  no.addEventListener("click", () => {
+    const why = prompt(`Dismiss "${it.title}"?\n\nWhy, in a few words (optional; the scout reads it so it doesn't ` +
+                       "propose the same thing again):", "");
+    if (why === null) return;
+    decide(d, it, { action: "dismiss", reason: why.trim().slice(0, 300) }, all);
+  });
+  const acts = el("div", "acts");
+  acts.append(yes, later, no);
+  card.append(acts);
+  if (d.errors[it.slug]) card.append(statusLine({ cls: "status bad", text: d.errors[it.slug] }));
+}
+
+// A plan waiting in ideas/terminal/: it writes under .claude/, where Claude Code asks before every write, so the
+// background loop can't build it. Dan builds it in a terminal session; it then comes back as a normal build.
+function renderHand(d, b, card) {
+  const st = actionStatus(d, b.slug), busy = !!(st && st.busy);
+  const h = el("h3", null, b.title);
+  h.append(el("span", "badge warn", "Build in a terminal"));
+  card.append(h, el("div", "where", `ideas/terminal/${b.slug}.md · planned ${ago(b.built)}`));
+  const box = el("div", "box warn"), steps = el("ol", "steps");
+  const stepLi = (...parts) => { const li = el("li"); li.append(...parts); steps.append(li); };
+  stepLi(el("div", null, "On the server (ssh homelab), start Claude Code in the repo:"), cmdRow("cd ~/homelab && claude"));
+  stepLi(el("div", null, "Build it, the same way as the loop (builder, then reviewer, up to 2 fix rounds), " +
+                         "but in front of you:"), cmdRow(`/build-ideas ${b.slug}`));
+  stepLi(el("div", null, "Approve the edits under .claude/ when Claude Code asks. These files:"),
+         b.files.length ? fileList(b.files) : el("div", "sub", "(see the plan's Files)"));
+  stepLi(el("div", null, "When it says the review passed, deploy it from the same terminal " +
+                         "(it shows up here as Needs terminal):"), cmdRow(`scripts/deploy-idea.sh ${b.slug}`));
+  if (b.manual) stepLi(el("div", null, "Then your manual steps, below."));
+  box.append(el("b", null, "This plan changes the Claude Code kit, so the background loop can't build it"), steps);
+  card.append(box);
+  if (b.manual) {
+    card.append(el("h4", null, "Manual steps (yours, at deploy)"));
+    const m = el("div", "box q");
+    m.append(md(b.manual));
+    card.append(m);
+  }
+  const no = btn("Reject", "btn ghost danger");
+  no.disabled = busy;
+  no.title = "Don't build it: files the idea under ideas/rejected/ with your reason";
+  no.addEventListener("click", () => {
+    const why = prompt(`Reject "${b.title}"?\n\nA short reason (kept in the note, so it isn't proposed again ` +
+                       "unless something changes):", "");
+    if (why === null) return;
+    if (!why.trim()) { d.errors[b.slug] = "Not rejected: give a short reason."; drawDeck(d); return; }
+    send(d, b.slug, { action: "reject", text: why.trim().slice(0, 300) }, [no]);
+  });
+  const acts = el("div", "acts");
+  acts.append(no);
+  card.append(fold(d, b.slug, "plan", "The plan", () => md(b.plan)),
+              fold(d, b.slug, "note", "Full note", () => md(b.note)), acts, statusLine(st));
+}
+
+function renderDeploy(d, b, card) {
+  if (b.kind === "hand") return renderHand(d, b, card);
+  const st = actionStatus(d, b.slug), busy = !!(st && st.busy);
+  const h = el("h3", null, b.title);
+  h.append(b.terminal.length ? el("span", "badge bad", "Needs terminal")
+         : b.sensitive.length ? el("span", "badge warn", "Sensitive") : el("span", "badge ok", "Ready"));
+  card.append(h, el("div", "where", `idea/${b.slug} · built ${ago(b.built)}`));
+  const go = btn("Deploy", "btn"), no = btn("Reject", "btn ghost danger");
+  const sync = () => { go.disabled = busy || (b.sensitive.length > 0 && !d.checks[b.slug]); };
+  no.disabled = busy;
+  no.title = "Don't deploy: throws the build away and files the idea under ideas/rejected/ with your reason";
+  no.addEventListener("click", () => {
+    const why = prompt(`Reject "${b.title}"?\n\nA short reason (kept in the note, so it isn't proposed again ` +
+                       "unless something changes):", "");
+    if (why === null) return;
+    if (!why.trim()) { d.errors[b.slug] = "Not rejected: give a short reason."; drawDeck(d); return; }
+    send(d, b.slug, { action: "reject", text: why.trim().slice(0, 300) }, [go, no]);
+  });
+  if (b.terminal.length) {
+    const box = el("div", "box bad");
+    box.append(el("b", null, "Deploy this one from a terminal"),
+               el("div", null, "It changes host setup or the Claude Code kit:"), fileList(b.terminal),
+               el("div", "sub", "On the server (ssh, or type ! first in Claude Code):"), cmdRow(b.command));
+    for (const c of b.after) box.append(el("div", "sub", "Then:"), cmdRow(c));
+    const acts = el("div", "acts");
+    acts.append(no);
+    box.append(acts);
+    card.append(box);
+  } else if (b.sensitive.length) {
+    const box = el("div", "box warn"), lab = el("label"), cb = el("input");
+    cb.type = "checkbox";
+    cb.checked = !!d.checks[b.slug];
+    cb.disabled = busy;
+    cb.addEventListener("change", () => { d.checks[b.slug] = cb.checked; sync(); });
+    lab.append(cb, "I've read the changes to these files");
+    box.append(el("b", null, "Sensitive: read these changes before deploying (Full diff, below)"),
+               fileList(b.sensitive), lab);
+    card.append(box);
+  }
+  if (b.manual) {
+    card.append(el("h4", null, "Manual steps (yours, at deploy)"));
+    const m = el("div", "box q");
+    m.append(md(b.manual));
+    card.append(m);
+  }
+  card.append(el("h4", null, `Commits (${b.commits.length})`));
+  const ul = el("ul", "commits");
+  for (const c of b.commits) {
+    const li = el("li"), i = c.indexOf(" ");
+    li.append(el("code", null, c.slice(0, i)), c.slice(i + 1));
+    ul.append(li);
+  }
+  card.append(ul,
+    fold(d, b.slug, "files", `Changed files (${b.files.length})`, () => el("pre", "out", b.diffstat)),
+    fold(d, b.slug, "diff", b.diff_truncated ? "Full diff (cut short; see the terminal)" : "Full diff", () => diffView(b.diff)),
+    fold(d, b.slug, "note", "Full note", () => md(b.note)));
+  if (!b.terminal.length) {
+    go.addEventListener("click", () => {
+      if (!confirm(`Deploy "${b.title}"?\n\nThis merges idea/${b.slug} into main, starts the services it changed, ` +
+                   "checks them and pushes.")) return;
+      send(d, b.slug, { action: "deploy", sensitive_ok: b.sensitive.length > 0 && !!d.checks[b.slug] }, [go]);
+    });
+    sync();
+    const acts = el("div", "acts");
+    acts.append(go, no);
+    card.append(acts, fold(d, b.slug, "terminal", "Or deploy from a terminal", () => cmdRow(b.command)));
+  }
+  card.append(statusLine(st));
+}
+
+function mountWidgets() {
+  for (const w of WIDGETS) {
+    const box = ADMIN ? PANELS[w.tab].grid : document.getElementById("widgets");
+    const card = el("article", w.wide ? "card wide" : w.span ? "card span2" : "card");
+    const h = el("h3", null, w.title);
+    w.head = el("small");
+    h.append(w.head);
+    w.body = el("div", "unavailable", "Loading…");
+    card.append(h, w.body);
+    if (w.form) card.append(w.form(w));  // outside w.body, so polls don't wipe what's being typed
+    box.append(card);
+    pollWidget(w);
+  }
+}
+
+async function pollWidget(w) {
+  if (w.busy) return;  // a fetch is in flight; it schedules the next one
+  clearTimeout(w.timer);
+  w.busy = true;
+  const gen = w.gen;
+  if (!document.hidden && (!ADMIN || w.tab === TAB)) {
+    const body = el("div"), head = el("small");
+    try {
+      const r = await fetch(w.id.startsWith("family/") ? `/api/${w.id}` : `/api/widgets/${w.id}`, { cache: "no-store" });
+      if (r.status === 401) return toLogin();
+      if (!r.ok) throw new Error(r.status);
+      const d = await r.json();
+      if (!d.ok) throw new Error("unavailable");
+      w.render(d, body, head);
+    } catch (e) {
+      body.replaceChildren();
+      body.className = "unavailable";
+      body.textContent = "unavailable";
+      head.textContent = "";
+      if (w.fail) w.fail(body);
+      if (ADMIN && (w.id === "health" || w.id === "vpn")) { KPI[w.id] = null; updateKpis(); }
+    }
+    if (w.switching || gen !== w.gen) {  // a tap changed things meanwhile: drop this result, fetch again
+      w.busy = false;
+      w.timer = setTimeout(() => pollWidget(w), w.switching ? w.every : 0);
+      return;
+    }
+    w.body.replaceWith(body);
+    w.head.replaceWith(head);
+    w.body = body; w.head = head;
+  }
+  w.busy = false;
+  w.timer = setTimeout(() => pollWidget(w), w.every);
+}
+
+// Services first: family poster links need Jellyfin's address from the tile list
+refresh().finally(() => {
+  mountWidgets();
+  if (ADMIN) { startTabs(); mountDecks(); }
+});
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) return;
+  WIDGETS.forEach(pollWidget);
+  if (ADMIN) DECKS.forEach(d => d.root && pollDeck(d));
+});
+</script>
+</body>
+</html>

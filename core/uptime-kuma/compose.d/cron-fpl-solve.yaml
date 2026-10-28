@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/fpl-solve.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-fpl-solve.push.name=cron-fpl-solve
+      - kuma.cron-fpl-solve.push.push_token=${KUMA_CRON_PUSH_SECRET:-}fplsolve00000000
+      - kuma.cron-fpl-solve.push.interval=93600
+      - kuma.cron-fpl-solve.push.max_retries=0

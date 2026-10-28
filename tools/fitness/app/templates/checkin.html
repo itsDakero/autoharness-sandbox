@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Morning check-in</h1>
+{% if saved %}<p class="card notice">Saved.</p>{% endif %}
+{% set colours = feel_colours %}
+{% set words = {1: "Awful", 2: "Poor", 3: "OK", 4: "Good", 5: "Great"} %}
+<form method="post" action="/checkin" class="card stack">
+  <label>Date <input type="date" name="date" value="{{ d }}" required onchange="location='/checkin?date='+this.value"></label>
+  <fieldset><legend>How do you feel?</legend>
+    <div class="seg">
+    {% for i in range(1, 6) %}<label style="--c:{{ colours[i] }}"><input type="radio" name="feeling" value="{{ i }}" required {{ "checked" if c and c.feeling == i }}><span><b>{{ i }}</b>{{ words[i] }}</span></label>{% endfor %}
+    </div>
+  </fieldset>
+  <fieldset><legend>Anything off?</legend>
+    <div class="chips">
+    {% for name, text in [("ill_neck", "Ill above the neck (sore throat, stuffy nose)"), ("ill_chest", "Ill in the chest / fever"),
+                          ("sore_legs", "Sore legs"), ("stressed", "Stressed"), ("slept_badly", "Slept badly")] %}
+      <label><input type="checkbox" name="{{ name }}" value="1" {{ "checked" if c and c[name] }}><span>{{ text }}</span></label>
+    {% endfor %}
+    </div>
+  </fieldset>
+  <label>Note <textarea name="note" rows="3" maxlength="1000">{{ c.note if c else "" }}</textarea></label>
+  <button>Save</button>
+</form>
+<h2>Recent</h2>
+<div class="card table scroll">
+<table>
+<tr><th>Date</th><th>Feeling</th><th>Flags</th><th>Note</th></tr>
+{% for r in recent %}
+<tr><td><a href="/checkin?date={{ r.date }}">{{ r.date }}</a></td>
+<td><span class="dotf" style="background:{{ colours.get(r.feeling, '#888') }}"></span>{{ r.feeling }}</td>
+<td>{% if r.ill_neck %}<span class="chip bad">neck</span> {% endif %}{% if r.ill_chest %}<span class="chip bad">chest</span> {% endif %}{% if r.sore_legs %}<span class="chip warn">legs</span> {% endif %}{% if r.stressed %}<span class="chip warn">stress</span> {% endif %}{% if r.slept_badly %}<span class="chip warn">sleep</span>{% endif %}</td>
+<td class="wrap">{{ r.note or "" }}</td></tr>
+{% endfor %}
+</table>
+</div>
+{% endblock %}

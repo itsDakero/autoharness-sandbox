@@ -1,0 +1,54 @@
+# FPL model: snapshot collector (stage 1) + web page on 8092 (stage 2) + team goals model (stage 3) + player points model (stage 4) (tools/fpl/README.md). The web app is the
+# container's main process; host cron runs each pull and the solver / deadline jobs with `docker compose exec`
+# (scripts/fpl-job.sh, scripts/fpl-web-job.sh; the hourly `teams` job runs the team model, `players` the player points model). Network `fpl` = internet (FPL, The Odds API, Understat); `proxy` = Traefik.
+services:
+  fpl:
+    image: homelab/fpl:0.5.0
+    build: .
+    container_name: fpl
+    restart: unless-stopped
+    # healthcheck: the image's own (GET /healthz)
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      DATA_DIR: /data
+      SOCCERDATA_DIR: /data/soccerdata
+      HOME: /data/home
+      ODDS_API_KEY: ${ODDS_API_KEY:-}
+      FPL_TEAM_ID: ${FPL_TEAM_ID:-}
+      SOLVER_DIR: /opt/solver
+    volumes:
+      - ${APPDATA_PATH}/fpl:/data
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "8092:8080"
+    networks:
+      - fpl
+      - proxy
+    labels:
+      # Traefik (bonus http://fpl.lan)
+      - traefik.enable=true
+      - traefik.http.routers.fpl.rule=Host(`fpl.${DOMAIN}`)
+      - traefik.http.routers.fpl.entrypoints=web
+      - traefik.http.services.fpl.loadbalancer.server.port=8080
+      # Dashboard
+      - homelab.name=FPL
+      - homelab.group=Tools
+      - homelab.icon=sportarr
+      - homelab.audience=admin
+      - homelab.description=FPL projections, my squad and transfer plans
+      - homelab.port=8092
+      # Uptime Kuma (AutoKuma). The pulls and jobs have their own push monitors cron-fpl-* (core/uptime-kuma)
+      - kuma.fpl.http.name=fpl
+      - kuma.fpl.http.url=http://${LAN_IP}:8092/healthz
+
+networks:
+  fpl:
+    name: fpl
+  proxy:
+    external: true

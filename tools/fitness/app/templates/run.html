@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>{{ a.name or "Run" }} <small>{{ (a.start_local or "")[:16] }}</small></h1>
+<div class="grid">
+  <div class="card tile"><span class="label">Distance</span><span class="value">{{ fmt_dist(a.distance_m, unit) }}</span></div>
+  <div class="card tile"><span class="label">Time</span><span class="value">{{ fmt_dur(a.duration_s) }}</span></div>
+  <div class="card tile"><span class="label">Pace</span><span class="value">{{ fmt_pace(a.distance_m, a.duration_s, unit) }}</span></div>
+  <div class="card tile"><span class="label">Heart rate</span><span class="value">{{ a.avg_hr|dash }}<small>bpm</small></span>
+    <span class="sub">max {{ a.max_hr|dash }}</span></div>
+  <div class="card tile"><span class="label">Cadence</span><span class="value">{{ a.cadence|dash }}<small>spm</small></span></div>
+  <div class="card tile"><span class="label">Training effect</span><span class="value">{{ a.aerobic_te|dash(1) }}<small>aerobic</small></span>
+    <span class="sub">{{ a.anaerobic_te|dash(1) }} anaerobic · load {{ a.training_load|dash }}</span></div>
+</div>
+{% if rx %}
+<div class="grid">
+  <div class="card tile"><span class="label">Effective VO2max</span>
+    <span class="value">{{ rx.eff_vo2|dash(1) }}</span>
+    <span class="sub">Garmin {{ rx.garmin_vo2.vo2max|dash(1) if rx.garmin_vo2 else "–" }}</span>
+    <span class="what">VO2max implied by this run's pace and heart rate, adjusted to your best recent effort.</span></div>
+  <div class="card tile"><span class="label">Decoupling</span>
+    <span class="value">{{ rx.decoupling|dash(1) }}{% if rx.decoupling is not none %}<small>%</small>{% endif %}</span>
+    {% if rx.decoupling is not none %}<span class="chip {{ rx.decoupling_tone }}">{{ "good aerobic base" if rx.decoupling_tone == "good" else "some drift" if rx.decoupling_tone == "warn" else "large drift" }}</span>{% endif %}
+    <span class="what">How much pace per heartbeat fell in the second half (runs of 45 min or more). Under 5% is good.</span></div>
+</div>
+<h2>Heart rate zones</h2>
+{% if rx.zone_strip %}<div class="card">{{ rx.zone_strip|safe }}
+<p class="what">Time in zones 1-5{% if rx.share_easy is not none %}; {{ (rx.share_easy * 100)|round|int }}% easy (zones 1-2){% endif %}.</p></div>
+{% elif rx.need_max_hr %}<p class="muted">Set max HR in <a href="/settings">Settings</a> to see zones.</p>
+{% else %}<p class="muted">–  No zone data for this run yet (fetched a few runs per sync).</p>{% endif %}
+{% if rx.efforts %}
+<h2>Best efforts in this run</h2>
+<div class="card table scroll"><table>
+<tr><th>Distance</th><th>Time</th><th>Source</th></tr>
+{% for k, secs, src in rx.efforts %}<tr><td>{{ {"400m":"400 m","1k":"1 km","1mi":"1 mile","5k":"5 km","10k":"10 km","half":"Half"}[k] }}</td><td>{{ fmt_dur(secs) }}</td><td>{{ src }}</td></tr>{% endfor %}
+</table></div>{% endif %}
+{% endif %}
+<h2>Laps</h2>
+{% if not laps %}<p class="muted">No lap data (not fetched yet, or none recorded).</p>{% else %}
+<div class="card table scroll">
+<table>
+<tr><th>#</th><th>Dist</th><th>Time</th><th>Pace</th><th>HR</th><th>Cadence</th></tr>
+{% for l in laps %}
+<tr><td>{{ l.idx + 1 }}</td><td>{{ fmt_dist(l.distance_m, unit) }}</td><td>{{ fmt_dur(l.duration_s) }}</td>
+<td>{{ fmt_pace(l.distance_m, l.duration_s, unit) }}</td><td>{{ l.avg_hr|dash }}</td><td>{{ l.cadence|dash }}</td></tr>
+{% endfor %}
+</table>
+</div>{% endif %}
+<p><a href="/runs?unit={{ unit }}">← All runs</a></p>
+{% endblock %}

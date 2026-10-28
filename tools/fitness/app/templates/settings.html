@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Settings</h1>
+{% if saved %}<p class="card notice">Saved.</p>{% endif %}
+<form method="post" action="/settings" class="card stack">
+  <label>Sleep need (hours) <input type="number" name="sleep_need_h" min="4" max="12" step="0.25" value="{{ need }}" required></label>
+  <p class="muted" style="margin:0">Used for the recovery score and sleep debt. Default 8 hours.</p>
+  <label>Max heart rate (bpm)
+    <input type="number" name="max_hr" min="100" max="230" step="1" value="{{ st.max_hr_setting if st.max_hr_setting else "" }}" placeholder="auto"></label>
+  <p class="muted" style="margin:0">Blank = automatic{% if st.auto_max_hr %}: highest in the last 12 months is {{ st.auto_max_hr|round|int }} bpm{% else %} (no heart rate data yet, so zones need a value here){% endif %}. Used for zones and VO2max.</p>
+  <label>Zone source
+    <select name="zone_source">
+      <option value="maxhr"{% if st.zone_source == "maxhr" %} selected{% endif %}>Percent of max HR (50/60/70/80/90%)</option>
+      <option value="garmin"{% if st.zone_source == "garmin" %} selected{% endif %}>Garmin's own zones</option>
+    </select></label>
+  <button>Save</button>
+</form>
+<h2>Goal</h2>
+<form method="post" action="/settings/goal" class="card stack">
+  <label>Distance
+    <select name="distance">
+      {% for v, l in [("5k", "5k"), ("10k", "10k"), ("half", "Half marathon"), ("custom", "Custom")] %}
+      <option value="{{ v }}"{% if goal and goal.distance == v %} selected{% endif %}>{{ l }}</option>
+      {% endfor %}
+    </select></label>
+  <label>Custom distance (metres, 400-50000) <input type="number" name="custom_m" min="400" max="50000" step="1"
+    value="{{ goal.distance_m|int if goal and goal.distance == 'custom' else '' }}"></label>
+  <label>Target time (mm:ss or h:mm:ss) <input name="target" required placeholder="23:59"
+    value="{{ fmt_dur(goal.target_s) if goal else '' }}"></label>
+  <label>Race date (blank = no date, rolling 4-week cycles) <input type="date" name="race_date" value="{{ goal.race_date or '' if goal else '' }}"></label>
+  <p class="muted" style="margin:0">Saving makes this the active goal and rebuilds the future weeks; this week and the past stay as they are.</p>
+  <button>Save goal</button>
+</form>
+{% if goals %}
+<h2>Recent goals</h2>
+<ul class="card">
+  {% for g in goals %}
+  <li>{{ g.created_at[:10] }}: {{ g.distance if g.distance != "custom" else (g.distance_m|int ~ " m") }} in {{ fmt_dur(g.target_s) }}{% if g.race_date %}, race {{ g.race_date }}{% endif %}{% if g.active %} <span class="chip good">active</span>{% endif %}</li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

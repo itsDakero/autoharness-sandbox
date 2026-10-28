@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/qbit-watchdog.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-qbit-watchdog.push.name=cron-qbit-watchdog
+      - kuma.cron-qbit-watchdog.push.push_token=${KUMA_CRON_PUSH_SECRET:-}qbitwatchdog0000
+      - kuma.cron-qbit-watchdog.push.interval=600
+      - kuma.cron-qbit-watchdog.push.max_retries=0

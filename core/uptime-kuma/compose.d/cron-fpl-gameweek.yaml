@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/fpl-gameweek.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-fpl-gameweek.push.name=cron-fpl-gameweek
+      - kuma.cron-fpl-gameweek.push.push_token=${KUMA_CRON_PUSH_SECRET:-}fplgameweek00000
+      - kuma.cron-fpl-gameweek.push.interval=93600
+      - kuma.cron-fpl-gameweek.push.max_retries=0

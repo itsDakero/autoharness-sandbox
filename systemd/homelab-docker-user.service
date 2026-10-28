@@ -1,0 +1,14 @@
+[Unit]
+Description=Homelab DOCKER-USER rule: SMB (tcp 445) only from Home Assistant
+Requires=docker.service
+After=docker.service
+PartOf=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/home/dan/homelab/scripts/docker-user-rules.sh add
+ExecStop=/home/dan/homelab/scripts/docker-user-rules.sh remove
+
+[Install]
+WantedBy=docker.service

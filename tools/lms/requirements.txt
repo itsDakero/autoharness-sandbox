@@ -1,0 +1,5 @@
+fastapi==0.142.2
+uvicorn==0.54.0
+# Same pins as tools/wardrobe (current PyPI stable on 2026-10-19)
+jinja2==3.1.6
+python-multipart==0.0.32

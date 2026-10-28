@@ -1,0 +1,53 @@
+services:
+  fitness:
+    build: .
+    image: homelab/fitness:0.9.0
+    container_name: fitness
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: ${TZ}
+      GARMIN_EMAIL: ${GARMIN_EMAIL}
+      GARMIN_PASSWORD: ${GARMIN_PASSWORD}
+      DATA_DIR: /data
+      OLLAMA_URL: ${FITNESS_OLLAMA_URL:-http://100.74.81.122:11434}
+      FITNESS_MODEL: ${FITNESS_MODEL:-qwen3.5:9b}
+    ports:
+      - "8086:8080"
+    volumes:
+      - ${APPDATA_PATH}/fitness:/data
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://fitness.lan)
+      - traefik.enable=true
+      - traefik.http.routers.fitness.rule=Host(`fitness.${DOMAIN}`)
+      - traefik.http.routers.fitness.entrypoints=web
+      - traefik.http.services.fitness.loadbalancer.server.port=8080
+      # Dashboard
+      - homelab.name=Fitness
+      - homelab.group=Tools
+      - homelab.icon=garmin
+      - homelab.audience=admin
+      - homelab.description=Garmin stats, morning check-in and FiiT log
+      - homelab.port=8086
+      # Uptime Kuma (AutoKuma)
+      - kuma.fitness.http.name=fitness
+      - kuma.fitness.http.url=http://${LAN_IP}:8086/healthz
+      - kuma.fitness-sync.http.name=fitness-sync
+      - kuma.fitness-sync.http.url=http://${LAN_IP}:8086/healthz/sync
+      - kuma.fitness-sync.http.interval=300
+      - kuma.fitness-sync.http.max_retries=2
+
+networks:
+  proxy:
+    external: true

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block body %}
+{% if not has_key %}
+<div class="banner err">ODDS_API_KEY is not set. Add it to the env file and recreate the lms container; until then no odds are pulled.</div>
+{% endif %}
+{% if quota_remaining %}
+<div class="banner {% if quota_low %}warn{% endif %}">Odds API credits left: {{ quota_remaining }} (used {{ quota_used }}), checked {{ quota_age }}.
+{% if quota_low %}Below 40: odds and results pulls are paused to leave room for FPL.{% endif %}</div>
+{% endif %}
+
+{% if not game %}
+<h2>No game yet</h2>
+<form method="post" action="/newgame"><button class="big">New game</button></form>
+
+{% elif out %}
+<h2>Out since round {{ game.out_round }}, waiting for the next game</h2>
+<form method="post" action="/newgame"><button class="big">New game</button></form>
+<p class="muted">No Discord nudges and no API calls while out (one reminder line on Mondays).</p>
+
+{% else %}
+<form method="post" action="/newgame" onsubmit="return confirm('Start a new game? Used teams are cleared.')"><button>New game</button></form>
+{% if not rnd %}
+<h2>No round</h2>
+<p>No fixtures stored yet. The odds job runs at 07:00 and 19:00.</p>
+{% else %}
+<h2>Round {{ rnd }} <span class="muted">({{ pool }})</span></h2>
+<p>
+{% if deadline %}Deadline: <b>{{ fmt_local(deadline) }}</b>{% if overridden %} (set by hand){% endif %}{% else %}No deadline yet{% endif %}
+<form method="post" action="/deadline"><input type="hidden" name="round" value="{{ rnd }}">
+<input type="datetime-local" name="when" value="{{ deadline_local }}"><button>Set deadline</button></form>
+{% if overridden %}<form method="post" action="/deadline"><input type="hidden" name="round" value="{{ rnd }}"><button>Use default</button></form>{% endif %}
+</p>
+<p class="muted">Odds updated: {{ odds_age or "never" }}.</p>
+
+{% if pick %}
+<div class="banner ok">Pick: <b>{{ pick.team }}</b> ({{ pick.result }}{% if pick.manual %}, by hand{% endif %})</div>
+{% if flag %}
+<div class="banner warn">Postponed? {{ flag }}.
+{% for a, label in [("through", "Through"), ("repick", "Re-pick"), ("out", "Out")] %}
+<form method="post" action="/postponed"><input type="hidden" name="pick_id" value="{{ pick.id }}"><input type="hidden" name="action" value="{{ a }}"><button>Postponed: {{ label }}</button></form>
+{% endfor %}</div>
+{% endif %}
+<form method="post" action="/void"><input type="hidden" name="pick_id" value="{{ pick.id }}"><button>Voided, re-pick</button></form>
+<form method="post" action="/result"><input type="hidden" name="pick_id" value="{{ pick.id }}"><input type="hidden" name="result" value="through"><button>Result: through</button></form>
+<form method="post" action="/result"><input type="hidden" name="pick_id" value="{{ pick.id }}"><input type="hidden" name="result" value="out"><button class="danger">Result: out</button></form>
+{% endif %}
+<form method="post" action="/out" onsubmit="return confirm('Mark yourself out?')"><input type="hidden" name="round" value="{{ rnd }}"><button class="danger">I'm out</button></form>
+
+<table>
+<tr><th>Team</th><th>Opponent</th><th>H/A</th><th>P(win)</th><th>P(draw)</th><th>Best</th><th>Kick-off</th><th></th></tr>
+{% for r in rows %}
+<tr class="{% if r.used or r.voided %}blocked{% elif r in top %}top{% endif %}">
+<td>{{ r.team }}{% if r.used %} (used){% elif r.voided %} (voided){% endif %}</td><td>{{ r.opp }}</td><td>{{ r.ha }}</td>
+{% if r.p_win is none %}<td colspan="3" class="muted">no odds</td>
+{% else %}<td>{{ "%.0f"|format(r.p_win * 100) }}%</td><td>{{ "%.0f"|format(r.p_draw * 100) }}%</td><td>{{ "%.2f"|format(r.best) }}</td>{% endif %}
+<td>{{ fmt_local(parse_utc(r.commence)) }}</td>
+<td>{% if not r.used and not r.voided %}<form method="post" action="/pick"><input type="hidden" name="event_id" value="{{ r.event_id }}"><input type="hidden" name="team" value="{{ r.team }}"><button>I picked {{ r.team }}</button></form>{% endif %}</td>
+</tr>
+{% else %}
+<tr><td colspan="8" class="muted">No fixtures for this round yet.</td></tr>
+{% endfor %}
+</table>
+{% endif %}
+{% endif %}
+
+{% if game %}
+<h2>Used teams this game</h2>
+<p>{% if used %}{{ used|join(", ") }}{% else %}none{% endif %}</p>
+<form method="post" action="/used"><input name="team" list="team-names" autocomplete="off" required placeholder="Team used earlier"><datalist id="team-names">{% for n in team_names or [] %}<option value="{{ n }}">{% endfor %}</datalist><button>Add as used</button></form>
+{% for p in earlier or [] %}
+<form method="post" action="/unused"><input type="hidden" name="pick_id" value="{{ p.id }}"><button title="Remove">x {{ p.team }}</button></form>
+{% endfor %}
+
+<h2>History</h2>
+{% for h in history %}
+<h3>Game {{ h.game.id }} <span class="muted">started {{ h.game.started }}{% if h.game.status == "out" %}, out since round {{ h.game.out_round }}{% endif %}</span></h3>
+{% if h.picks %}
+<table>
+<tr><th>Round</th><th>Team</th><th>Result</th><th></th></tr>
+{% for p in h.picks %}
+<tr><td>{{ p.round }}</td><td>{{ p.team }}</td><td>{{ p.result }}{% if p.manual %} (by hand){% endif %}</td>
+<td>{% if h.game.id == game.id and p.round != "earlier" %}
+{% for res in ["through", "out", "void"] %}<form method="post" action="/result"><input type="hidden" name="pick_id" value="{{ p.id }}"><input type="hidden" name="result" value="{{ res }}"><button>{{ res }}</button></form>{% endfor %}
+{% endif %}</td></tr>
+{% endfor %}
+</table>
+{% else %}<p class="muted">No picks.</p>{% endif %}
+{% endfor %}
+{% endif %}
+{% endblock %}

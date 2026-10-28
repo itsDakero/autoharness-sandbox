@@ -1,0 +1,1 @@
+0 7,19 * * * $R lms-odds 300 $REPO/scripts/lms-job.sh odds

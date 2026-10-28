@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/lms-results.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-lms-results.push.name=cron-lms-results
+      - kuma.cron-lms-results.push.push_token=${KUMA_CRON_PUSH_SECRET:-}lmsresults000000
+      - kuma.cron-lms-results.push.interval=9000
+      - kuma.cron-lms-results.push.max_retries=0

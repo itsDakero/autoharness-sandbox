@@ -1,0 +1,46 @@
+services:
+  prowlarr:
+    image: linuxserver/prowlarr:2.6.5.5623-ls162
+    container_name: prowlarr
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1:9696/ping"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      PUID: ${PUID}
+      PGID: ${PGID}
+    ports:
+      - "9696:9696"                  # host port = homelab.port
+    volumes:
+      - ${APPDATA_PATH}/prowlarr:/config
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://prowlarr.lan)
+      - traefik.enable=true
+      - traefik.http.routers.prowlarr.rule=Host(`prowlarr.${DOMAIN}`)
+      - traefik.http.routers.prowlarr.entrypoints=web
+      - traefik.http.services.prowlarr.loadbalancer.server.port=9696
+      # Dashboard
+      - homelab.name=Prowlarr
+      - homelab.group=Media
+      - homelab.icon=prowlarr
+      - homelab.audience=admin
+      - homelab.description=Indexer manager for the arr apps
+      - homelab.port=9696
+      # Uptime Kuma (AutoKuma) – checks the published port, like family devices use it
+      - kuma.prowlarr.http.name=prowlarr
+      - kuma.prowlarr.http.url=http://${LAN_IP}:9696/ping
+
+networks:
+  proxy:
+    external: true

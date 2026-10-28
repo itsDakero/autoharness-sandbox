@@ -1,0 +1,9 @@
+# Unofficial Garmin client: the most likely thing to break, bump deliberately
+# (see README.md). Needs Python >=3.12. Source: https://pypi.org/pypi/garminconnect/json
+garminconnect==0.3.19
+fastapi==0.142.2
+uvicorn==0.54.0
+# Current PyPI stable on 2026-10-16: https://pypi.org/pypi/jinja2/json
+jinja2==3.1.6
+# Current PyPI stable on 2026-10-16: https://pypi.org/pypi/python-multipart/json
+python-multipart==0.0.32

@@ -1,0 +1,51 @@
+# Secrets
+.env
+*.env
+!.env.example
+secrets/
+*.key
+*.pem
+*.crt
+acme.json
+
+# Runtime data (bind mounts) never goes in git
+appdata/
+data/
+!games/leafgreen/data/
+# ^ build input (game data from PokeAPI/pret), not runtime data
+
+# Editor / OS noise
+*.swp
+*~
+.DS_Store
+
+# Claude Code personal overrides
+.claude/settings.local.json
+
+# Python bytecode / venvs
+__pycache__/
+.venv/
+
+# Forensics: evidence and test data never go in git (they live in /srv/homelab/forensics/)
+forensics/**/testdata/
+forensics/**/cases/
+forensics/**/*.[Ee]01
+forensics/**/*.[Ee]x01
+forensics/**/*.dd
+forensics/**/*.raw
+forensics/**/*.img
+forensics/**/*.mem
+forensics/**/*.vmdk
+forensics/**/*.vhd
+forensics/**/*.vhdx
+forensics/**/*.aff4
+forensics/**/*.pcap
+forensics/**/*.pcapng
+
+# Idea builds from the background loop (scripts/idea.sh): one git worktree per idea
+.worktrees/
+
+# M6 proposals: drafts until approved (an approved one moves to ideas/ and gets committed by idea.sh).
+# Not in git, but the repo dir is in restic.
+ideas/proposed/
+ideas/dismissed/

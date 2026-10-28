@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/lms-alerts.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-lms-alerts.push.name=cron-lms-alerts
+      - kuma.cron-lms-alerts.push.push_token=${KUMA_CRON_PUSH_SECRET:-}lmsalerts0000000
+      - kuma.cron-lms-alerts.push.interval=1800
+      - kuma.cron-lms-alerts.push.max_retries=0

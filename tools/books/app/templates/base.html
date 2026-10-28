@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Books{% endblock %}</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<nav>
+  <a href="/" class="{{ 'on' if path == '/' }}">Home</a>
+  <a href="/library" class="{{ 'on' if path.startswith('/library') }}">Library</a>
+  <a href="/add" class="{{ 'on' if path == '/add' }}">Add</a>
+  <a href="/import" class="{{ 'on' if path == '/import' }}">Import</a>
+</nav>
+<main>
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>

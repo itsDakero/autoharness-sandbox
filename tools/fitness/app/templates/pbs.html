@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Personal bests</h1>
+{% set dist = {"5k": 5000, "10k": 10000, "half": 21097.5} %}
+<div class="grid">
+{% for d, r in pbs %}
+  <div class="card tile"><span class="label">{{ half_label[d] }}</span>
+    <span class="value">{{ fmt_dur(r.seconds) if r else "–" }}</span>
+    <span class="sub">{{ fmt_pace(dist[d], r.seconds, unit) if r else "–" }} · {{ (r.date if r else None) or "date unknown" }}</span>
+    {% if r %}<span class="chip">{{ r.source }}</span>{% endif %}
+    {% if rn %}{% if rn.predictions %}
+    <span class="sub">Riegel {{ fmt_dur(rn.predictions[d][0]) }} · VDOT {{ fmt_dur(rn.predictions[d][1]) }}</span>
+    {% else %}<span class="sub">no 5k effort in 90 days</span>{% endif %}{% endif %}</div>
+{% endfor %}
+</div>
+{% if rn %}
+<p class="what">Predictions come from your best 5 km effort in the last 90 days ({{ fmt_dur(rn.best5k) if rn.best5k else "none" }}). Riegel scales the time with distance; VDOT uses Daniels' tables.</p>
+<h2>Endurance</h2>
+<div class="grid">
+  <div class="card tile"><span class="label">Endurance gap</span>
+    <span class="value">{{ fmt_dur(rn.gap) if rn.gap is not none and rn.gap >= 0 else ("-" ~ fmt_dur(-rn.gap) if rn.gap is not none else "–") }}</span>
+    {% if rn.gap is not none %}<span class="chip {{ rn.gap_tone }}">{{ "small gap" if rn.gap_tone == "good" else "room to build" if rn.gap_tone == "warn" else "big gap" }}</span>{% endif %}
+    <span class="what">Your half PB minus the half your 5k PB predicts. A big gap suggests more long, easy running.</span></div>
+  <div class="card tile"><span class="label">Long-run readiness</span>
+    <span class="value">{{ rn.ready|dash }}{% if rn.ready is not none %}<small>%</small>{% endif %}</span>
+    {% if rn.ready is not none %}<span class="chip {{ rn.ready_tone }}">{{ "ready" if rn.ready_tone == "good" else "building" if rn.ready_tone == "warn" else "not yet" }}</span>
+    <span class="sub">{{ "%.0f"|format(rn.weekly_km) }} km/week, longest {{ "%.0f"|format(rn.longest_km) }} km</span>{% endif %}
+    <span class="what">Weekly volume and longest run against half-marathon targets, like Runalyze's marathon shape with our own half targets.</span></div>
+  <div class="card tile"><span class="label">Effective VO2max</span>
+    <span class="value">{{ rn.vo2_current|dash(1) }}</span>
+    <span class="sub">Garmin {{ rn.garmin_vo2.vo2max|dash(1) if rn.garmin_vo2 else "–" }}</span>
+    <span class="what">Mean over the last 30 days of what each run's pace and heart rate imply.{% if rn.need_max_hr %} Set max HR in <a href="/settings">Settings</a>.{% endif %}</span></div>
+</div>
+{% endif %}
+<p class="muted">Seeded by hand; replaced only when Garmin's record is faster.</p>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Gaps</h1>
+<p>Season:
+{% for s in seasons + ("all",) %}
+  {% if s == season %}<strong>{{ s }}</strong>{% else %}<a href="/gaps?season={{ s }}">{{ s }}</a>{% endif %}{% if not loop.last %} | {% endif %}
+{% endfor %}
+</p>
+{% if season == "all" %}
+<p>{% for s, n in currents %}{{ n }} outfits possible in {{ s }}{% if not loop.last %}, {% endif %}{% endfor %} now.</p>
+{% else %}
+<p>{{ currents[0][1] }} outfits possible this season now.</p>
+{% endif %}
+{% if reason %}
+<p>{{ reason }}</p>
+{% else %}
+<table>
+  <tr><th>#</th><th>Item</th><th>Unlocks</th><th>Size</th><th>Budget</th><th></th></tr>
+{% for r in rows %}
+  <tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ r.colour }} {{ r.category }}, {{ r.season }}</td>
+    <td>+{{ r.unlocks }} outfits</td>
+    <td>{{ r.size }}</td>
+    <td>{{ r.max_price }}</td>
+    <td>{% if r.on_wishlist %}on wishlist{% endif %}</td>
+  </tr>
+{% endfor %}
+</table>
+{% endif %}
+<p><small>Suggestions name the item only; no shop links.</small></p>
+{% endblock %}

@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/ops-actions.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-ops-actions.push.name=cron-ops-actions
+      - kuma.cron-ops-actions.push.push_token=${KUMA_CRON_PUSH_SECRET:-}opsactions000000
+      - kuma.cron-ops-actions.push.interval=900
+      - kuma.cron-ops-actions.push.max_retries=0

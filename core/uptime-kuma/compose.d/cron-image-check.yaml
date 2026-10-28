@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/image-check.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-image-check.push.name=cron-image-check
+      - kuma.cron-image-check.push.push_token=${KUMA_CRON_PUSH_SECRET:-}imagecheck000000
+      - kuma.cron-image-check.push.interval=691200
+      - kuma.cron-image-check.push.max_retries=0

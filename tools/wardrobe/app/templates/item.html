@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_form.html" import fields %}
+{% block body %}
+<h1>{{ it.category or "Item" }} #{{ it.id }} <small>({{ it.kind }}{% if it.status == "retired" %}, retired: {{ it.retired_reason }}{% endif %})</small></h1>
+<section class="rev">
+  {% if it.photo %}<img src="/photos/{{ it.photo }}" alt="">{% else %}<div class="noimg">no photo</div>{% endif %}
+  <div>
+    {% if it.tag_status == "failed" %}<div class="banner err">{{ it.tag_error }}</div>{% endif %}
+    {% if it.source_url %}<p>Source: <a href="{{ it.source_url }}" rel="noreferrer">{{ it.source_url }}</a></p>{% endif %}
+    <p><small>Tag status: {{ it.tag_status }}{% if it.tagged_by_model %}, by {{ it.tagged_by_model }}{% endif %}{% if it.bought_at %}; bought {{ it.bought_at }}{% endif %}</small></p>
+    <form method="post" action="/item/{{ it.id }}/save">
+      {{ fields(it) }}
+      <button>Save</button>
+    </form>
+    {% if it.photo %}<form method="post" action="/item/{{ it.id }}/retry"><button>Retry tagging</button></form>{% endif %}
+    <form method="post" action="/item/{{ it.id }}/photo" enctype="multipart/form-data">
+      <label>{{ "Replace" if it.photo else "Add" }} photo <input type="file" name="file" accept="image/*" required></label>
+      <button>Upload</button>
+    </form>
+    {% if it.kind == "wishlist" %}
+    <form method="post" action="/item/{{ it.id }}/bought"><button>Mark bought</button></form>
+    {% endif %}
+    {% if it.status == "active" %}
+    <form method="post" action="/item/{{ it.id }}/retire">
+      <select name="reason">{% for r in REASONS %}<option value="{{ r }}">{{ r|replace("_", " ") }}</option>{% endfor %}</select>
+      <button>Retire</button>
+    </form>
+    {% else %}
+    <form method="post" action="/item/{{ it.id }}/restore"><button>Restore</button></form>
+    {% endif %}
+    <form method="post" action="/item/{{ it.id }}/delete" onsubmit="return confirm('Delete this item and its photo for good?')">
+      <label class="chk"><input type="checkbox" name="confirm" value="yes"> confirm</label>
+      <button class="danger">Delete for good</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

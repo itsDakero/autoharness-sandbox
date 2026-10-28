@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/disk-space-check.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-disk-space-check.push.name=cron-disk-space-check
+      - kuma.cron-disk-space-check.push.push_token=${KUMA_CRON_PUSH_SECRET:-}diskspacecheck00
+      - kuma.cron-disk-space-check.push.interval=93600
+      - kuma.cron-disk-space-check.push.max_retries=0

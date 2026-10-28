@@ -1,0 +1,24 @@
+{% macro fields(it) %}
+<label>Category
+  <select name="category">
+    <option value="">-</option>
+    {% for c in CATEGORIES %}<option value="{{ c }}"{% if it.category == c %} selected{% endif %}>{{ c }}</option>{% endfor %}
+  </select>
+</label>
+<fieldset><legend>Colours (up to 3)</legend>
+  {% for c in COLOURS %}<label class="chk"><input type="checkbox" name="colours" value="{{ c }}"{% if c in it.colours %} checked{% endif %}> {{ c }}</label>{% endfor %}
+</fieldset>
+<fieldset><legend>Seasons</legend>
+  {% for s in SEASONS %}<label class="chk"><input type="checkbox" name="seasons" value="{{ s }}"{% if s in it.seasons %} checked{% endif %}> {{ s }}</label>{% endfor %}
+</fieldset>
+<label>Style
+  <select name="style">
+    <option value="">-</option>
+    {% for s in STYLES %}<option value="{{ s }}"{% if it.style == s %} selected{% endif %}>{{ s }}</option>{% endfor %}
+  </select>
+</label>
+<label>Brand <input name="brand" value="{{ it.brand or '' }}" maxlength="60"></label>
+<label>Size <input name="size" value="{{ it.size or '' }}" maxlength="20"></label>
+<label>Price <input name="price" value="{{ it.price if it.price is not none else '' }}" inputmode="decimal"></label>
+<label>Notes <input name="notes" value="{{ it.notes or '' }}" maxlength="500"></label>
+{% endmacro %}

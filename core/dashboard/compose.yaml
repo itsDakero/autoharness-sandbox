@@ -1,0 +1,99 @@
+services:
+  dashboard:
+    build: .
+    image: homelab/dashboard:0.18.0
+    container_name: dashboard
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      DOCKER_URL: http://docker-socket-proxy:2375
+      KUMA_URL: http://uptime-kuma:3001
+      KUMA_API_KEY: ${KUMA_API_KEY}
+      # Widgets (read-only; credentials stay in the backend)
+      QBITTORRENT_URL: http://gluetun:8083
+      QBITTORRENT_USERNAME: ${QBITTORRENT_USERNAME}
+      QBITTORRENT_PASSWORD: ${QBITTORRENT_PASSWORD}
+      GLUETUN_URL: http://gluetun:8000   # control server, proxy network only (not published)
+      GLUETUN_API_KEY: ${GLUETUN_API_KEY:-}   # read-only role, scripts/gluetun-auth.py
+      JELLYFIN_URL: http://jellyfin:8096
+      JELLYFIN_API_KEY: ${JELLYFIN_API_KEY}
+      SEERR_URL: http://seerr:5055
+      SEERR_API_KEY: ${SEERR_API_KEY}
+      # /admin login (app/auth.py). Missing/invalid -> /admin refuses everyone; the family page is unaffected.
+      DASHBOARD_ADMIN_USERNAME: ${DASHBOARD_ADMIN_USERNAME:-}
+      DASHBOARD_ADMIN_PASSWORD_HASH: ${DASHBOARD_ADMIN_PASSWORD_HASH:-}   # scripts/dashboard-passwd.py
+      DASHBOARD_SESSION_SECRET: ${DASHBOARD_SESSION_SECRET:-}
+      # Server health: CPU/RAM/load from the host-wide /proc, CPU temp from /sys, disks via statvfs on the
+      # read-only mounts below, GPU via nvidia-smi ("utility" = monitoring only, no compute/video)
+      HEALTH_DISKS: System=/host/system,Media=/host/media
+      NVIDIA_DRIVER_CAPABILITIES: utility
+      # Idea box (app/ideas.py): writes new notes into the repo's ideas/ for the build loop (/build-ideas)
+      IDEAS_DIR: /ideas
+      ACTIONS_DIR: /actions   # Parked/Deploy tab requests, run by scripts/idea-actions.py (cron)
+      OPS_ACTIONS_DIR: /ops-actions   # read-only: PAUSE + audit.jsonl for the /town medic
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}   # "Idea queued" posts; empty = none
+      AGENT_FEED_DIR: /agent-feed   # status.json + personal.json for the Hermes assistant (tools/hermes mounts it read-only)
+      # Hermes personal feed (read-only): empty = that source reports "not configured"
+      CHANGEDETECTION_API_KEY: ${CHANGEDETECTION_API_KEY:-}
+    ports:
+      - "8000:8000"                  # host port = homelab.port
+    volumes:
+      # Only statvfs'd, never read. System = an empty dir on the root disk.
+      - ${APPDATA_PATH}/dashboard:/host/system:ro
+      - ${MEDIA_PATH}:/host/media:ro
+      # The writable mounts: the repo's ideas folder, the action requests for scripts/idea-actions.py, and
+      # the Hermes status feed. Runs as 1000:1000 (dan), so files stay dan's.
+      - ../../ideas:/ideas
+      - ${APPDATA_PATH}/dashboard/actions:/actions
+      - ${APPDATA_PATH}/dashboard/agent-feed:/agent-feed
+      - ${APPDATA_PATH}/ops-actions:/ops-actions:ro   # /town only: PAUSE + audit.jsonl
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, utility]
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - proxy
+      - socket-proxy
+    labels:
+      # Traefik: home.lan, plus catch-all (lowest priority) so http://192.168.0.210/
+      # and http://homelab/ land here when no other router matches.
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=Host(`home.${DOMAIN}`)
+      - traefik.http.routers.dashboard.entrypoints=web
+      - traefik.http.routers.dashboard.service=dashboard
+      - traefik.http.routers.dashboard-catchall.rule=HostRegexp(`.+`)
+      - traefik.http.routers.dashboard-catchall.entrypoints=web
+      - traefik.http.routers.dashboard-catchall.priority=1
+      - traefik.http.routers.dashboard-catchall.service=dashboard
+      - traefik.http.services.dashboard.loadbalancer.server.port=8000
+      # Dashboard
+      - homelab.name=Dashboard
+      - homelab.group=Infrastructure
+      - homelab.icon=homer
+      - homelab.audience=admin
+      - homelab.description=This page
+      - homelab.port=8000
+      # Uptime Kuma (AutoKuma): the app itself, and the port-80 path family devices use
+      - kuma.dashboard.http.name=dashboard
+      - kuma.dashboard.http.url=http://${LAN_IP}:8000/healthz
+      - kuma.dashboard-web.http.name=dashboard-web
+      - kuma.dashboard-web.http.url=http://${LAN_IP}/
+
+networks:
+  proxy:
+    external: true
+  socket-proxy:
+    external: true

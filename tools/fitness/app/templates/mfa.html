@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Garmin MFA code</h1>
+{% if message %}<p class="banner warn">{{ message }}</p>{% endif %}
+{% if status.mfa %}
+<form method="post" action="/garmin/mfa" class="stack">
+  <label>Code <input name="code" inputmode="numeric" autocomplete="one-time-code" required></label>
+  <button>Submit</button>
+</form>
+{% else %}<p>No MFA login is waiting. Press Sync now on the Today page if Garmin should ask again.</p>{% endif %}
+{% endblock %}

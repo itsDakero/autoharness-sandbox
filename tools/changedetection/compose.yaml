@@ -1,0 +1,48 @@
+# changedetection.io: price-drop and restock watches. Watches and notification URLs live in its UI/datastore.
+services:
+  changedetection:
+    image: dgtlmoon/changedetection.io:0.60.9
+    container_name: changedetection
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/', timeout=8)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      BASE_URL: http://${LAN_IP}:8087   # so links in alerts work
+      LOGGER_LEVEL: WARNING   # DEBUG (the default) logs the Apprise webhook URL
+    ports:
+      - "8087:5000"
+    volumes:
+      - ${APPDATA_PATH}/changedetection:/datastore
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://changedetection.lan)
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.changedetection.rule=Host(`changedetection.${DOMAIN}`)
+      - traefik.http.routers.changedetection.entrypoints=web
+      - traefik.http.services.changedetection.loadbalancer.server.port=5000
+      # Dashboard
+      - homelab.name=Changedetection
+      - homelab.group=Tools
+      - homelab.icon=changedetection
+      - homelab.audience=admin
+      - homelab.description=Price-drop and restock watches
+      - homelab.port=8087
+      # Uptime Kuma (AutoKuma)
+      - kuma.changedetection.http.name=changedetection
+      - kuma.changedetection.http.url=http://${LAN_IP}:8087/
+
+networks:
+  proxy:
+    external: true

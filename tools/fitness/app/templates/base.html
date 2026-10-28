@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fitness</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<nav>
+  <a class="brand" href="/">Fitness</a>
+  <div class="tabs">
+  {% for href, label in [("/", "Today"), ("/plan", "Plan"), ("/runs", "Runs"), ("/trends", "Trends"), ("/pbs", "PBs"), ("/checkin", "Check-in"), ("/fiit", "FiiT"), ("/insights", "Insights"), ("/settings", "Settings")] %}
+  <a href="{{ href }}"{% if path == href or (href != "/" and path.startswith(href)) %} class="on"{% endif %}>{{ label }}</a>
+  {% endfor %}
+  </div>
+  <a class="unit" href="{{ unit_url }}" title="Switch to {{ other_unit }}">{{ unit }} → {{ other_unit }}</a>
+</nav>
+{% if not status.configured %}
+<div class="banner err">Garmin not configured: set GARMIN_EMAIL and GARMIN_PASSWORD in the env file and redeploy.</div>
+{% elif status.mfa %}
+<div class="banner err">MFA code needed. <a href="/garmin/mfa">Enter the code</a>.</div>
+{% elif status.error %}
+<div class="banner {{ 'err' if status.stale else 'warn' }}">Sync problem: {{ status.error }}{% if status.backoff %} (paused until {{ status.backoff }}){% endif %}</div>
+{% endif %}
+<main>
+{% block body %}{% endblock %}
+</main>
+<footer>Not medical advice; your own data only.</footer>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/lms-odds.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-lms-odds.push.name=cron-lms-odds
+      - kuma.cron-lms-odds.push.push_token=${KUMA_CRON_PUSH_SECRET:-}lmsodds000000000
+      - kuma.cron-lms-odds.push.interval=46800
+      - kuma.cron-lms-odds.push.max_retries=0

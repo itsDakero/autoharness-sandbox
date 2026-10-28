@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block body %}
+<form method="get" class="filters">
+  <select name="kind"><option value="">owned + wishlist</option>
+    <option value="owned"{% if kind == "owned" %} selected{% endif %}>owned</option>
+    <option value="wishlist"{% if kind == "wishlist" %} selected{% endif %}>wishlist</option></select>
+  <select name="category"><option value="">all categories</option>
+    {% for c in CATEGORIES %}<option value="{{ c }}"{% if category == c %} selected{% endif %}>{{ c }}</option>{% endfor %}</select>
+  <select name="status">
+    {% for s in ["active", "retired", "all"] %}<option value="{{ s }}"{% if status == s %} selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+  <button>Filter</button>
+</form>
+{% if not items %}<p>Nothing here yet. <a href="/upload">Upload photos</a>.</p>{% endif %}
+<div class="grid">
+{% for it in items %}
+  <a class="card" href="/item/{{ it.id }}">
+    {% if it.thumb %}<img src="/thumbs/{{ it.thumb }}" alt="" loading="lazy">{% else %}<div class="noimg">no photo</div>{% endif %}
+    <div>{{ it.category or "untagged" }}{% if it.colours %}, {{ it.colours|join("/") }}{% endif %}</div>
+    <small>{{ it.kind }}{% if it.status == "retired" %}, retired ({{ it.retired_reason }}){% endif %}{% if it.tag_status == "pending" %}, tagging{% elif it.tag_status in ("tagged", "failed") %}, to review{% endif %}</small>
+  </a>
+{% endfor %}
+</div>
+{% endblock %}

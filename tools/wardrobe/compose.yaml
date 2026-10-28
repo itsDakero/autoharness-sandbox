@@ -1,0 +1,47 @@
+services:
+  wardrobe:
+    build: .
+    image: homelab/wardrobe:0.3.0
+    container_name: wardrobe
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    read_only: true
+    tmpfs:
+      - /tmp:size=512m
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: ${TZ}
+      DATA_DIR: /data
+      OLLAMA_URL: ${WARDROBE_OLLAMA_URL:-http://100.74.81.122:11434}
+      WARDROBE_MODEL: ${WARDROBE_MODEL:-gemma4:12b-it-qat}
+    ports:
+      - "8091:8080"
+    volumes:
+      - ${APPDATA_PATH}/wardrobe:/data
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://wardrobe.lan)
+      - traefik.enable=true
+      - traefik.http.routers.wardrobe.rule=Host(`wardrobe.${DOMAIN}`)
+      - traefik.http.routers.wardrobe.entrypoints=web
+      - traefik.http.services.wardrobe.loadbalancer.server.port=8080
+      # Dashboard
+      - homelab.name=Wardrobe
+      - homelab.group=Tools
+      - homelab.icon=homebox
+      - homelab.audience=admin
+      - homelab.description=Clothes catalogue, auto-tagged photos and wishlist
+      - homelab.port=8091
+      # Uptime Kuma (AutoKuma)
+      - kuma.wardrobe.http.name=wardrobe
+      - kuma.wardrobe.http.url=http://${LAN_IP}:8091/healthz
+
+networks:
+  proxy:
+    external: true

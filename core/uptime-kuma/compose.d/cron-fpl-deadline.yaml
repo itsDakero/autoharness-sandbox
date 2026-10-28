@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/fpl-deadline.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-fpl-deadline.push.name=cron-fpl-deadline
+      - kuma.cron-fpl-deadline.push.push_token=${KUMA_CRON_PUSH_SECRET:-}fpldeadline00000
+      - kuma.cron-fpl-deadline.push.interval=93600
+      - kuma.cron-fpl-deadline.push.max_retries=0
