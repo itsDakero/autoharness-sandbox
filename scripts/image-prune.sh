@@ -1,17 +1,21 @@
 #!/usr/bin/env bash
 # Remove old homelab/* image tags and old build cache. Dry run by default.
-#   scripts/image-prune.sh            list what would go (changes nothing)
-#   scripts/image-prune.sh --apply    remove it
+#   scripts/image-prune.sh [--dry-run]   list what would go (changes nothing; the default)
+#   scripts/image-prune.sh --apply       remove it
+#   scripts/image-prune.sh -h|--help     this text
 # Per homelab/<name> repo the newest 2 tags are kept (rollback), plus any tag a container uses (running or
 # stopped). Build cache older than 168h is pruned. Other unused images are only listed for Dan to remove by hand.
 # Runs after build deploys from scripts/deploy-idea.sh. Never uses -f on rmi, never removes by image ID.
+# Exit: 0 ok, 1 an --apply step failed, 2 bad arguments.
 set -euo pipefail
 
-usage() { echo "usage: ${0##*/} [--apply]" >&2; exit 2; }
+help() { sed -n '2,/^set -euo/{/^set -euo/d;s/^# \{0,1\}//;p}' "$0"; }
+usage() { echo "usage: ${0##*/} [--dry-run|--apply|--help]" >&2; exit 2; }
 APPLY=0
 case "${1:-}" in
-  "") ;;
+  ""|--dry-run) ;;
   --apply) APPLY=1 ;;
+  -h|--help) help; exit 0 ;;
   *) usage ;;
 esac
 [[ $# -le 1 ]] || usage

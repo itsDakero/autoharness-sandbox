@@ -160,7 +160,7 @@ scripts/deploy-idea.sh --post-merge <slug>  # re-run the steps after the merge (
 scripts/secret-scan.sh install         # once: gitleaks v8.30.1 into ~/.local/bin (sha256 checked)
 scripts/secret-scan.sh history         # once by hand: scan the whole repo history (rotate real hits)
 scripts/secret-scan.sh <dir> <range>   # test: scan a clone, e.g. a fake ghp_ token in HEAD~1..HEAD (exit 1, no value)
-scripts/image-prune.sh                 # dry run: old homelab/* tags + build cache; lists other unused images
+scripts/image-prune.sh [--dry-run]     # dry run (default): old homelab/* tags + build cache; lists other unused images
 scripts/image-prune.sh --apply         # remove them (deploy-idea.sh does this after a build)
 scripts/deploy-idea.sh reject <slug>   # throw it away for good: note to ideas/rejected/ with a reason
                                        # (also a plan waiting in ideas/terminal/, or a parked note)

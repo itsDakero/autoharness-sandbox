@@ -1,9 +1,9 @@
 {
   "created_by": "agent",
-  "use": 2,
+  "use": 3,
   "view": 0,
-  "patch": 4,
+  "patch": 6,
   "anchor": 1,
   "verification": null,
-  "reused_gen": 3
+  "reused_gen": 4
 }

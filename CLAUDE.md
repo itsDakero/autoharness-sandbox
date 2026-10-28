@@ -44,7 +44,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   - `idea-actions.py` (cron: runs the dashboard's Parked/Deploy tab buttons: answer, requeue, deploy, reject; auto-deploys approved Risk 1 builds, see m5)
   - `idea.sh` (the build loop's git steps; `kit-paths`/`terminal` for `.claude/` plans, `unblocked <slug>` = notes waiting on it, `research-ok`; `scout-due`/`scout-done`/`scout-topic-done` for the M6 scout; held topics in `ideas/proposed/_topics.md`)
   - `image-check.py` (cron Mondays: Discord digest of newer image tags; ntfy on security releases; `--propose`: a Risk 1 note in ideas/proposed/ per patch bump)
-  - `image-prune.sh [--apply]` (old `homelab/*` tags beyond the newest two + build cache >7d; lists other unused images for Dan; deploy-idea runs it after a build)
+  - `image-prune.sh [--dry-run|--apply]` (old `homelab/*` tags beyond the newest two + build cache >7d; lists other unused images for Dan; deploy-idea runs it after a build)
   - `install-cron.sh` (entries from `scripts/cron.d/<name>.cron`; `--check`: daily Discord on drift; deploy-idea.sh reinstalls on drift)
   - `jellyfin-library-check.py [--dry-run]` (cron daily 09:30: Discord when a Jellyfin library is missing, empty or its scan failed/stalled)
   - `jellyfin-setup.py` (libraries + NVENC; `plugins` = Intro Skipper)

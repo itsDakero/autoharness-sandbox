@@ -1,0 +1,26 @@
+{
+  "run_id": "cdb580fd-39b4-4efb-89c5-77dfa9a6803d-11",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "bash-command-shape",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "bash-command-shape",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "script-change-sync",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    }
+  ]
+}

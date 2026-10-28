@@ -1,6 +1,6 @@
 ---
 name: bash-command-shape
-description: Use when a Bash call is refused or needs approval.
+description: Use before chaining Bash commands (&&, ;, cd, pipes, $(...), VAR=x prefixes), and when a Bash call is refused or needs approval, including a syntax check or a script run with flags.
 category: tool-usage
 ---
 
@@ -20,6 +20,7 @@ Keep each Bash call to one plain command with absolute paths. The matcher refuse
 - Search with the Grep tool, not `grep -r`: the homelab guard blocks recursive grep that could read `.env`. Fetch remote JSON with WebFetch or one plain `curl -sS <url>`; `curl ... | python3 -c` and `$(...)` tokens count as several operations and are refused.
 - File-mode changes (`chmod +x`) can be refused too. Do not retry; list the exact command as a step for the user to run.
 - Searching for a term across the repo: use the Grep tool (with `path` and `glob`) and Glob for file listings. Observed refusals in one session: `grep ...; ls ...; git status --short` was denied by a project permission rule; `grep -rli <term> <abs path> --exclude-dir=...` was denied the same way; `git -C <dir> grep ...` and `git -C <dir> status --short` needed approval (`no-rule-match`). A single `ls -la <abs path>`, `rm <abs file>` and `rmdir <abs dir>` went through.
+- A single command with an absolute path can still be refused (`bashMiss:no-rule-match`): `bash -n <abs script>`, `<abs script> --help` and `<abs script> --bogus` were all refused in one session. Those checks did not run. Say so in the report; do not present them as verified, and list them as steps for the user.
 - After a refusal, do not retry the same string. Re-issue the simplest single command. If it is still refused, state that the step did not run.
 
 Observed reason codes and what triggered them: references/rejection-codes.md
