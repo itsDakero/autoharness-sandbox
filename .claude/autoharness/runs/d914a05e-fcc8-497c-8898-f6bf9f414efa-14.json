@@ -1,0 +1,36 @@
+{
+  "run_id": "d914a05e-fcc8-497c-8898-f6bf9f414efa-14",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "bash-command-shape",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    }
+  ]
+}

@@ -22,6 +22,7 @@ Read this first, then only the doc you need. One line per doc; add a line when y
 | `tools/lms/README.md` | Last Man Standing picker (Odds API odds, safest pick per round, used teams, Discord nudges): first run, rules as built, credits, failures |
 | `tools/mealie/README.md` | Mealie recipes and meal planner: data location, first-start admin password, health URL |
 | `tools/paperless/README.md` | Paperless-ngx documents with OCR: data folders, consume dir, secret key, first admin, health URL |
+| `tools/linkding/README.md` | linkding bookmarks: data location, creating the first admin, health URL |
 | `docs/fitness-analysis-prompt.md` | Fitness phase 2 idea note: the analysis top apps do (load, recovery bands, zones, predictions, illness warning); `docs/fitness-analysis/` = the 5 queueable notes, one at a time |
 | `games/leafgreen/CLAUDE.md` | LeafGreen Field Notes web app: build, files, game logic |
 | `docs/ops-actions.md` | Ops actions runner: auto-restart of unhealthy non-core containers, caps, breaker, PAUSE file, action tiers |

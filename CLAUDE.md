@@ -15,7 +15,8 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   fpl = FPL collector + projections/squad/solver page + team goals and player points models, admin; see `tools/fpl/README.md`,
   lms = Last Man Standing picker (Odds API), admin; see `tools/lms/README.md`,
   mealie = recipes + meal plans + shopping lists, family; see `tools/mealie/README.md`,
-  paperless = Paperless-ngx documents + OCR (+ its own Redis), admin; see `tools/paperless/README.md`)
+  paperless = Paperless-ngx documents + OCR (+ its own Redis), admin; see `tools/paperless/README.md`,
+  linkding = bookmarks with tags + search, admin; see `tools/linkding/README.md`)
 - `games/` – game helpers (leafgreen = LeafGreen Field Notes, walkthrough + Nuzlocke web app; own `CLAUDE.md`)
 - `forensics/` – forensic parsers: Python scripts run by hand, one dir per parser (see `forensics/README.md`)
 - `templates/` – compose template with the required labels
@@ -168,6 +169,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
 | 8094 | mealie |
 | 8095 | paperless |
 | 8096 | jellyfin |
+| 8097 | linkding |
 | 8989 | sonarr |
 | 8990 | sonarr-remote |
 | 9696 | prowlarr |
