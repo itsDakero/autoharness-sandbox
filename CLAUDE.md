@@ -13,7 +13,8 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   changedetection = price/restock watches, books = reading tracker (Goodreads CSV import, Open Library covers), admin; see `tools/books/README.md`,
   wardrobe = clothes catalogue + outfit generator + gap analysis, Mac mini vision tagging, admin; see `tools/wardrobe/README.md`,
   fpl = FPL collector + projections/squad/solver page + team goals and player points models, admin; see `tools/fpl/README.md`,
-  lms = Last Man Standing picker (Odds API), admin; see `tools/lms/README.md`)
+  lms = Last Man Standing picker (Odds API), admin; see `tools/lms/README.md`,
+  mealie = recipes + meal plans + shopping lists, family; see `tools/mealie/README.md`)
 - `games/` – game helpers (leafgreen = LeafGreen Field Notes, walkthrough + Nuzlocke web app; own `CLAUDE.md`)
 - `forensics/` – forensic parsers: Python scripts run by hand, one dir per parser (see `forensics/README.md`)
 - `templates/` – compose template with the required labels
@@ -163,6 +164,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
 | 8091 | wardrobe |
 | 8092 | fpl |
 | 8093 | lms |
+| 8094 | mealie |
 | 8096 | jellyfin |
 | 8989 | sonarr |
 | 8990 | sonarr-remote |

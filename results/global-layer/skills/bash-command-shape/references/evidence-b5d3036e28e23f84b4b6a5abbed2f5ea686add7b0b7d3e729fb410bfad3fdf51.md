@@ -1,0 +1,3 @@
+PreToolUse:Bash hook error: ["$CLAUDE_PROJECT_DIR"/.claude/hooks/guard.py]: Blocked by homelab guard: recursive grep would read .env. Use the Grep tool (skips gitignored files) or add --exclude='*.env'.
+
+This Bash command contains multiple operations. The following parts require approval: curl -sS -m 20 "https://hub.docker.com/v2/repositories/hkotel/mealie/tags?page_size=15&ordering=last_updated", python3 -c 'import sys,json;print([t["name"] for t in json.load(sys.stdin)["results"]])'

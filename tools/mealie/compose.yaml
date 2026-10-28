@@ -1,0 +1,48 @@
+# Mealie: recipe manager and meal planner. Users, recipes and plans live in its UI/database.
+services:
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:v3.0.2
+    container_name: mealie
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9000/api/app/about', timeout=8)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      BASE_URL: http://${LAN_IP}:8094   # so links in invites and emails work
+      ALLOW_SIGNUP: "false"             # accounts by admin invite only
+    ports:
+      - "8094:9000"
+    volumes:
+      - ${APPDATA_PATH}/mealie:/app/data
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://mealie.lan)
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.mealie.rule=Host(`mealie.${DOMAIN}`)
+      - traefik.http.routers.mealie.entrypoints=web
+      - traefik.http.services.mealie.loadbalancer.server.port=9000
+      # Dashboard
+      - homelab.name=Mealie
+      - homelab.group=Tools
+      - homelab.icon=mealie
+      - homelab.audience=family
+      - homelab.description=Recipes, meal plans and shopping lists
+      - homelab.port=8094
+      # Uptime Kuma (AutoKuma)
+      - kuma.mealie.http.name=mealie
+      - kuma.mealie.http.url=http://${LAN_IP}:8094/api/app/about
+
+networks:
+  proxy:
+    external: true
