@@ -86,6 +86,9 @@ sudo ufw delete allow from 192.168.0.0/24 to any port 29811:29817 proto tcp
 ```bash
 ss -tn | grep ':29814'
 ```
+- `scripts/omada-ap-check.py` (cron hourly :50) runs the same check: fewer than 3 distinct AP IPs on 29814
+  (re-checked once after 90 s) posts to Discord, repeated daily while it lasts, plus a line on recovery. A stopped
+  controller is skipped (the omada Kuma monitor alerts). `--dry-run` prints the count; `journalctl -t omada-ap-check`.
 
 What can go wrong:
 - An empty controller sees the APs first: they show "Managed by others" and need the

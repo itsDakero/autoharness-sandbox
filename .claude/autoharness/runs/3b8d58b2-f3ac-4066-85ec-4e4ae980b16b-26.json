@@ -1,0 +1,22 @@
+{
+  "run_id": "3b8d58b2-f3ac-4066-85ec-4e4ae980b16b-26",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "bash-command-shape",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "add-cron-job",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}

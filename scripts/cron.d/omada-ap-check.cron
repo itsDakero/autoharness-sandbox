@@ -1,0 +1,1 @@
+50 * * * * $R omada-ap-check 300 --ok 0,1 $REPO/scripts/omada-ap-check.py

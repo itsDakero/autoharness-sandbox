@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/omada-ap-check.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-omada-ap-check.push.name=cron-omada-ap-check
+      - kuma.cron-omada-ap-check.push.push_token=${KUMA_CRON_PUSH_SECRET:-}omadaapcheck0000
+      - kuma.cron-omada-ap-check.push.interval=5400
+      - kuma.cron-omada-ap-check.push.max_retries=0

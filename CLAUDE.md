@@ -55,6 +55,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   - `media-cleanup.py` (plan; user applies)
   - `model-bench.py` (by hand: Ollama model bench on the Mac mini, table into `docs/mac-mini.md`; `--memory`: memory budget table)
   - `morning-brief.py [test|--print]` (cron 07:00: one Discord brief from the dashboard's agent feed: outfit when the wardrobe toggle is on, readiness/illness, yesterday's activity, deals, services not up, items waiting for Dan; `MORNING_BRIEF_ENABLED=0` turns it off)
+  - `omada-ap-check.py [--dry-run]` (cron hourly :50: Discord when fewer than 3 APs hold a link to Omada on 29814, via `ss`; daily repeat, recovery line)
   - `ops-actions.py [--dry-run]` (cron every 5 min: restart registered non-core containers unhealthy 2 checks running, capped 1/h + 3/day per service, breaker >3/h writes PAUSE; see docs/ops-actions.md)
   - `qbit-setup.py` (qBittorrent login + settings)
   - `qbit-watchdog.sh` (cron, via `install-cron.sh`)
