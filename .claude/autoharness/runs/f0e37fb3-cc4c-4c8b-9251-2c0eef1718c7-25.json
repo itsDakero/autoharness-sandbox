@@ -1,0 +1,17 @@
+{
+  "run_id": "f0e37fb3-cc4c-4c8b-9251-2c0eef1718c7-25",
+  "verdicts": [
+    {
+      "action": "create",
+      "name": "add-cron-job",
+      "ok": false,
+      "findings": [
+        "safety",
+        "structure",
+        "structure",
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}

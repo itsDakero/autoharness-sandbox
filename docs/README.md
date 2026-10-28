@@ -12,6 +12,7 @@ Read this first, then only the doc you need. One line per doc; add a line when y
 | `docs/m5-pipeline.md` | Idea pipeline: dashboard idea box, Discord feed, the background build loop and deploys |
 | `docs/m6-research.md` | M6 plan: scout agent + scoring/Proposed tab, Mac mini model server, assistant agent (Hermes), pre-planner researcher |
 | `docs/mac-mini.md` | Mac mini model server (M6 stage C): headless setup, Tailscale, Ollama as a launchd agent, checks, model bench |
+| `docs/new-cron-job.md` | Checklist for adding a cron job: script, `scripts/cron.d/` entry, Kuma push monitor fragment (token suffix, intervals), CLAUDE.md line, checks, deploy, removal |
 | `docs/restore.md` | Restoring a file, an app, or the whole server from backups |
 | `docs/restore-runbook.md` | Restoring one service's appdata from restic: its folders (multi-folder services, excluded paths), picking a snapshot, swap in, checks, rollback, per-service notes |
 | `forensics/README.md` | Forensic parsers: layout, Python setup, where test data lives (never in git) |
