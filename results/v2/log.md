@@ -18,3 +18,15 @@ Setup (parent session):
 - last_run.json: `{"run_id": "150c55d5-132d-4955-afdb-642133600a2d-19", "landed": 0, "rejected": 3, "absorbed": 0, "families": ["self_produced", "structure"], "uncategorized": 0}`
 - global skills now: 
 - child summary: results/v2/tasks/task-1.md
+
+## Task 2: fix compose-lint findings
+
+- session=2bb73a92-09ff-4665-a192-83fa5a7c3c45 rc=0 secs=54 waited_for_plugin=40s still_running=0
+- tools=10 {'Bash': 9, 'Skill': 1}
+- skills_before=add-service build-ideas debug-service remove-service rules-audit scout script-change-sync update-stack 
+- skills_after=add-service build-ideas debug-service remove-service rules-audit scout script-change-sync update-stack 
+- plugin run files: 16 -> 17
+- files changed: 12 (8 under .claude/)
+- last_run.json: `{"run_id": "2bb73a92-09ff-4665-a192-83fa5a7c3c45-10", "landed": 0, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
+- global skills now: 
+- child summary: results/v2/tasks/task-2.md

@@ -30,6 +30,10 @@ M1_CORE = """\
 ## Healthchecks
 Already healthy from image or compose, left alone: imagecheck, other-one.
 Skipped: sidecar (not a web service; no port); quiet (manual; Dan adds it by hand).
+## Notes
+- Container logs are capped per service in compose (`logging:` json-file, 10m x 3).
+  The cap takes effect on recreate. nolog and `other-log` are left out on purpose (manual).
+- Something else: unrelated are left out on purpose.
 ## Later
 """
 
@@ -198,6 +202,14 @@ class TestLoggingAndHealth(LintCase):
         out = self.run_lint()[1]
         self.assertEqual(len(out), 1)
         self.assertIn("Dan: no healthcheck", out[0])
+
+    def test_docs_logging_exceptions(self):
+        for name in ("nolog", "other-log", "unrelated", "imagecheck"):
+            self.compose(f"apps/{name}/compose.yaml", service(name, logging="", labels=""))
+        out = sorted(self.run_lint()[1])
+        self.assertEqual(self.rules(out), ["logging-cap", "logging-cap"])
+        self.assertIn("imagecheck: no logging", out[0])
+        self.assertIn("unrelated: no logging", out[1])
 
     def test_dockerfile_healthcheck(self):
         self.compose("apps/myservice/compose.yaml", service(health="", extra="    build: .\n"))

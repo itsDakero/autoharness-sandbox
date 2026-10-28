@@ -10,7 +10,8 @@ With no FILE, lints every <category>/<service>/compose.yaml under the repo root 
 
 Rules (one line per finding: `<file>[:<line>]: <rule>: <detail>`):
   image-pinned     image has an explicit tag or digest, never :latest; build-only services need image: too
-  logging-cap      logging driver json-file with max-size 10m and max-file 3 (templates/compose.yaml)
+  logging-cap      logging driver json-file with max-size 10m and max-file 3 (templates/compose.yaml), unless
+                   docs/m1-core.md's "Container logs are capped" bullet says "<a> and <b> are left out on purpose"
   healthcheck      a healthcheck (not disabled), unless the service builds from a local Dockerfile with its
                    own HEALTHCHECK, or docs/m1-core.md "## Healthchecks" lists it as healthy from its
                    image ("left alone: ...") or as skipped ("Skipped: ...")
@@ -104,6 +105,22 @@ def healthcheck_exceptions(root):
                 names.add(words[0].strip("`,"))
     names.discard("")
     return names
+
+
+def logging_exceptions(root):
+    """Services docs/m1-core.md's "Container logs are capped" bullet leaves out on purpose."""
+    try:
+        with open(os.path.join(root, "docs", "m1-core.md"), encoding="utf-8") as f:
+            text = f.read()
+    except OSError:
+        return set()
+    m = re.search(r"^- Container logs are capped(.*?)(?=^\S|^- |\Z)", text, re.S | re.M)
+    bullet = " ".join(m.group(1).split()) if m else ""
+    m = re.search(r"([\w`, -]+?) (?:is|are) left out on purpose", bullet)
+    if not m:
+        return set()
+    names = re.split(r",|\band\b", m.group(1).split(".")[-1])
+    return {n.strip(" `") for n in names} - {""}
 
 
 def labels_of(svc):
@@ -230,7 +247,7 @@ def load(path):
     return text, data, node_lines(yaml.compose(text))
 
 
-def lint_file(path, rel, hc_exempt, table, port_users):
+def lint_file(path, rel, hc_exempt, log_exempt, table, port_users):
     findings = []
 
     def add(line, rule, detail):
@@ -261,7 +278,7 @@ def lint_file(path, rel, hc_exempt, table, port_users):
             if problem:
                 add(field("image"), "image-pinned", f"{name}: {problem}")
 
-        problem = logging_problem(svc)
+        problem = None if name in log_exempt else logging_problem(svc)
         if problem:
             add(field("logging"), "logging-cap", f"{name}: {problem}")
 
@@ -372,10 +389,11 @@ def main(argv):
     port_users = collect_ports(all_paths, root)
     table = ports_table(root)
     hc_exempt = healthcheck_exceptions(root)
+    log_exempt = logging_exceptions(root)
 
     findings = []
     for path in targets:
-        findings += lint_file(path, relpath(path, root), hc_exempt, table, port_users)
+        findings += lint_file(path, relpath(path, root), hc_exempt, log_exempt, table, port_users)
     for line in findings:
         print(line)
     return 1 if findings else 0
