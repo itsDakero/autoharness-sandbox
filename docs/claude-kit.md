@@ -23,6 +23,12 @@ session needs every time; this is the detail. Update it when a skill, agent, hoo
 - Hook `compose-check.sh` (PostToolUse) runs `config -q` after every `compose.yaml` edit and re-checks the
   whole file (pinned images, docker.sock), then `compose-lint.py` on it (its findings + repo-wide port-unique;
   skipped with a warning if PyYAML or the script is missing). Read-write media mounts are approved via the guard's ask.
+- Hook `stop-check.sh` (Stop, after hookify's "require tests before stopping"): if `git status` shows changes under
+  `scripts/`, `.claude/hooks/` or to any `compose.yaml`, and the transcript (`transcript_path`) has no Bash call running
+  `scripts/check.sh`, `unittest` or `compose-lint.py` after the last Edit/Write of such a file, it blocks the stop once
+  and asks Claude to run `scripts/check.sh`. Never blocks twice in a row (`stop_hook_active`). Fails open (no jq, no
+  transcript, not a git checkout, bad input: exit 0). Test by piping `{"transcript_path":…,"stop_hook_active":false}`
+  with a fake JSONL transcript.
 - Permissions: git, `dc.sh` config/ps/logs and homelab `curl` run freely; up/down/stop/restart ask;
   `rm -rf`, `sudo`, reading `.env` and `dc.sh` up/down/build/… on `.worktrees/*` are denied. Exception: `dc.sh core/dashboard` build/up/restart run
   freely. Ask rules beat allow rules and can't say "except", so the up/down/stop/restart ask rules name

@@ -162,3 +162,15 @@ Setup (parent session):
 - last_run.json: `{"run_id": "f33a0ec7-bb31-4dd6-91d9-c90d30dc0aa2-8", "landed": 0, "rejected": 2, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
 - global skills now: upstream-file-fetch 
 - child summary: results/v2/tasks/task-13.md
+
+## Task 14: Stop hook: run check.sh first
+
+- session=5dadb8f6-c15b-494d-932d-89439abbe293 rc=0 secs=85 waited_for_plugin=30s still_running=0
+- tools=10 {'Skill': 1, 'Bash': 8, 'Write': 1}
+- skills_before=add-cron-job add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- skills_after=add-cron-job add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- plugin run files: 28 -> 29
+- files changed: 12 (9 under .claude/)
+- last_run.json: `{"run_id": "5dadb8f6-c15b-494d-932d-89439abbe293-10", "landed": 0, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
+- global skills now: upstream-file-fetch 
+- child summary: results/v2/tasks/task-14.md

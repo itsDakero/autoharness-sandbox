@@ -70,6 +70,8 @@ Skills, agents, hooks and permissions: `docs/claude-kit.md`. Every session needs
   without a safe `--format`, env dumps, recursive grep without `--exclude`), `sudo`, `/mnt/media` writes,
   `docker.sock` outside the proxy, `:latest`/untagged images and `ANTHROPIC_API_KEY`; it fails closed.
   `compose-check.sh` lints every `compose.yaml` edit.
+  `stop-check.sh` (Stop) blocks the stop once when `scripts/`, `.claude/hooks/` or a `compose.yaml` changed and
+  `scripts/check.sh` (or the unit tests / compose-lint) hasn't run since the last edit; it fails open.
 - Permissions (`.claude/settings.json`): `rm -rf`, `sudo`, `.env` reads and `dc.sh` up/down/build/… on `.worktrees/*`
   are denied; up/down/stop/restart ask, and those ask rules name each core service: **a new core service must be
   added there** (`media/*`, `tools/*` are wildcards; `games/*` still needs adding).

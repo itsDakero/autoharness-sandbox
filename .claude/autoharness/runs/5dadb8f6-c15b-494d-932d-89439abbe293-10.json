@@ -1,0 +1,14 @@
+{
+  "run_id": "5dadb8f6-c15b-494d-932d-89439abbe293-10",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "claude-hook-maintenance",
+      "ok": false,
+      "findings": [
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}
