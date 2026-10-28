@@ -1,0 +1,14 @@
+{
+  "run_id": "e9b972da-70a4-4d38-9a37-43fcd6ddf6ee-11",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "script-change-sync",
+      "ok": false,
+      "findings": [
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}

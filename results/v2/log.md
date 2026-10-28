@@ -102,3 +102,15 @@ Setup (parent session):
 - last_run.json: `{"run_id": "9c3ef1bf-ddce-456d-ba9c-1102b023e5d3-22", "landed": 2, "rejected": 4, "absorbed": 0, "families": ["self_produced", "structure"], "uncategorized": 0}`
 - global skills now: upstream-file-fetch 
 - child summary: results/v2/tasks/task-8.md
+
+## Task 9: service catalog + port table check
+
+- session=e9b972da-70a4-4d38-9a37-43fcd6ddf6ee rc=0 secs=112 waited_for_plugin=30s still_running=0
+- tools=11 {'Skill': 1, 'Bash': 8, 'Write': 2}
+- skills_before=add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- skills_after=add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- plugin run files: 23 -> 24
+- files changed: 14 (7 under .claude/)
+- last_run.json: `{"run_id": "e9b972da-70a4-4d38-9a37-43fcd6ddf6ee-11", "landed": 0, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
+- global skills now: upstream-file-fetch 
+- child summary: results/v2/tasks/task-9.md

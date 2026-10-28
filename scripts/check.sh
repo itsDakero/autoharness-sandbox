@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Local "is the repo healthy" check; CI runs it too (.github/workflows/check.yml).
 # Usage: scripts/check.sh
-# Runs in order: bash -n, py_compile, shellcheck (skipped with a note if missing), compose-lint, unit tests.
+# Runs in order: bash -n, py_compile, shellcheck (skipped with a note if missing), compose-lint,
+# service-catalog --check (docs/services.md fresh, CLAUDE.md Ports table matches homelab.port), unit tests.
 # Exit 0 when every step passes, 1 otherwise. Reads files only; bytecode goes to a temp dir.
 set -uo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
@@ -54,6 +55,7 @@ else
   results+=("SKIP  shellcheck (not installed)")
 fi
 step "compose-lint" python3 scripts/compose-lint.py
+step "service-catalog" python3 scripts/service-catalog.py --check
 step "unit tests" python3 -m unittest discover -s scripts/tests
 
 echo
