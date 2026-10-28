@@ -1,0 +1,28 @@
+{
+  "run_id": "c92bf327-cf13-4d8d-82a2-6c3ebb3f05f3-8",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "shell-script-lint",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "script-change-sync",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "repo-check",
+      "ok": false,
+      "findings": [
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}

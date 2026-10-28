@@ -54,3 +54,15 @@ Setup (parent session):
 - last_run.json: `{"run_id": "639857e6-2354-4ebe-b8d6-5cab35ed74df-8", "landed": 1, "rejected": 0, "absorbed": 0, "families": [], "uncategorized": 0}`
 - global skills now: 
 - child summary: results/v2/tasks/task-4.md
+
+## Task 5: check.sh + GitHub Actions CI
+
+- session=c92bf327-cf13-4d8d-82a2-6c3ebb3f05f3 rc=0 secs=76 waited_for_plugin=40s still_running=0
+- tools=8 {'Skill': 1, 'Bash': 5, 'Write': 1, 'Edit': 1}
+- skills_before=add-service build-ideas claude-hook-maintenance debug-service remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- skills_after=add-service build-ideas claude-hook-maintenance debug-service remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- plugin run files: 19 -> 20
+- files changed: 19 (15 under .claude/)
+- last_run.json: `{"run_id": "c92bf327-cf13-4d8d-82a2-6c3ebb3f05f3-8", "landed": 2, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
+- global skills now: 
+- child summary: results/v2/tasks/task-5.md

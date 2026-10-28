@@ -17,4 +17,5 @@ Fix real findings in the code. Suppress only the intentional patterns, each with
   - SC1090/SC1091 when sourcing a root-only or git-ignored env file that is not in the repo: `# shellcheck source=/dev/null`.
   - SC2001 `sed 's/^/  /'` indenting every line of a multi-line string, which a parameter expansion cannot do.
 - Real fixes: SC2001 on a single substitution becomes `${var//a/b}`. SC1010 on a bare `done` used as a loop word gets quoted.
+- SC2164 on a bare `cd "$REPO"` becomes `cd "$REPO" || exit 1`, so a failed cd stops the script instead of running later commands in the wrong directory. Scripts that do not use `set -e` need this guard too.
 - A function whose name matches an argument to an external command (`attach()` alongside `tmux attach`) causes false SC2032/SC2033. Rename the function and update its callers.

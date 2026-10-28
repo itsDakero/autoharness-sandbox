@@ -29,6 +29,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   - `backup.sh` + `backup-excludes.txt` (nightly restic to `/mnt/backup/restic`, then `offsite` copy to B2; root via systemd; `test-alert`)
   - `card-prices.py` (cron daily: LeafGreen card watchlist price history; Discord on a drop; `--dry-run`)
   - `cert-expiry-check.sh` (cron daily: ntfy when a TLS cert nears expiry, today Omada's 8043; warn 30 days weekly, crit 7 days daily)
+  - `check.sh` (by hand + CI `.github/workflows/check.yml`: bash -n, py_compile, shellcheck (skipped if missing), compose-lint, unit tests; pass/fail summary, exit 1 on any failure)
   - `compose-lint.py [--root DIR] [FILE ...]` (read-only: every `<category>/<service>/compose.yaml` against the Rules: pinned image, logging cap + healthcheck (m1-core exceptions), web labels, unique + tabled `homelab.port`, docker.sock, `/mnt/media` `:ro` unless commented "approved"; exit 1 on findings, 2 usage)
   - `core-up.sh`
   - `cron-run.sh <name> <timeout> [--ok codes] <cmd>` (wraps every cron job: syslog `cron-<name>` and a Kuma push monitor `cron-<name>`)
