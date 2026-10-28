@@ -1,50 +1,48 @@
-# Autoharness sandbox
+# Autoharness sandbox (v2: no rules)
 
-A throwaway copy of the homelab repo. Its only job: let the
+A throwaway copy of the homelab repo. The point: let the
 [tigerless-labs/autoharness](https://github.com/tigerless-labs/autoharness)
-Claude Code plugin run freely, then see what skills it writes.
+plugin and the agents run on their own, then see what they come up with.
 
 - This is NOT the real homelab. There is no server, Docker, Mac mini or `.env` here.
-- The plugin may write anywhere under `.claude/`. That is the point.
-- `.claude/settings.json` enables the plugin for this repo only.
-  The Discord alert hooks are removed; the guard hook stays, so the copy behaves like the real repo.
+- No guard hook, no permission lists. `.claude/settings.json` only enables the plugin.
+- `CLAUDE.md` is here as background on what the homelab is. Its rules are NOT binding here.
+  Follow them, bend them or ignore them: whatever you think makes the homelab better.
+- The plugin may write anything under `.claude/`. Do not restrict it.
 
-## How to run it
+## The brief
 
-1. Install the plugin (if the repo settings did not already):
-   `claude plugin marketplace add tigerless-labs/autoharness` then
-   `claude plugin install autoharness@autoharness --scope project`.
-2. Run each task below as its own fresh session, so the plugin's
-   session start/stop hooks fire each time:
-   `claude -p "<task>" --permission-mode acceptEdits` (from the repo root).
-3. After each task: commit everything, including `.claude/` changes, with the task number in the message.
-4. Record each task in `results/log.md`: tool calls (rough), what the plugin did (new/changed/archived skills), anything odd.
-5. At the end, write `results/REPORT.md` and push.
+Improve this homelab however you see fit. You pick the work.
+Build things, refactor, add services, write tools, delete things, change the Claude kit.
+Aim for about 15 separate pieces of work, each run as its own fresh session
+(`claude -p "<what you decided>"` from the repo root) so the plugin's hooks fire each time.
 
-## Tasks (homelab-style, no live host needed)
+## Research for ideas
 
-Repeat themes on purpose: the plugin learns from patterns.
+Before and between pieces of work, look outward for ideas:
 
-1. Add a cron script `scripts/cert-expiry-check.sh` following the repo's cron rules (cron.d entry, Kuma push monitor file, CLAUDE.md script list).
-2. Add a cron script `scripts/jellyfin-library-check.py` the same way.
-3. Add a new web service `tools/mealie/compose.yaml` from `templates/compose.yaml` (labels, port 8094, healthcheck, logging cap, ports table).
-4. Add a new web service `tools/paperless/compose.yaml` the same way (port 8095).
-5. Add a new web service `tools/linkding/compose.yaml` the same way (port 8097).
-6. Remove the `tools/linkding` service again cleanly (compose, ports table, CLAUDE.md, docs).
-7. Add `--dry-run` to `scripts/image-prune.sh` if missing, or improve its help text if present.
-8. Write `docs/restore-runbook.md`: restoring one service's appdata from restic. Index it in `docs/README.md`.
-9. Write `docs/new-cron-job.md`: a checklist for adding a cron job. Index it.
-10. Add tests for `.claude/hooks/guard.py` in `scripts/tests/test_guard.py` (blocked and allowed cases) and make them pass.
-11. Run shellcheck (install it if needed) over `scripts/*.sh` and fix the top 5 warnings.
-12. Write an idea note in `ideas/` for "weekly Jellyfin watch stats to Discord", in the format other idea notes use.
-13. Add a cron script `scripts/omada-ap-check.py` following the cron rules again.
-14. Add a new web service `tools/stirling-pdf/compose.yaml` (port 8098) following the rules again.
-15. Review the whole diff since the first commit against CLAUDE.md rules and fix any breaks.
+- Search GitHub and the web for Claude Code skills, plugins, agents and hooks,
+  self-hosted apps and homelab repos that could make this homelab better.
+- Good starting points: awesome-claude-code style lists, the Claude Code plugin marketplaces,
+  awesome-selfhosted, r/selfhosted, popular homelab repos.
+- Read their code and docs freely. Borrow ideas or copy skill text into this repo (note the source URL).
+- Do NOT install or run other third-party plugins or code you found. Read it, don't execute it.
+  (This container holds a GitHub token and a Claude login; untrusted code could take them.)
+- Keep a list of everything you found in `results/v2/research.md`: name, URL, what it does,
+  whether you used it, and whether it's worth bringing to the real homelab.
 
-## Report (`results/REPORT.md`)
+## Only these limits
 
-- Every skill the plugin created, changed, merged or archived, with a one-line summary.
-- Which skills look genuinely useful for the real homelab, and which are noise.
-- Did any skill conflict with CLAUDE.md or the guard?
-- Rough usage: number of background `claude -p` runs the plugin started.
-- Anything surprising or unsafe it did.
+- Never create or use `ANTHROPIC_API_KEY` (subscription only).
+- Do not install or run third-party plugins or code you find (see above).
+- Only push to this repo. Never try to reach real hosts (192.168.0.210, Tailscale IPs, the Mac mini).
+
+## Record
+
+- After each piece of work: commit everything, including `.claude/`, and append to `results/v2/log.md`:
+  what you chose to do and why, rough tool calls, what the plugin did (new/changed/archived skills).
+- Push every few pieces. Run 1 results stay in `results/` (do not overwrite them).
+- Copy any global skills the plugin writes (`~/.claude/skills/`) into `results/v2/global-layer/` before the end.
+- At the end, write `results/v2/REPORT.md`: what got built, every skill the plugin wrote,
+  which ideas or skills are worth bringing back to the real homelab, and anything surprising or unsafe.
+  Short sentences and bullets: Dan is dyslexic.
