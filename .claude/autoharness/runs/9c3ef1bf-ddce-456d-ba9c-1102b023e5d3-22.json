@@ -1,0 +1,67 @@
+{
+  "run_id": "9c3ef1bf-ddce-456d-ba9c-1102b023e5d3-22",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "backup-excludes-policy",
+      "ok": false,
+      "findings": [
+        "structure"
+      ],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "upstream-file-fetch",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "gpu-container-policy",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    }
+  ]
+}

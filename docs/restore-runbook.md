@@ -41,6 +41,7 @@ Services with more than one folder, or a folder with another name:
 | dashboard | `core/dashboard` | `dashboard` (incl. `actions`, `agent-feed`), `ops-actions` |
 | hermes | `tools/hermes` | `hermes` (it also writes `dashboard/agent-feed`: leave that to the dashboard) |
 | paperless | `tools/paperless` | `paperless/{data,media,consume,export,redis}`: restore `paperless` whole |
+| immich | `tools/immich` | `immich/library` (`immich/postgres` and `immich/model-cache` are not backed up): see the per-service note |
 | jellyfin | `media/jellyfin` | `jellyfin/config` (`jellyfin/cache` is not backed up) |
 | scrutiny | `tools/scrutiny` | `scrutiny/config` (`scrutiny/influxdb` is not backed up) |
 | omada | `core/omada` | use `docs/restore.md`, case e (the live DB is not backed up) |
@@ -50,7 +51,7 @@ Everything else: one folder named after the service.
 
 **Not in any snapshot** (`scripts/backup-excludes.txt`): logs, `logs.db*`, `MediaCover`,
 `Sentry`, `*.pid`, Jellyfin cache/transcodes, `gluetun/servers.json`, AdGuard's query log,
-Scrutiny's InfluxDB, Omada's `data/db`, `/srv/homelab/forensics`. These come back empty;
+Scrutiny's InfluxDB, Omada's `data/db`, Immich's live Postgres and ML models, `/srv/homelab/forensics`. These come back empty;
 the apps rebuild them.
 
 ## 2. Pick a snapshot
@@ -159,6 +160,10 @@ folder away, move `seerr.broken` back to `seerr`, start it.
   re-downloaded by Gluetun.
 - **paperless**: restore all of `paperless` from one snapshot (`data` holds the database,
   `media` the documents; they must match). Its Redis is a queue only.
+- **immich**: the database comes back from Immich's own nightly dump (02:00, in
+  `immich/library/backups`), not from the live Postgres files (excluded). Restore `immich/library`
+  whole (every subfolder keeps a `.immich` marker Immich checks at start), then follow
+  `tools/immich/README.md`, "Restore".
 - **Arr apps**: after a restore, the app may show files as missing until its next disk
   scan. `/mnt/media` is never in a snapshot and never touched by a restore.
 - **One file only**: `--include` the file's full path, then `sudo cp -a` just that file.

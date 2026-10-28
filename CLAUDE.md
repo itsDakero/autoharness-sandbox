@@ -17,6 +17,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   mealie = recipes + meal plans + shopping lists, family; see `tools/mealie/README.md`,
   paperless = Paperless-ngx documents + OCR (+ its own Redis), admin; see `tools/paperless/README.md`,
   stirling-pdf = PDF merge/split/convert/OCR in the browser, family; see `tools/stirling-pdf/README.md`,
+  immich = photo/video backup from phones (+ its own ML on CPU, Postgres, Valkey), family; see `tools/immich/README.md`,
   beszel = host + per-container resource history and alerts (hub + agent, Docker API via the socket proxy), admin; see `tools/beszel/README.md`)
 - `games/` – game helpers (leafgreen = LeafGreen Field Notes, walkthrough + Nuzlocke web app; own `CLAUDE.md`)
 - `forensics/` – forensic parsers: Python scripts run by hand, one dir per parser (see `forensics/README.md`)
@@ -177,6 +178,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
 | 8094 | mealie |
 | 8095 | paperless |
 | 8096 | jellyfin |
+| 8097 | immich |
 | 8098 | stirling-pdf |
 | 8989 | sonarr |
 | 8990 | sonarr-remote |

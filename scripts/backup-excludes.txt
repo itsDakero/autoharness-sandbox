@@ -13,6 +13,10 @@
 /srv/homelab/adguard/work/data/querylog*
 /srv/homelab/scrutiny/influxdb
 /srv/homelab/omada/data/db
+# Immich: live Postgres files (the nightly dump in library/backups is the DB backup) and downloaded ML
+# models. thumbs/encoded-video stay in: Immich won't start without each folder's .immich marker
+/srv/homelab/immich/postgres
+/srv/homelab/immich/model-cache
 /home/dan/homelab/scripts/__pycache__
 # Forensic test data and evidence: never off-site (B2 copies every nightly snapshot)
 /srv/homelab/forensics

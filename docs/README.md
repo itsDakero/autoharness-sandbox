@@ -25,6 +25,7 @@ Read this first, then only the doc you need. One line per doc; add a line when y
 | `tools/mealie/README.md` | Mealie recipes and meal planner: data location, first-start admin password, health URL |
 | `tools/paperless/README.md` | Paperless-ngx documents with OCR: data folders, consume dir, secret key, first admin, health URL |
 | `tools/stirling-pdf/README.md` | Stirling-PDF tools: data folders, no login, health URL |
+| `tools/immich/README.md` | Immich photo/video backup: first run (DB password, admin, family accounts, phone app), data folders, DB dumps and restore, CPU ML (why not CUDA), upgrades |
 | `tools/beszel/README.md` | Beszel hub + agent: resource history and alerts, first start (key/token), Docker API via the socket proxy, gaps |
 | `docs/fitness-analysis-prompt.md` | Fitness phase 2 idea note: the analysis top apps do (load, recovery bands, zones, predictions, illness warning); `docs/fitness-analysis/` = the 5 queueable notes, one at a time |
 | `games/leafgreen/CLAUDE.md` | LeafGreen Field Notes web app: build, files, game logic |

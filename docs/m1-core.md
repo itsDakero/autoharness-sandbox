@@ -216,6 +216,10 @@ Each check below was run in its live container (`docker exec <name> <test>`) on 
 | scrutiny | `curl` `:8080/api/health` |
 | beszel | `/beszel health --url http://127.0.0.1:8090` (scratch image; the hub's own command, GET `/api/health`); not yet run live |
 | beszel-agent | `/agent health` (scratch image; fails after 90 s without a hub connection); not yet run live |
+| immich | `immich-healthcheck` (the image's own CLI, `/api/server/ping`); not yet run live |
+| immich-machine-learning | `python3` urllib on `:3003/ping`; not yet run live |
+| immich-postgres | `pg_isready -U postgres -d immich`; not yet run live |
+| immich-redis | `redis-cli ping`, grep PONG; not yet run live |
 | hermes | `python3` scans `/proc/*/cmdline` for the `hermes_cli ... gateway run` process (no Discord or model call; tighter than a bare "gateway" match, which also hits the s6 supervisor) |
 
 Already healthy from image or compose, left alone: dashboard, omada, uptime-kuma, jellyfin, gluetun, fitness,

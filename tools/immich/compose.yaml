@@ -1,0 +1,133 @@
+# Immich: family photo/video backup from phones (server + machine learning + its own Postgres and Valkey).
+# Based on Immich's docker-compose.yml for v3.3.5 (github.com/immich-app/immich/releases/tag/v3.3.5);
+# bump immich and immich-machine-learning together, and only follow the release notes for the DB image.
+# Only the server is published; ML, Postgres and Valkey talk to it on the project's own network.
+# ML runs on CPU (tools/immich/README.md, "GPU" says why not CUDA on the GTX 970).
+services:
+  immich:
+    image: ghcr.io/immich-app/immich-server:v3.3.5
+    container_name: immich
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "immich-healthcheck"]   # the image's own check (GET /api/server/ping)
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 300s                    # DB migrations on first start and after upgrades
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      immich-postgres:
+        condition: service_healthy
+      immich-redis:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ}
+      DB_HOSTNAME: immich-postgres
+      DB_USERNAME: postgres
+      DB_PASSWORD: ${IMMICH_DB_PASSWORD:?set in .env}
+      DB_DATABASE_NAME: immich
+      REDIS_HOSTNAME: immich-redis
+      IMMICH_MACHINE_LEARNING_URL: http://immich-machine-learning:3003
+    ports:
+      - "8097:2283"
+    volumes:
+      # originals, thumbnails, encoded video and Immich's nightly DB dumps (library/backups)
+      - ${APPDATA_PATH}/immich/library:/data
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - proxy
+      - immich
+    labels:
+      # Traefik (bonus http://immich.lan)
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.immich.rule=Host(`immich.${DOMAIN}`)
+      - traefik.http.routers.immich.entrypoints=web
+      - traefik.http.services.immich.loadbalancer.server.port=2283
+      # Dashboard
+      - homelab.name=Immich
+      - homelab.group=Tools
+      - homelab.icon=immich
+      - homelab.audience=family
+      - homelab.description=Photo and video backup from our phones
+      - homelab.port=8097
+      # Uptime Kuma (AutoKuma)
+      - kuma.immich.http.name=immich
+      - kuma.immich.http.url=http://${LAN_IP}:8097/api/server/ping
+
+  immich-machine-learning:
+    image: ghcr.io/immich-app/immich-machine-learning:v3.3.5   # CPU image (no -cuda suffix)
+    container_name: immich-machine-learning
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3003/ping', timeout=8)"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ${APPDATA_PATH}/immich/model-cache:/cache   # downloaded models; not backed up
+    networks:
+      - immich
+
+  immich-postgres:
+    # Immich's own Postgres with VectorChord (+ pgvecto.rs for old installs); tag and digest as in v3.3.5's compose
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    container_name: immich-postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d immich || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD:?set in .env}
+      POSTGRES_USER: postgres
+      POSTGRES_DB: immich
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    shm_size: 128mb
+    volumes:
+      # live DB files: not backed up (scripts/backup-excludes.txt); Immich's nightly dump in library/backups is
+      - ${APPDATA_PATH}/immich/postgres:/var/lib/postgresql/data
+    networks:
+      - immich
+
+  immich-redis:
+    image: docker.io/valkey/valkey:9.0.7   # upstream uses the floating valkey:9 (by digest); exact 9.0 patch here
+    container_name: immich-redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - immich
+
+networks:
+  proxy:
+    external: true
+  immich:

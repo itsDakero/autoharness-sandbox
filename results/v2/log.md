@@ -90,3 +90,15 @@ Setup (parent session):
 - last_run.json: `{"run_id": "98fa0982-b2e4-48f3-8fe3-6fa28d76f491-22", "landed": 0, "rejected": 6, "absorbed": 0, "families": ["self_produced", "shape", "structure"], "uncategorized": 0}`
 - global skills now: 
 - child summary: results/v2/tasks/task-7.md
+
+## Task 8: Immich photos
+
+- session=9c3ef1bf-ddce-456d-ba9c-1102b023e5d3 rc=0 secs=217 waited_for_plugin=80s still_running=0
+- tools=22 {'Bash': 16, 'ToolSearch': 1, 'WebFetch': 3, 'Write': 2}
+- skills_before=add-service build-ideas claude-hook-maintenance debug-service remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- skills_after=add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- plugin run files: 22 -> 23
+- files changed: 15 (7 under .claude/)
+- last_run.json: `{"run_id": "9c3ef1bf-ddce-456d-ba9c-1102b023e5d3-22", "landed": 2, "rejected": 4, "absorbed": 0, "families": ["self_produced", "structure"], "uncategorized": 0}`
+- global skills now: upstream-file-fetch 
+- child summary: results/v2/tasks/task-8.md
