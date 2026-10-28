@@ -1,0 +1,15 @@
+{
+  "run_id": "1d140ed9-fdbf-4c02-9783-4371b9a56be9-19",
+  "verdicts": [
+    {
+      "action": "create",
+      "name": "claude-md-upkeep",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}

@@ -25,7 +25,7 @@ The slug, the worktree (`<repo>/.worktrees/<slug>`) and the note with the idea a
    no `docker.sock` outside the socket proxy; app data in `${APPDATA_PATH}/<service>/`; media `:ro`;
    secrets only via env vars named in `.env.example`, none committed; nothing needing sudo outside `bootstrap.sh`.
 4. **Security**: new ports, admin pages without a login, writable mounts, untrusted input reaching a shell.
-5. **Docs**: the docs and CLAUDE.md lines the plan named are updated; a new doc is in `docs/README.md`.
+5. **Docs**: the docs, CLAUDE.md and `scripts/README.md` lines the plan named are updated; a new doc is in `docs/README.md`.
 6. **Always-manual areas** (AdGuard, Omada, Tailscale, firewall, SSH, DNS, deletes, `/mnt/media` writes):
    FAIL if the diff touches them and the plan didn't list them as a manual step for Dan.
 7. **Review focus and reasonable expectation**: check each `Review focus:` item in the plan against

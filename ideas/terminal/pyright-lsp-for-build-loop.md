@@ -43,7 +43,7 @@ Files:
 - .claude/settings.json: add a top-level `"enabledPlugins": {"pyright-lsp@claude-plugins-official": true}`. Change nothing else.
 - .claude/agents/idea-builder.md: in "## Checks", after the py_compile line, add: "If `pyright` is on PATH: `pyright <changed .py files>`. Fix errors on lines you added or changed; report the count of other errors, but don't fix those."
 - docs/m5-pipeline.md: new `### Pyright diagnostics` subsection at the end of Stage C (just before `## Stage D`)
-- CLAUDE.md: add `pyright-setup.sh` to the scripts list in alphabetical order (between `media-cleanup.py` and `qbit-setup.py`: "user runs once: pyright venv + `~/.local/bin` wrappers for the pyright-lsp plugin; prints the repo's baseline"). In the Claude Code kit section, add one line: "Plugin `pyright-lsp` (enabled in project settings) reports type diagnostics after .py edits; needs `scripts/pyright-setup.sh`."
+- scripts/README.md: add a `pyright-setup.sh` bullet in alphabetical order (between `media-cleanup.py` and `qbit-setup.py`: "user runs once: pyright venv + `~/.local/bin` wrappers for the pyright-lsp plugin; prints the repo's baseline"). In `docs/claude-kit.md` (the kit detail moved out of CLAUDE.md), add one line: "Plugin `pyright-lsp` (enabled in project settings) reports type diagnostics after .py edits; needs `scripts/pyright-setup.sh`."
 
 scripts/pyright-setup.sh (`set -euo pipefail`):
 1. Settings: `VENV=$HOME/.local/share/pyright/venv` and `PIN='pyright[nodejs]==1.1.414'` (PyPI, https://pypi.org/project/pyright/; version taken from the note's scout check).

@@ -235,5 +235,5 @@ Shared lists are split so idea branches that add jobs or scripts merge without c
 1. A cron job is one file, `scripts/cron.d/<name>.cron` (one crontab line); `install-cron.sh` builds the crontab from the folder.
 2. Its Kuma push monitor is one fragment, `core/uptime-kuma/compose.d/cron-<name>.yaml`; `scripts/dc.sh` merges every
    `compose.d/*.yaml` of a service dir. `deploy-idea.sh` maps a changed fragment to its service dir, so it still restarts the service.
-3. The `scripts/` list in `CLAUDE.md` has one script per line, in alphabetical order.
+3. The script list in `scripts/README.md` has one bullet per script, in alphabetical order.
 4. New keys in `.env.example` go in their service's section, not at the end.

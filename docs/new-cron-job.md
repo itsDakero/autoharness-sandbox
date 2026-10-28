@@ -55,7 +55,7 @@ service + timer in `systemd/`, an `OnFailure=` ntfy unit, and a line in `bootstr
   Kuma 2.x caps intervals at 2073600 s (24 d); a monthly job can't be covered by a push monitor.
 
 ## 4. Docs and lists
-- [ ] `CLAUDE.md` `scripts/` list: one line for the script, in its alphabetical spot, starting with
+- [ ] `scripts/README.md`: one bullet for the script, in its alphabetical spot, starting with
       `(cron …: what it does; where it reports)`.
 - [ ] `docs/m1-core.md` "Cron dead-man's switch": add the job to the intervals line if it is every-minute, 5-min,
       hourly or weekly, and to the `--ok 0,1` line if it uses it.
@@ -78,6 +78,6 @@ service + timer in `systemd/`, an `OnFailure=` ntfy unit, and a line in `bootstr
       shows the monitor up. It also appears on the dashboard's "Cron jobs" tile.
 
 ## Removing a job
-Delete `scripts/cron.d/<name>.cron`, `core/uptime-kuma/compose.d/cron-<name>.yaml`, the script and its `CLAUDE.md`
-line and doc mentions together; then `install-cron.sh` and `dc.sh core/uptime-kuma up -d` from main, so the crontab
+Delete `scripts/cron.d/<name>.cron`, `core/uptime-kuma/compose.d/cron-<name>.yaml`, the script and its `scripts/README.md`
+bullet and doc mentions together; then `install-cron.sh` and `dc.sh core/uptime-kuma up -d` from main, so the crontab
 line and the monitor both go (AutoKuma deletes the monitor).

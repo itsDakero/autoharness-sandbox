@@ -33,6 +33,6 @@ It follows the cron rules: `scripts/cron.d/jellyfin-watch-stats.cron` wrapped in
 
 ## Checks
 `python3 -m py_compile`, then `--dry-run` against the live server shows a sensible week. Add the script to
-CLAUDE.md's scripts list (alphabetical) and a line to `docs/m2-media.md`.
+`scripts/README.md` (alphabetical) and a line to `docs/m2-media.md`.
 
 _Added by Claude in the terminal for Dan, 2026-10-28._

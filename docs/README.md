@@ -4,7 +4,9 @@ Read this first, then only the doc you need. One line per doc; add a line when y
 
 | Doc | Covers |
 |---|---|
-| `CLAUDE.md` (repo root) | Rules, layout, ports, labels, the Claude Code kit. Always loaded. |
+| `CLAUDE.md` (repo root) | Rules, layout, ports, labels, the kit's must-knows. Always loaded; keep it short (reference goes here, in `docs/`). |
+| `scripts/README.md` | Every script in `scripts/`, one bullet each, alphabetical: usage, cron schedule, where it reports |
+| `docs/claude-kit.md` | Claude Code kit in full: skills, agents, the guard/compose-check/loop-alert hooks, permission rules |
 | `docs/m1-core.md` | Core services: Traefik, AdGuard, Kuma, ntfy, Dozzle, the dashboard (widgets, admin login), phone alerts |
 | `docs/m2-media.md` | Media stack: GPU, Gluetun + qBittorrent, arr apps and the remote 720p pair, Jellyfin, Seerr |
 | `docs/m3-omada.md` | Omada controller: host networking, UFW ports, the restore, auto-backup, upgrades |
@@ -12,7 +14,7 @@ Read this first, then only the doc you need. One line per doc; add a line when y
 | `docs/m5-pipeline.md` | Idea pipeline: dashboard idea box, Discord feed, the background build loop and deploys |
 | `docs/m6-research.md` | M6 plan: scout agent + scoring/Proposed tab, Mac mini model server, assistant agent (Hermes), pre-planner researcher |
 | `docs/mac-mini.md` | Mac mini model server (M6 stage C): headless setup, Tailscale, Ollama as a launchd agent, checks, model bench |
-| `docs/new-cron-job.md` | Checklist for adding a cron job: script, `scripts/cron.d/` entry, Kuma push monitor fragment (token suffix, intervals), CLAUDE.md line, checks, deploy, removal |
+| `docs/new-cron-job.md` | Checklist for adding a cron job: script, `scripts/cron.d/` entry, Kuma push monitor fragment (token suffix, intervals), `scripts/README.md` bullet, checks, deploy, removal |
 | `docs/services.md` | Generated service catalog: every dashboard tile by group (path, port, audience, description) and the compose services with no homelab labels; `scripts/service-catalog.py` |
 | `docs/restore.md` | Restoring a file, an app, or the whole server from backups |
 | `docs/restore-runbook.md` | Restoring one service's appdata from restic: its folders (multi-folder services, excluded paths), picking a snapshot, swap in, checks, rollback, per-service notes |

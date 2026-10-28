@@ -107,7 +107,7 @@ Checks the builder must run: <commands, e.g. scripts/dc.sh <worktree>/<dir> conf
 Review focus: <up to 5 inputs or conditions the idea implies but the plan doesn't otherwise cover
   (an API down or slow, an empty or odd response, two runs overlapping, a full disk, a missing file),
   each as "<condition> -> <expected behaviour>"; None for docs only>
-Docs: <which docs/CLAUDE.md lines change: port table, layout, scripts list, a runbook section>
+Docs: <which docs/CLAUDE.md lines change: port table, layout, scripts/README.md bullet, a runbook section>
 
 ## Manual steps
 <what Dan does at deploy: fill env vars, sudo ./bootstrap.sh, first-run setup> or None

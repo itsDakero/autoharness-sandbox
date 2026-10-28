@@ -114,3 +114,15 @@ Setup (parent session):
 - last_run.json: `{"run_id": "e9b972da-70a4-4d38-9a37-43fcd6ddf6ee-11", "landed": 0, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
 - global skills now: upstream-file-fetch 
 - child summary: results/v2/tasks/task-9.md
+
+## Task 10: slim CLAUDE.md, scripts/README.md
+
+- session=1d140ed9-fdbf-4c02-9783-4371b9a56be9 rc=0 secs=122 waited_for_plugin=40s still_running=0
+- tools=19 {'Bash': 19}
+- skills_before=add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- skills_after=add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- plugin run files: 24 -> 25
+- files changed: 20 (11 under .claude/)
+- last_run.json: `{"run_id": "1d140ed9-fdbf-4c02-9783-4371b9a56be9-19", "landed": 0, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
+- global skills now: upstream-file-fetch 
+- child summary: results/v2/tasks/task-10.md
