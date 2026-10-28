@@ -174,3 +174,15 @@ Setup (parent session):
 - last_run.json: `{"run_id": "5dadb8f6-c15b-494d-932d-89439abbe293-10", "landed": 0, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
 - global skills now: upstream-file-fetch 
 - child summary: results/v2/tasks/task-14.md
+
+## Task 15: rules review
+
+- session=bb5bdcf7-d741-48cf-aada-5bb6ae72ed30 rc=0 secs=74 waited_for_plugin=20s still_running=0
+- tools=12 {'Skill': 1, 'Bash': 11}
+- skills_before=add-cron-job add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- skills_after=add-cron-job add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- plugin run files: 29 -> 30
+- files changed: 9 (7 under .claude/)
+- last_run.json: `{"run_id": "bb5bdcf7-d741-48cf-aada-5bb6ae72ed30-12", "landed": 0, "rejected": 3, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
+- global skills now: upstream-file-fetch 
+- child summary: results/v2/tasks/task-15.md

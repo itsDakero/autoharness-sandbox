@@ -1,0 +1,33 @@
+{
+  "run_id": "bb5bdcf7-d741-48cf-aada-5bb6ae72ed30-12",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "rules-audit",
+      "ok": false,
+      "findings": [
+        "structure"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "rules-audit",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "rules-audit",
+      "ok": false,
+      "findings": [
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}
