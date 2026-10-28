@@ -1,4 +1,5 @@
-# Read-only Docker API for Traefik, AutoKuma, Uptime Kuma (docker monitors), the dashboard and Dozzle.
+# Read-only Docker API for Traefik, AutoKuma, Uptime Kuma (docker monitors), the dashboard, Dozzle and the
+# Beszel agent.
 # The only place docker.sock is mounted. No UI, so no Traefik/dashboard/Kuma labels.
 services:
   docker-socket-proxy:
@@ -17,12 +18,12 @@ services:
         max-size: "10m"
         max-file: "3"
     environment:
-      # Allowed (GET only): what Traefik, AutoKuma, the dashboard and Dozzle need.
-      CONTAINERS: 1
+      # Allowed (GET only): what Traefik, AutoKuma, the dashboard, Dozzle and the Beszel agent need.
+      CONTAINERS: 1                  # Beszel: /containers/json, /<id>/stats, /<id>/json, /<id>/logs
       EVENTS: 1
-      INFO: 1                        # Dozzle (host name, engine info)
+      INFO: 1                        # Dozzle (host name, engine info), Beszel (engine info)
       PING: 1
-      VERSION: 1
+      VERSION: 1                     # Beszel: engine version check
       # Everything else denied, including all writes.
       POST: 0
     volumes:

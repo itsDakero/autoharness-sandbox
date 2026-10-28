@@ -1,0 +1,73 @@
+{
+  "run_id": "98fa0982-b2e4-48f3-8fe3-6fa28d76f491-22",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "shape"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "update-stack",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    }
+  ]
+}

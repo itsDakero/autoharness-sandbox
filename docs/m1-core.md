@@ -214,6 +214,8 @@ Each check below was run in its live container (`docker exec <name> <test>`) on 
 | seerr | `wget` `:5055/api/v1/status` |
 | changedetection | `python3` urllib on `:5000/` |
 | scrutiny | `curl` `:8080/api/health` |
+| beszel | `/beszel health --url http://127.0.0.1:8090` (scratch image; the hub's own command, GET `/api/health`); not yet run live |
+| beszel-agent | `/agent health` (scratch image; fails after 90 s without a hub connection); not yet run live |
 | hermes | `python3` scans `/proc/*/cmdline` for the `hermes_cli ... gateway run` process (no Discord or model call; tighter than a bare "gateway" match, which also hits the s6 supervisor) |
 
 Already healthy from image or compose, left alone: dashboard, omada, uptime-kuma, jellyfin, gluetun, fitness,

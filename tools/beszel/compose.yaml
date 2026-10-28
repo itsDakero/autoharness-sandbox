@@ -1,0 +1,95 @@
+# Beszel: host + per-container CPU/memory/disk/network history with alerts. The hub is the web UI (PocketBase);
+# the agent collects and connects out to the hub over the project's own network (WebSocket, HUB_URL + TOKEN).
+# The agent reads the Docker API through docker-socket-proxy (GET only), never docker.sock. See README.md.
+services:
+  beszel:
+    image: henrygd/beszel:0.21.1
+    container_name: beszel
+    restart: unless-stopped
+    healthcheck:
+      # scratch image: the hub's own health command (GET /api/health)
+      test: ["CMD", "/beszel", "health", "--url", "http://127.0.0.1:8090"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      APP_URL: http://${LAN_IP}:8089
+    ports:
+      - "8089:8090"                  # LAN + tailnet; host port = homelab.port
+    volumes:
+      - ${APPDATA_PATH}/beszel/data:/beszel_data
+    networks:
+      - proxy
+      - beszel
+    labels:
+      # Traefik (bonus http://beszel.lan)
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.beszel.rule=Host(`beszel.${DOMAIN}`)
+      - traefik.http.routers.beszel.entrypoints=web
+      - traefik.http.services.beszel.loadbalancer.server.port=8090
+      # Dashboard
+      - homelab.name=Beszel
+      - homelab.group=Infrastructure
+      - homelab.icon=beszel
+      - homelab.audience=admin
+      - homelab.description=Server and container resource history, alerts
+      - homelab.port=8089
+      # Uptime Kuma (AutoKuma) – checks the published port, like family devices use it
+      - kuma.beszel.http.name=beszel
+      - kuma.beszel.http.url=http://${LAN_IP}:8089/api/health
+
+  beszel-agent:
+    # Not a web service: no port, no Traefik/dashboard labels. Bridge network, not host: host networking
+    # can't reach docker-socket-proxy (see README.md "Gaps": no host NIC throughput).
+    image: henrygd/beszel-agent:0.21.1
+    container_name: beszel-agent
+    restart: unless-stopped
+    healthcheck:
+      # scratch image: fails when the agent has had no hub connection for 90 s
+      test: ["CMD", "/agent", "health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      beszel:
+        condition: service_healthy
+    environment:
+      TZ: ${TZ}
+      # Docker API: read-only proxy (GET /containers/*, /info, /version; POST=0)
+      DOCKER_HOST: tcp://docker-socket-proxy:2375
+      LISTEN: 45876                  # hub->agent SSH fallback, on the beszel network only (not published)
+      HUB_URL: http://beszel:8090
+      # From the hub's "Add system" dialog (README.md "First start"); empty until then, so the agent restarts.
+      KEY: ${BESZEL_AGENT_KEY:-}
+      TOKEN: ${BESZEL_AGENT_TOKEN:-}
+    volumes:
+      - ${APPDATA_PATH}/beszel/agent:/var/lib/beszel-agent
+      # disk usage for the extra disks (read-only; the agent only runs statfs on them)
+      - /mnt/media:/extra-filesystems/media:ro
+      - /mnt/backup:/extra-filesystems/backup:ro
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - beszel
+      - socket-proxy
+
+networks:
+  proxy:
+    external: true
+  socket-proxy:
+    external: true
+  beszel:

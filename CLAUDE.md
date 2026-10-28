@@ -16,7 +16,8 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   lms = Last Man Standing picker (Odds API), admin; see `tools/lms/README.md`,
   mealie = recipes + meal plans + shopping lists, family; see `tools/mealie/README.md`,
   paperless = Paperless-ngx documents + OCR (+ its own Redis), admin; see `tools/paperless/README.md`,
-  stirling-pdf = PDF merge/split/convert/OCR in the browser, family; see `tools/stirling-pdf/README.md`)
+  stirling-pdf = PDF merge/split/convert/OCR in the browser, family; see `tools/stirling-pdf/README.md`,
+  beszel = host + per-container resource history and alerts (hub + agent, Docker API via the socket proxy), admin; see `tools/beszel/README.md`)
 - `games/` – game helpers (leafgreen = LeafGreen Field Notes, walkthrough + Nuzlocke web app; own `CLAUDE.md`)
 - `forensics/` – forensic parsers: Python scripts run by hand, one dir per parser (see `forensics/README.md`)
 - `templates/` – compose template with the required labels
@@ -168,6 +169,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
 | 8086 | fitness |
 | 8087 | changedetection |
 | 8088 | omada (`homelab.port`; redirects to 8043; host network, no Traefik) |
+| 8089 | beszel |
 | 8090 | books |
 | 8091 | wardrobe |
 | 8092 | fpl |
