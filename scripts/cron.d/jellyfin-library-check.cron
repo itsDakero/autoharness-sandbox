@@ -1,0 +1,1 @@
+30 9 * * * $R jellyfin-library-check 300 --ok 0,1 $REPO/scripts/jellyfin-library-check.py

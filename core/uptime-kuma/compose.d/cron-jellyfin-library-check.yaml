@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/jellyfin-library-check.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-jellyfin-library-check.push.name=cron-jellyfin-library-check
+      - kuma.cron-jellyfin-library-check.push.push_token=${KUMA_CRON_PUSH_SECRET:-}jellyfinlibraryc
+      - kuma.cron-jellyfin-library-check.push.interval=93600
+      - kuma.cron-jellyfin-library-check.push.max_retries=0

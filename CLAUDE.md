@@ -44,6 +44,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   - `image-check.py` (cron Mondays: Discord digest of newer image tags; ntfy on security releases; `--propose`: a Risk 1 note in ideas/proposed/ per patch bump)
   - `image-prune.sh [--apply]` (old `homelab/*` tags beyond the newest two + build cache >7d; lists other unused images for Dan; deploy-idea runs it after a build)
   - `install-cron.sh` (entries from `scripts/cron.d/<name>.cron`; `--check`: daily Discord on drift; deploy-idea.sh reinstalls on drift)
+  - `jellyfin-library-check.py [--dry-run]` (cron daily 09:30: Discord when a Jellyfin library is missing, empty or its scan failed/stalled)
   - `jellyfin-setup.py` (libraries + NVENC; `plugins` = Intro Skipper)
   - `kuma-status.py`
   - `lms-job.sh <odds|alerts|results>` (cron: LMS odds, Discord nudges, results)

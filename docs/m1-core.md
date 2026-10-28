@@ -82,7 +82,7 @@
 - Intervals (AutoKuma labels on `core/uptime-kuma`): every-minute jobs (qbit-watchdog, idea-actions, seerr-route)
   600 s; ops-actions (every 5 min) 900 s; daily jobs 93600 s (26 h); weekly jobs (arr-missing-search, storage-cleanup, image-check, fitness-weekly)
   691200 s (8 d). Kuma 2.x caps intervals at 2073600 s.
-- `--ok 0,1`: ha-backup-check, scrutiny-check, disk-space-check, cert-expiry-check and self-check exit 1 after sending their own
+- `--ok 0,1`: ha-backup-check, scrutiny-check, disk-space-check, cert-expiry-check, jellyfin-library-check and self-check exit 1 after sending their own
   alert, so exit 1 counts as up (no double alert). Crashes (other codes), timeouts and missed runs still alert.
 - Token: `<KUMA_CRON_PUSH_SECRET><suffix>`, exactly 32 letters/digits (Kuma rejects anything else, and AutoKuma's
   sync then stalls). Secret: 16 hex (`openssl rand -hex 8`); suffix: the job name without hyphens, padded with `0` or

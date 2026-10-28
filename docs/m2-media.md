@@ -203,6 +203,11 @@ missing search). `report` writes `${APPDATA_PATH}/cleanup/storage-report-YYYY-MM
   libraries Movies `/mnt/media/movies`, TV `/mnt/media/tv`, Movies (Remote) `/mnt/media/movies-720p`,
   TV (Remote) `/mnt/media/tv-720p`; transcoding NVENC, hardware decode H.264/MPEG-2/MPEG-4/VC-1 only,
   no 10-bit decode, H.264 output (no HEVC/AV1 encoding), tone mapping on.
+- `scripts/jellyfin-library-check.py` (cron daily 09:30, Kuma push `cron-jellyfin-library-check`, read-only GETs):
+  one Discord message when one of those four libraries is missing or lost its folder, holds no items, or the
+  "Scan Media Library" task last ended Failed/Aborted or more than 36 h ago; repeats daily until fixed. Jellyfin
+  down: exit 0 (its own monitor alerts). `--dry-run` prints, posts nothing. Logs: `journalctl -t jellyfin-library-check`.
+  Its library list mirrors `jellyfin-setup.py`'s; change both together.
 - Intro Skipper plugin (skip intro/credits button): `scripts/jellyfin-setup.py plugins` adds the repository
   `https://intro-skipper.org/manifest.json`, installs the pinned 12.0.5.0 (stable), clears the plugin
   auto-update task's triggers (pinned like the images) and sets the analysis tasks to daily 02:00, max 4h.
