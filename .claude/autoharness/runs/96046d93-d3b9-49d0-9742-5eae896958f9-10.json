@@ -1,0 +1,25 @@
+{
+  "run_id": "96046d93-d3b9-49d0-9742-5eae896958f9-10",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "claude-hook-maintenance",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    }
+  ]
+}

@@ -125,7 +125,8 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   Tests: `python3 -m unittest discover -s scripts/tests` (`test_guard.py`, blocked/allowed/ask cases).
 - Hooks `Notification` (permission_prompt), `PermissionDenied` and `StopFailure` run `scripts/loop-alert.sh`.
 - Hook `compose-check.sh` (PostToolUse) runs `config -q` after every `compose.yaml` edit and re-checks the
-  whole file (pinned images, docker.sock). Read-write media mounts are approved via the guard's ask.
+  whole file (pinned images, docker.sock), then `compose-lint.py` on it (its findings + repo-wide port-unique;
+  skipped with a warning if PyYAML or the script is missing). Read-write media mounts are approved via the guard's ask.
 - Permissions: git, `dc.sh` config/ps/logs and homelab `curl` run freely; up/down/stop/restart ask;
   `rm -rf`, `sudo`, reading `.env` and `dc.sh` up/down/build/… on `.worktrees/*` are denied. Exception: `dc.sh core/dashboard` build/up/restart run
   freely. Ask rules beat allow rules and can't say "except", so the up/down/stop/restart ask rules name
