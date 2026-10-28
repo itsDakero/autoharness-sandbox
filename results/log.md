@@ -136,3 +136,15 @@ Plugin: autoharness 0.5.3, default settings (reflect every 50 tool calls, plus a
 
 - global skills now: bash-command-shape 
 
+## Task 12: jellyfin watch stats idea note
+
+- rc=0 secs=105 still_running_spawn=0
+- tools=10 {'Bash': 6, 'Read': 2, 'Grep': 1, 'Write': 1}
+- skills_before=add-service build-ideas debug-service remove-service scout script-change-sync update-stack
+- skills_after=add-service build-ideas debug-service remove-service scout script-change-sync update-stack 
+- plugin runs/ files so far: 12
+- files changed: 8 (6 under .claude/)
+- last_run.json: `{"run_id": "22af2be6-21aa-48c4-9d4f-e973a3d6d2a9-9", "landed": 1, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
+
+- global skills now: bash-command-shape 
+

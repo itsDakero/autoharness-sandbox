@@ -1,0 +1,21 @@
+{
+  "run_id": "22af2be6-21aa-48c4-9d4f-e973a3d6d2a9-9",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "bash-command-shape",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "idea-note-writing",
+      "ok": false,
+      "findings": [
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}
