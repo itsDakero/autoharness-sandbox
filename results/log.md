@@ -124,3 +124,15 @@ Plugin: autoharness 0.5.3, default settings (reflect every 50 tool calls, plus a
 
 - global skills now: bash-command-shape 
 
+## Task 11: shellcheck fixes
+
+- rc=0 secs=41 still_running_spawn=0
+- tools=6 {'Bash': 5, 'Skill': 1}
+- skills_before=add-service build-ideas debug-service remove-service scout script-change-sync update-stack
+- skills_after=add-service build-ideas debug-service remove-service scout script-change-sync update-stack 
+- plugin runs/ files so far: 11
+- files changed: 7 (6 under .claude/)
+- last_run.json: `{"run_id": "783890bb-52ec-44c6-912e-857d24589afd-6", "landed": 1, "rejected": 0, "absorbed": 0, "families": [], "uncategorized": 0}`
+
+- global skills now: bash-command-shape 
+

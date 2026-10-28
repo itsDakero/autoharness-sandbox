@@ -1,0 +1,12 @@
+{
+  "run_id": "783890bb-52ec-44c6-912e-857d24589afd-6",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "bash-command-shape",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    }
+  ]
+}
