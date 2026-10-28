@@ -1,0 +1,28 @@
+{
+  "run_id": "14507be0-3b95-42da-94a6-9843482114a9-13",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "bash-command-shape",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "bash-command-shape",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "restore-service-appdata",
+      "ok": false,
+      "findings": [
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}

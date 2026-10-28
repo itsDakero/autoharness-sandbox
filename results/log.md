@@ -88,3 +88,15 @@ Plugin: autoharness 0.5.3, default settings (reflect every 50 tool calls, plus a
 
 - global skills now: bash-command-shape 
 
+## Task 8: restore runbook
+
+- rc=0 secs=126 still_running_spawn=0
+- tools=14 {'Bash': 7, 'Grep': 1, 'Write': 1, 'Read': 1, 'Edit': 4}
+- skills_before=add-service build-ideas debug-service remove-service scout script-change-sync update-stack
+- skills_after=add-service build-ideas debug-service remove-service scout script-change-sync update-stack 
+- plugin runs/ files so far: 8
+- files changed: 10 (6 under .claude/)
+- last_run.json: `{"run_id": "14507be0-3b95-42da-94a6-9843482114a9-13", "landed": 2, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
+
+- global skills now: bash-command-shape 
+

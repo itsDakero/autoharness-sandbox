@@ -33,6 +33,7 @@ sudo stat -c '%u:%g %a %n' /srv/homelab/* | sudo tee /srv/homelab/keep/owners.tx
 Example: `seerr`. Replace `seerr` with the service, and `media/seerr` with its
 compose dir.
 Jellyfin's config is about 900 MB: the same steps work, they just take longer.
+Services with several folders, older snapshots and per-service notes: `docs/restore-runbook.md`.
 
 1. List the snapshots and pick one.
 ```bash
