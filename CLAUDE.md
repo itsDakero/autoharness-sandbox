@@ -119,6 +119,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   `/proc/*/environ`, recursive grep without `--exclude`); `sudo`; writes to `/mnt/media`; `docker.sock` outside
   the socket proxy; `:latest`/untagged images; `ANTHROPIC_API_KEY`. A media mount without `:ro` asks first.
   Fails closed (`onFailure: block`, 10 s timeout): a guard crash or timeout blocks the call.
+  Tests: `python3 -m unittest discover -s scripts/tests` (`test_guard.py`, blocked/allowed/ask cases).
 - Hooks `Notification` (permission_prompt), `PermissionDenied` and `StopFailure` run `scripts/loop-alert.sh`.
 - Hook `compose-check.sh` (PostToolUse) runs `config -q` after every `compose.yaml` edit and re-checks the
   whole file (pinned images, docker.sock). Read-write media mounts are approved via the guard's ask.

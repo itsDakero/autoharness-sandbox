@@ -12,7 +12,7 @@ Keep each Bash call to one plain command with absolute paths. The matcher refuse
 - Do not assign shell variables in the same command that uses them. Inline the literal path (`assigned-variable`).
 - Do not chain several distinct operations with `&&` or `;` (syntax check, generate, run, list). Make one call per step (`too-complex`, `no-rule-match`).
 - An inline env prefix (`VAR=x docker compose ...`) is refused like an assignment; pass values through `.env` or ask the user to run it.
-- A plain `python3 -c "..."` with no pipe was still refused ("requires approval"). To read a YAML or JSON file, use Read or Grep instead.
+- A plain `python3 -c "..."` with no pipe was still refused ("requires approval"). To read a YAML or JSON file, use Read or Grep instead. `python3 -m unittest discover -s <abs path>` (no pipe, no `cd`, no `2>&1`) was also refused with "This command requires approval", so a test run may need the user to run it.
 - Do not start background servers and kill them with `pkill -f` in the same call. Run them as separate calls, and report any step that was refused.
 - A raw `docker compose --env-file <path> -f <path> config -q` was refused ("requires approval", `no-rule-match`). Use the project's own compose wrapper with its default env instead, or hand the exact command to the user.
 - `command -v X && ... || ...` chains are refused as shell operators ("uses shell operators that require approval"). Split into single calls, or use Read/Grep to inspect files.

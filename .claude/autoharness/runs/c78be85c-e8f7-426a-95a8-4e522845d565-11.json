@@ -1,0 +1,22 @@
+{
+  "run_id": "c78be85c-e8f7-426a-95a8-4e522845d565-11",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "bash-command-shape",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "guard-hook-tests",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}

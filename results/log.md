@@ -112,3 +112,15 @@ Plugin: autoharness 0.5.3, default settings (reflect every 50 tool calls, plus a
 
 - global skills now: bash-command-shape 
 
+## Task 10: guard.py tests
+
+- rc=0 secs=157 still_running_spawn=0
+- tools=12 {'Bash': 6, 'Read': 2, 'Write': 1, 'Skill': 1, 'Grep': 1, 'Edit': 1}
+- skills_before=add-service build-ideas debug-service remove-service scout script-change-sync update-stack
+- skills_after=add-service build-ideas debug-service remove-service scout script-change-sync update-stack 
+- plugin runs/ files so far: 10
+- files changed: 9 (6 under .claude/)
+- last_run.json: `{"run_id": "c78be85c-e8f7-426a-95a8-4e522845d565-11", "landed": 1, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
+
+- global skills now: bash-command-shape 
+
