@@ -3,7 +3,8 @@
 Reference for the skills, agents, hooks and permissions under `.claude/`. `CLAUDE.md` keeps only the rules a
 session needs every time; this is the detail. Update it when a skill, agent, hook or permission rule changes.
 
-- Skills (user-invoked): `/add-service <idea>`, `/remove-service <name>`, `/debug-service <name>`
+- Skills (user-invoked): `/add-service <idea>`, `/add-cron-job <name>` (script, `scripts/cron.d/` entry, Kuma push
+  fragment, README bullet, sandbox checks; follows `docs/new-cron-job.md`), `/remove-service <name>`, `/debug-service <name>`
   (read-only), `/update-stack [name]`, `/build-ideas` (background loop, run as `/loop /build-ideas`: subagents
   `idea-planner` (Opus), `idea-researcher` (Sonnet, when the planner says RESEARCH), `idea-builder` (Sonnet),
   `idea-reviewer` (Opus) in `.claude/agents/`; reviewed builds wait on `idea/<slug>` branches for

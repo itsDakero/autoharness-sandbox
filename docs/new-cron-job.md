@@ -2,6 +2,7 @@
 
 Every step for adding a cron job. Background (cron-run.sh, push tokens, throttle) is in `docs/m1-core.md`
 "Cron dead-man's switch"; the merge rules are in `docs/m5-pipeline.md` "Merge-friendly registries".
+The `/add-cron-job` skill walks through these steps.
 `<name>` below is the job name: lowercase-kebab, unique, and the same in every file.
 
 Jobs that need root (e.g. anything reading the restic repo) are not cron jobs: they get a systemd

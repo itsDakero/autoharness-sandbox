@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/docs-index-check.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-docs-index-check.push.name=cron-docs-index-check
+      - kuma.cron-docs-index-check.push.push_token=${KUMA_CRON_PUSH_SECRET:-}docsindexcheck00
+      - kuma.cron-docs-index-check.push.interval=691200
+      - kuma.cron-docs-index-check.push.max_retries=0

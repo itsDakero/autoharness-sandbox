@@ -1,0 +1,1 @@
+35 9 * * 1 $R docs-index-check 300 --ok 0,1 $REPO/scripts/docs-index-check.sh

@@ -1,0 +1,26 @@
+{
+  "run_id": "1b4fa4f6-94a9-4d1c-b9f8-61dfd7f580e1-14",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "add-cron-job",
+      "ok": false,
+      "findings": [
+        "safety",
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    }
+  ]
+}

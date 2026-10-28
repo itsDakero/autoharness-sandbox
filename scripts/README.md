@@ -24,6 +24,7 @@ Rules for new scripts and cron jobs are in `CLAUDE.md` (Layout, `scripts/`); the
 - `discord.sh "<msg>"|test` (Discord feed: non-urgent; ntfy stays for urgent alerts)
 - `disk-space-check.sh` (cron: ntfy when a disk fills; media 70%, system/backup 85%, any 95%)
 - `docker-user-rules.sh` (root: DOCKER-USER rule, SMB from the HA Pi only)
+- `docs-index-check.sh [--dry-run]` (cron Mondays 09:35: Discord line when a file in `docs/` is not listed in `docs/README.md`; exit 1 after it, 2 when the post fails)
 - `fitness-weekly.sh` (cron Sundays 19:00: the fitness app's weekly written summary to Discord; Mac mini model)
 - `fpl-job.sh <job> <threshold> <secs>` (cron: one FPL collector pull run inside the fpl container; Discord once after N failures in a row)
 - `fpl-web-job.sh <solve|deadline|teams|players>` (cron: daily solver run 06:45, deadline Discord line 18:00, hourly team model :25, hourly player model :40)

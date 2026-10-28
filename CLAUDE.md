@@ -64,7 +64,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
 
 ## Claude Code kit (`.claude/`)
 Skills, agents, hooks and permissions: `docs/claude-kit.md`. Every session needs only this:
-- Skills: `/add-service`, `/remove-service`, `/debug-service` (read-only), `/update-stack`, `/build-ideas`
+- Skills: `/add-service`, `/add-cron-job`, `/remove-service`, `/debug-service` (read-only), `/update-stack`, `/build-ideas`
   (loop: `docs/m5-pipeline.md`), `/scout` (M6: `docs/m6-research.md`).
 - Hook `guard.py` blocks `.env` reads/edits, indirect secret dumps (`compose config` without `-q`, `docker inspect`
   without a safe `--format`, env dumps, recursive grep without `--exclude`), `sudo`, `/mnt/media` writes,
