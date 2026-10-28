@@ -172,3 +172,15 @@ Plugin: autoharness 0.5.3, default settings (reflect every 50 tool calls, plus a
 
 - global skills now: bash-command-shape 
 
+## Task 15: rule review
+
+- rc=0 secs=175 still_running_spawn=0
+- tools=25 {'Bash': 16, 'Read': 7, 'Edit': 1, 'Grep': 1}
+- skills_before=add-service build-ideas debug-service remove-service scout script-change-sync update-stack
+- skills_after=add-service build-ideas debug-service remove-service rules-audit scout script-change-sync update-stack 
+- plugin runs/ files so far: 15
+- files changed: 9 (7 under .claude/)
+- last_run.json: `{"run_id": "833fa3b8-69af-4102-be62-ff90b7da24fb-24", "landed": 1, "rejected": 2, "absorbed": 0, "families": ["safety", "structure"], "uncategorized": 0}`
+
+- global skills now: bash-command-shape 
+

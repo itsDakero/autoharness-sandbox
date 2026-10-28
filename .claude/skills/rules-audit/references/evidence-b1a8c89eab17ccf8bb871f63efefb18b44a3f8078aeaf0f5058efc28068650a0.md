@@ -1,0 +1,2 @@
+Review the whole diff since the first commit (git diff 91e1616) against the CLAUDE.md rules and fix any breaks.
+I checked everything changed since `91e1616` against the CLAUDE.md rules. I found two breaks, fixed one, and the other still needs you. I couldn't run the guard tests, so their status is unknown.

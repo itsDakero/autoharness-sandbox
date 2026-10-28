@@ -53,8 +53,8 @@ Every step for adding a cron job. Background (cron-run.sh, push tokens, throttle
 ## 4. Docs and lists
 - [ ] `CLAUDE.md` `scripts/` list: one line for the script, in its alphabetical spot, starting with
       `(cron …: what it does; where it reports)`.
-- [ ] `docs/m1-core.md` "Cron dead-man's switch": add the job to the intervals line if it is every-minute, 5-min or
-      weekly, and to the `--ok 0,1` line if it uses it.
+- [ ] `docs/m1-core.md` "Cron dead-man's switch": add the job to the intervals line if it is every-minute, 5-min,
+      hourly or weekly, and to the `--ok 0,1` line if it uses it.
 - [ ] The service's own README or milestone doc, if the job belongs to one (e.g. `tools/fpl/README.md`).
 
 ## 5. Checks before handing it over
