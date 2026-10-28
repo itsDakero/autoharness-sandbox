@@ -22,7 +22,7 @@ Per-task details: `log.md`. Each child's own summary: `tasks/task-N.md`.
 
 | # | Task | Result |
 |---|---|---|
-| 1 | `scripts/compose-lint.py`: checks every compose file against the CLAUDE.md rules | Done. 63 tests |
+| 1 | `scripts/compose-lint.py`: checks every compose file against the CLAUDE.md rules | Done. 43 tests (the child said 62; it miscounted) |
 | 2 | Fix what compose-lint found | 2 findings, both false positives (adguard/omada logging is left out on purpose). It fixed the linter, not the compose files |
 | 3 | PostToolUse hook runs compose-lint on each compose edit | Done. Also re-wired the hook (v2 settings had dropped it). Fails open |
 | 4 | shellcheck pass | 12 findings in 7 scripts. 3 real fixes, the rest suppressed with reasons |
