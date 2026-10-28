@@ -1,0 +1,16 @@
+{
+  "run_id": "7aada2f9-0471-4910-b73c-47d88426a10e-5",
+  "verdicts": [
+    {
+      "action": "create",
+      "name": "script-unit-tests",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}

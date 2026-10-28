@@ -138,3 +138,15 @@ Setup (parent session):
 - last_run.json: `{"run_id": "1b4fa4f6-94a9-4d1c-b9f8-61dfd7f580e1-14", "landed": 0, "rejected": 1, "absorbed": 0, "families": ["safety", "self_produced", "structure"], "uncategorized": 0}`
 - global skills now: upstream-file-fetch 
 - child summary: results/v2/tasks/task-11.md
+
+## Task 12: ops-actions tests
+
+- session=7aada2f9-0471-4910-b73c-47d88426a10e rc=0 secs=87 waited_for_plugin=40s still_running=0
+- tools=5 {'Bash': 4, 'Write': 1}
+- skills_before=add-cron-job add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- skills_after=add-cron-job add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- plugin run files: 26 -> 27
+- files changed: 8 (6 under .claude/)
+- last_run.json: `{"run_id": "7aada2f9-0471-4910-b73c-47d88426a10e-5", "landed": 0, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
+- global skills now: upstream-file-fetch 
+- child summary: results/v2/tasks/task-12.md
