@@ -1,4 +1,7 @@
 {
+  "enabledPlugins": {
+    "autoharness@autoharness": true
+  },
   "extraKnownMarketplaces": {
     "autoharness": {
       "source": {
@@ -6,8 +9,5 @@
         "repo": "tigerless-labs/autoharness"
       }
     }
-  },
-  "enabledPlugins": {
-    "autoharness@autoharness": true
   }
 }
