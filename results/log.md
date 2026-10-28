@@ -184,3 +184,9 @@ Plugin: autoharness 0.5.3, default settings (reflect every 50 tool calls, plus a
 
 - global skills now: bash-command-shape 
 
+## Wrap-up (parent session)
+
+- Made the 3 new cron scripts executable (task 15 found them `100644`; the child's `chmod` was refused).
+- Ran `python3 -m unittest scripts/tests/test_guard.py`: 20 tests, OK.
+- Task 11 did nothing: shellcheck installs were all refused.
+- Report: `results/REPORT.md`.
