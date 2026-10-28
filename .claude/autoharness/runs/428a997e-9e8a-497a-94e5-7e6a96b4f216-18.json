@@ -1,0 +1,36 @@
+{
+  "run_id": "428a997e-9e8a-497a-94e5-7e6a96b4f216-18",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "remove-service",
+      "ok": false,
+      "findings": [
+        "safety",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "remove-service",
+      "ok": false,
+      "findings": [
+        "safety",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "bash-command-shape",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    }
+  ]
+}
