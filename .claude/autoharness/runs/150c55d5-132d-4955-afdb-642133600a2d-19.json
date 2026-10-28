@@ -1,0 +1,37 @@
+{
+  "run_id": "150c55d5-132d-4955-afdb-642133600a2d-19",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "rules-audit",
+      "ok": false,
+      "findings": [
+        "structure"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "compose-lint",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}
