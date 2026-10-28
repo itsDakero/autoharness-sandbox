@@ -48,8 +48,11 @@ scan_ok() {  # <dir> <range> <label>: secret scan before a push. 0 clean, 1 hit,
   case $rc in
     0) rm -f "$err"; return 0 ;;
     1) rm -f "$err"
-       echo "deploy-idea: secret scan blocked a push of $3:" >&2; sed 's/^/  /' <<<"$out" >&2
-       f="$(head -n3 <<<"$out" | paste -sd';' - | sed 's/;/; /g')"
+       echo "deploy-idea: secret scan blocked a push of $3:" >&2
+       # indents every line of a multi-line string
+       # shellcheck disable=SC2001
+       sed 's/^/  /' <<<"$out" >&2
+       f="$(head -n3 <<<"$out" | paste -sd';' -)"; f="${f//;/; }"
        [[ $(wc -l <<<"$out") -gt 3 ]] && f+=" (more)"
        "$REPO/scripts/discord.sh" "Secret scan blocked a push of $3: ${f:0:300}" >/dev/null || true
        return 1 ;;
@@ -243,6 +246,8 @@ fi
 s="$1"
 lock
 [[ $(git symbolic-ref --short HEAD) == main ]] || die "check out main first"
+# die if either diff is non-empty; die never returns
+# shellcheck disable=SC2015
 git diff --quiet && git diff --cached --quiet || die "main has uncommitted changes; commit or stash them first"
 git show-ref --verify --quiet "refs/heads/idea/$s" || die "no branch idea/$s (scripts/deploy-idea.sh lists them)"
 reviewed "$s" || die "idea/$s has no reviewed commit yet (the loop is still on it, or it failed)"
@@ -255,6 +260,8 @@ changed="$(git diff --name-only "main...idea/$s")"
 if risky="$(grep -E "$SENSITIVE" <<<"$changed")"; then
   echo
   echo "!! Touches sensitive files, look at these diffs before saying yes:"
+  # indents every line of a multi-line string
+  # shellcheck disable=SC2001
   sed 's/^/   /' <<<"$risky"
 fi
 manual="$(done_note "$s" | sed -n '/^## Manual steps/,/^## /p' | sed '$!b;/^## /d')"

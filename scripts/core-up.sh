@@ -5,7 +5,11 @@ set -euo pipefail
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO"
 [[ -f .env ]] || { echo "Missing $REPO/.env (cp .env.example .env)" >&2; exit 1; }
-set -a; . ./.env; set +a
+set -a
+# .env is git-ignored, never in the repo
+# shellcheck source=/dev/null
+. ./.env
+set +a
 
 ensure_network() {
   local name=$1; shift

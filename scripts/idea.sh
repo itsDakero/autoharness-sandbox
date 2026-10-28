@@ -53,7 +53,7 @@ deployed() { git cat-file -e "main:ideas/done/$1.md" 2>/dev/null; }  # on main, 
 waiting_taken() {  # a waiting note's slug is already used elsewhere: starting it would collide
   local d
   [[ -e ideas/$1.md ]] && return 0
-  for d in done parked rejected terminal; do [[ -e ideas/$d/$1.md ]] && return 0; done
+  for d in "done" parked rejected terminal; do [[ -e ideas/$d/$1.md ]] && return 0; done
   return 1
 }
 plan_files() {  # the Files: list of the last "## Plan" section of note $1, one path per line
@@ -76,8 +76,11 @@ scan_ok() {  # <dir> <range> <label>: secret scan before a push. 0 clean, 1 hit 
   case $rc in
     0) rm -f "$err"; return 0 ;;
     1) rm -f "$err"
-       echo "idea.sh: secret scan blocked a push of $3:" >&2; sed 's/^/  /' <<<"$SCAN_OUT" >&2
-       f="$(head -n3 <<<"$SCAN_OUT" | paste -sd';' - | sed 's/;/; /g')"
+       echo "idea.sh: secret scan blocked a push of $3:" >&2
+       # indents every line of a multi-line string
+       # shellcheck disable=SC2001
+       sed 's/^/  /' <<<"$SCAN_OUT" >&2
+       f="$(head -n3 <<<"$SCAN_OUT" | paste -sd';' -)"; f="${f//;/; }"
        [[ $(wc -l <<<"$SCAN_OUT") -gt 3 ]] && f+=" (more)"
        notify "Secret scan blocked a push of $3: ${f:0:300}"
        return 1 ;;
@@ -125,6 +128,8 @@ queue)
     s="$(basename "$f" .md)"
     dep="$(dep_of "$f" || true)"
     if [[ $f == ideas/waiting/* ]]; then
+      # continue unless there is a dep and it is deployed
+      # shellcheck disable=SC2015
       [[ -n $dep ]] && deployed "$dep" || continue  # waits: no dependency line, or it isn't deployed yet
       waiting_taken "$s" && continue                # collision: stays put, the dashboard shows it
     elif [[ -n $dep ]] && ! deployed "$dep"; then continue

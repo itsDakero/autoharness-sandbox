@@ -17,7 +17,7 @@ for c in tmux claude; do
   command -v "$c" >/dev/null 2>&1 || { echo "loop.sh: $c not found" >&2; exit 1; }
 done
 
-attach() {
+attach_session() {
   if [ -n "${TMUX:-}" ]; then
     tmux switch-client -t =ideas
   else
@@ -27,10 +27,10 @@ attach() {
 
 if tmux has-session -t =ideas 2>/dev/null; then
   echo "session 'ideas' already exists; the compact window applies only to a new session. To restart: quit claude in it, \`tmux kill-session -t ideas\`, then rerun scripts/loop.sh" >&2
-  attach
+  attach_session
   exit 0
 fi
 
 tmux new-session -d -s ideas -c "$repo" "env HOMELAB_LOOP=1 CLAUDE_CODE_AUTO_COMPACT_WINDOW=$window claude; exec bash"
 echo "type: /loop /build-ideas"
-attach
+attach_session

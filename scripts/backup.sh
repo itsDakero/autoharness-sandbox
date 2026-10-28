@@ -66,7 +66,11 @@ preflight() {  # root, backup disk, one backup job at a time (local and off-site
 offsite() {
   preflight
   [[ -s $B2_ENV ]] || fail "$B2_ENV missing"
-  set -a; . "$B2_ENV"; set +a
+  set -a
+  # root-only /etc/restic/b2.env, not in the repo
+  # shellcheck source=/dev/null
+  . "$B2_ENV"
+  set +a
   export RESTIC_REPOSITORY=$B2_REPO
   # Copies every local nightly snapshot B2 doesn't have yet: normally just tonight's, more after a missed run.
   restic copy --from-repo "$LOCAL_REPO" --from-password-file "$RESTIC_PASSWORD_FILE" --tag nightly \

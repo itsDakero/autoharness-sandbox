@@ -18,7 +18,10 @@ install_cmd() {
     echo "gitleaks $VERSION is already installed at $dest"
     return 0
   fi
-  tmp="$(mktemp -d)"; trap "rm -rf '$tmp'" EXIT
+  tmp="$(mktemp -d)"
+  # expand now: tmp is local and gone by the time EXIT fires
+  # shellcheck disable=SC2064
+  trap "rm -rf '$tmp'" EXIT
   base="https://github.com/gitleaks/gitleaks/releases/download/v$VERSION"
   tar="gitleaks_${VERSION}_linux_x64.tar.gz"
   curl -fsSL -o "$tmp/$tar" "$base/$tar" || { echo "secret-scan: download failed" >&2; return 1; }

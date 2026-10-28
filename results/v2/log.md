@@ -42,3 +42,15 @@ Setup (parent session):
 - last_run.json: `{"run_id": "96046d93-d3b9-49d0-9742-5eae896958f9-10", "landed": 1, "rejected": 1, "absorbed": 0, "families": ["self_produced", "structure"], "uncategorized": 0}`
 - global skills now: 
 - child summary: results/v2/tasks/task-3.md
+
+## Task 4: shellcheck pass
+
+- session=639857e6-2354-4ebe-b8d6-5cab35ed74df rc=0 secs=79 waited_for_plugin=30s still_running=0
+- tools=8 {'Bash': 7, 'Skill': 1}
+- skills_before=add-service build-ideas claude-hook-maintenance debug-service remove-service rules-audit scout script-change-sync update-stack 
+- skills_after=add-service build-ideas claude-hook-maintenance debug-service remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- plugin run files: 18 -> 19
+- files changed: 17 (9 under .claude/)
+- last_run.json: `{"run_id": "639857e6-2354-4ebe-b8d6-5cab35ed74df-8", "landed": 1, "rejected": 0, "absorbed": 0, "families": [], "uncategorized": 0}`
+- global skills now: 
+- child summary: results/v2/tasks/task-4.md

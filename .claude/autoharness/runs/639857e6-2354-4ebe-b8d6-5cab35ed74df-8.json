@@ -1,0 +1,12 @@
+{
+  "run_id": "639857e6-2354-4ebe-b8d6-5cab35ed74df-8",
+  "verdicts": [
+    {
+      "action": "create",
+      "name": "shell-script-lint",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    }
+  ]
+}

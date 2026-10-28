@@ -54,6 +54,8 @@ esac
 [[ -z $cwd ]] || msg+=" in $(basename "$cwd")"
 
 dir="${XDG_RUNTIME_DIR:-/tmp}/homelab-loop-alert"
+# either step failing means no usable state dir
+# shellcheck disable=SC2015
 mkdir -p "$dir" 2>/dev/null && chmod 700 "$dir" 2>/dev/null || { log "no state dir: $msg"; exit 0; }
 
 (
