@@ -54,6 +54,25 @@
       "WebFetch(domain:code.claude.com)",
       "WebFetch(domain:pypi.org)"
     ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(*dc.sh *.worktrees/* up*)",
+      "Bash(*dc.sh *.worktrees/* down*)",
+      "Bash(*dc.sh *.worktrees/* stop*)",
+      "Bash(*dc.sh *.worktrees/* start*)",
+      "Bash(*dc.sh *.worktrees/* restart*)",
+      "Bash(*dc.sh *.worktrees/* build*)",
+      "Bash(*dc.sh *.worktrees/* run*)",
+      "Bash(*dc.sh *.worktrees/* create*)",
+      "Bash(*dc.sh *.worktrees/* exec*)",
+      "Bash(*dc.sh *.worktrees/* kill*)",
+      "Bash(*dc.sh *.worktrees/* rm*)",
+      "Bash(*dc.sh *.worktrees/* pull*)",
+      "Bash(*.worktrees/*/scripts/dc.sh*)",
+      "Read(./.env)",
+      "Read(**/*.env)"
+    ],
     "ask": [
       "Bash(scripts/dc.sh core/adguard* up*)",
       "Bash(scripts/dc.sh core/docker-socket-proxy* up*)",
@@ -121,25 +140,6 @@
       "Bash(curl *downloads/limit*)",
       "Bash(curl * --json*)",
       "Bash(scripts/deploy-idea.sh*)"
-    ],
-    "deny": [
-      "Bash(rm -rf *)",
-      "Bash(sudo *)",
-      "Bash(*dc.sh *.worktrees/* up*)",
-      "Bash(*dc.sh *.worktrees/* down*)",
-      "Bash(*dc.sh *.worktrees/* stop*)",
-      "Bash(*dc.sh *.worktrees/* start*)",
-      "Bash(*dc.sh *.worktrees/* restart*)",
-      "Bash(*dc.sh *.worktrees/* build*)",
-      "Bash(*dc.sh *.worktrees/* run*)",
-      "Bash(*dc.sh *.worktrees/* create*)",
-      "Bash(*dc.sh *.worktrees/* exec*)",
-      "Bash(*dc.sh *.worktrees/* kill*)",
-      "Bash(*dc.sh *.worktrees/* rm*)",
-      "Bash(*dc.sh *.worktrees/* pull*)",
-      "Bash(*.worktrees/*/scripts/dc.sh*)",
-      "Read(./.env)",
-      "Read(**/*.env)"
     ]
   },
   "hooks": {
@@ -179,6 +179,9 @@
       }
     ]
   },
+  "enabledPlugins": {
+    "autoharness@autoharness": true
+  },
   "extraKnownMarketplaces": {
     "autoharness": {
       "source": {
@@ -186,8 +189,5 @@
         "repo": "tigerless-labs/autoharness"
       }
     }
-  },
-  "enabledPlugins": {
-    "autoharness@autoharness": true
   }
 }
