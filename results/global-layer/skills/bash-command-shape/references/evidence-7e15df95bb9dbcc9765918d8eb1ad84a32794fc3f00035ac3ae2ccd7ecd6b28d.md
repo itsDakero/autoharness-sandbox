@@ -1,0 +1,1 @@
+Permission to use Bash with command cd /home/user/autoharness-sandbox; mkdir -p tools/stirling-pdf; grep -n "paperless\|mealie" docs/*.md core/dashboard -r --exclude=.env has been denied.

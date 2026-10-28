@@ -160,3 +160,15 @@ Plugin: autoharness 0.5.3, default settings (reflect every 50 tool calls, plus a
 
 - global skills now: bash-command-shape 
 
+## Task 14: stirling-pdf web service
+
+- rc=0 secs=111 still_running_spawn=0
+- tools=11 {'Bash': 6, 'Write': 2, 'Edit': 3}
+- skills_before=add-service build-ideas debug-service remove-service scout script-change-sync update-stack
+- skills_after=add-service build-ideas debug-service remove-service scout script-change-sync update-stack 
+- plugin runs/ files so far: 14
+- files changed: 10 (6 under .claude/)
+- last_run.json: `{"run_id": "b2a63e35-bdfc-472c-b28b-62660c500c31-11", "landed": 1, "rejected": 4, "absorbed": 0, "families": ["self_produced", "structure"], "uncategorized": 0}`
+
+- global skills now: bash-command-shape 
+

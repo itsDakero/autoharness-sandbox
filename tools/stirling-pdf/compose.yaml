@@ -1,0 +1,51 @@
+# Stirling-PDF: merge, split, convert, compress and OCR PDFs in the browser. Files are processed and not kept.
+services:
+  stirling-pdf:
+    image: stirlingtools/stirling-pdf:1.0.2
+    container_name: stirling-pdf
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/api/v1/info/status | grep -q UP || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    environment:
+      TZ: ${TZ}
+      SECURITY_ENABLELOGIN: "false"     # no accounts; LAN/tailnet only like every published port
+      SYSTEM_DEFAULTLOCALE: en-GB
+      LANGS: en_GB                      # UI language
+    ports:
+      - "8098:8080"
+    volumes:
+      - ${APPDATA_PATH}/stirling-pdf/configs:/configs
+      - ${APPDATA_PATH}/stirling-pdf/tessdata:/usr/share/tessdata
+      - ${APPDATA_PATH}/stirling-pdf/logs:/logs
+    networks:
+      - proxy
+    labels:
+      # Traefik (bonus http://stirling-pdf.lan)
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.stirling-pdf.rule=Host(`stirling-pdf.${DOMAIN}`)
+      - traefik.http.routers.stirling-pdf.entrypoints=web
+      - traefik.http.services.stirling-pdf.loadbalancer.server.port=8080
+      # Dashboard
+      - homelab.name=Stirling-PDF
+      - homelab.group=Tools
+      - homelab.icon=stirling-pdf
+      - homelab.audience=family
+      - homelab.description=Merge, split, convert and OCR PDFs
+      - homelab.port=8098
+      # Uptime Kuma (AutoKuma)
+      - kuma.stirling-pdf.http.name=stirling-pdf
+      - kuma.stirling-pdf.http.url=http://${LAN_IP}:8098/api/v1/info/status
+
+networks:
+  proxy:
+    external: true

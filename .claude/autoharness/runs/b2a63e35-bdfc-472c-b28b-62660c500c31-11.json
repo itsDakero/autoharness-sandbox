@@ -1,0 +1,60 @@
+{
+  "run_id": "b2a63e35-bdfc-472c-b28b-62660c500c31-11",
+  "verdicts": [
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "add-service",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "self_produced"
+      ],
+      "notes": []
+    },
+    {
+      "action": "patch",
+      "name": "bash-command-shape",
+      "ok": true,
+      "findings": [],
+      "notes": []
+    }
+  ]
+}
