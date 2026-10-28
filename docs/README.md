@@ -8,7 +8,7 @@ Read this first, then only the doc you need. One line per doc; add a line when y
 | `docs/m1-core.md` | Core services: Traefik, AdGuard, Kuma, ntfy, Dozzle, the dashboard (widgets, admin login), phone alerts |
 | `docs/m2-media.md` | Media stack: GPU, Gluetun + qBittorrent, arr apps and the remote 720p pair, Jellyfin, Seerr |
 | `docs/m3-omada.md` | Omada controller: host networking, UFW ports, the restore, auto-backup, upgrades |
-| `docs/m4-backups.md` | restic backups (local + B2), Home Assistant backups over SMB, Scrutiny disk health |
+| `docs/m4-backups.md` | restic backups (local + B2), the monthly restore drill, Home Assistant backups over SMB, Scrutiny disk health |
 | `docs/m5-pipeline.md` | Idea pipeline: dashboard idea box, Discord feed, the background build loop and deploys |
 | `docs/m6-research.md` | M6 plan: scout agent + scoring/Proposed tab, Mac mini model server, assistant agent (Hermes), pre-planner researcher |
 | `docs/mac-mini.md` | Mac mini model server (M6 stage C): headless setup, Tailscale, Ollama as a launchd agent, checks, model bench |

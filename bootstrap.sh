@@ -285,14 +285,15 @@ else
 fi
 
 # ---------------------------------------------------------------- Backups
-# Nightly restic backup (scripts/backup.sh) and its off-site copy to B2, via systemd units kept in the
-# repo's systemd/. The disk (/mnt/backup), restic, both restic repos, /etc/restic/password and
+# Nightly restic backup (scripts/backup.sh), its off-site copy to B2 and the monthly restore drill
+# (scripts/restore-drill.sh), via systemd units kept in the repo's systemd/. The disk (/mnt/backup), restic, both restic repos, /etc/restic/password and
 # /etc/restic/b2.env are set up by hand; only checked here.
 log "--- Backups ---"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 UNITS_CHANGED=0
 for u in homelab-backup.service homelab-backup.timer homelab-backup-failure.service \
-         homelab-backup-offsite.service homelab-backup-offsite-failure.service; do
+         homelab-backup-offsite.service homelab-backup-offsite-failure.service \
+         homelab-restore-drill.service homelab-restore-drill.timer homelab-restore-drill-failure.service; do
   if cmp -s "$REPO_DIR/systemd/$u" "/etc/systemd/system/$u"; then
     log "$u up to date"
   else
@@ -304,6 +305,8 @@ done
 (( UNITS_CHANGED )) && systemctl daemon-reload
 systemctl enable --now homelab-backup.timer
 log "homelab-backup.timer: $(systemctl is-active homelab-backup.timer)"
+systemctl enable --now homelab-restore-drill.timer
+log "homelab-restore-drill.timer: $(systemctl is-active homelab-restore-drill.timer)"
 mountpoint -q /mnt/backup || log "WARNING: /mnt/backup not mounted: backups will fail"
 [[ -s /etc/restic/password ]] || log "WARNING: /etc/restic/password missing: backups will fail"
 [[ -s /etc/restic/b2.env ]] || log "WARNING: /etc/restic/b2.env missing: off-site copies will fail"

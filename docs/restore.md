@@ -3,7 +3,8 @@
 For Dan. Three cases: (a) one file or app from the local repo, (b) backup disk lost,
 (c) server dead. Then Home Assistant, Omada and the "keep OFF the server" list.
 
-Steps marked **UNTESTED** have not been run yet. Case (c) gets a full drill later;
+A monthly drill restores one service's appdata from the local repo and verifies it
+(`docs/m4-backups.md`, stage E). Steps marked **UNTESTED** have not been run yet. Case (c) gets a full drill later;
 remove the marks as steps pass. Everything else uses commands from
 `docs/m4-backups.md` that have run.
 

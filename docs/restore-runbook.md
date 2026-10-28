@@ -8,6 +8,8 @@ Other cases (backup disk lost, server dead, Home Assistant, Omada) are in
 `docs/restore.md`. Backup setup is in `docs/m4-backups.md`.
 
 Steps marked **UNTESTED** have not been run yet. Remove the mark once a step works.
+Steps 1–3 (restore to a temp dir, check the files) run every month in the restore drill
+(`scripts/restore-drill.sh`, `docs/m4-backups.md` stage E); the swap-in steps are not drilled.
 
 ## 0. Before you start
 - Snapshots: local repo `/mnt/backup/restic` (nightly 04:00, tag `nightly`; kept 7 daily,

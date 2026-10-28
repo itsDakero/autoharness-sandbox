@@ -1,0 +1,6 @@
+[Unit]
+Description=ntfy alert: homelab restore drill failed
+
+[Service]
+Type=oneshot
+ExecStart=/home/dan/homelab/scripts/restore-drill.sh notify-failure

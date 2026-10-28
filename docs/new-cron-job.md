@@ -4,6 +4,10 @@ Every step for adding a cron job. Background (cron-run.sh, push tokens, throttle
 "Cron dead-man's switch"; the merge rules are in `docs/m5-pipeline.md` "Merge-friendly registries".
 `<name>` below is the job name: lowercase-kebab, unique, and the same in every file.
 
+Jobs that need root (e.g. anything reading the restic repo) are not cron jobs: they get a systemd
+service + timer in `systemd/`, an `OnFailure=` ntfy unit, and a line in `bootstrap.sh`'s unit list (see
+`scripts/restore-drill.sh` and `docs/m4-backups.md`, stage E). Same for monthly jobs: no push monitor covers them.
+
 ## 1. The script
 - [ ] `scripts/<name>.sh` or `scripts/<name>.py`, executable, with a header comment: what it does, when it runs,
       its flags (`--dry-run`/`--print`/`test` where it sends anything).

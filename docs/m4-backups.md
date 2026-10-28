@@ -266,3 +266,38 @@ that can't be checked (registry down, GitHub rate limit for notes) are listed, n
 Cache with GitHub ETags and `alerted`: `~/.cache/homelab/image-check.json` (missing or corrupt = starts
 empty). `scripts/image-check.py --print` shows the digest only (no Discord, no ntfy, `alerted` kept);
 logs: `journalctl -t image-check`.
+
+## Stage E: monthly restore drill
+Backups only count if they restore. `scripts/restore-drill.sh` proves it once a month on one service.
+- **When**: `homelab-restore-drill.timer`, the 1st of each month at 10:00 (`Persistent=true`: a missed run happens
+  at the next boot). It runs the script as root through `homelab-restore-drill.service`. Root, not cron, because
+  the repo and `/etc/restic/password` are root-only; it uses the same repo, password file and cache as `backup.sh`.
+  There is no Kuma push monitor: Kuma caps push intervals at 24 days.
+- **What**: one folder from the script's `DRILL` list, picked by month (Jan radarr, Feb sonarr, Mar prowlarr,
+  Apr seerr/config, May jellyfin/config, Jun uptime-kuma, Jul dashboard, Aug fitness, Sep books, Oct wardrobe,
+  Nov mealie, Dec paperless). It takes the newest `nightly` snapshot holding `/srv/homelab`, restores that folder
+  into a fresh `/var/tmp/restore-drill.XXXXXX` (root-only, on disk) with `restic restore --verify` (restic re-reads
+  every restored file and checks it against the snapshot), then compares the restored files with `restic ls`:
+  same file count, same total bytes, at least one non-empty file. The temp dir is always deleted.
+- **Fails** (exit 1) when: no snapshot, `restic restore --verify` fails, files or bytes differ, not enough free
+  space in `/var/tmp` (snapshot size + 1 GB), the backup lock is still held after 2 h, or the snapshot is 48 h or
+  older (the restore is still checked first, so the message says which part failed).
+- **Lock**: it takes `/run/homelab-backup.lock` like the backup jobs (waits up to 2 h), so it never runs during a
+  backup or prune. It holds the lock for a few minutes at 10:00, well clear of the 04:00 backup; only a
+  `Persistent` catch-up right after a boot near 04:00 could make that night's backup fail with "another backup is running".
+- **Report**: one Discord line either way (`scripts/discord.sh`), e.g.
+  `Restore drill OK: radarr from snapshot 1a2b3c4d (6h old): 412 files, 38.5 MB restored and verified in 9s`.
+  On failure, systemd runs `homelab-restore-drill-failure.service`, which posts "Homelab restore drill FAILED" to
+  `NTFY_ALERT_TOPIC` with the last 15 journal lines (this also covers a timeout or a crash).
+- It checks the restore itself, not that the app starts on the restored data; the swap-in steps stay in
+  `docs/restore-runbook.md`.
+
+### Commands
+```bash
+systemctl list-timers homelab-restore-drill.timer         # next run
+sudo systemctl start homelab-restore-drill.service        # this month's drill now
+sudo scripts/restore-drill.sh seerr/config                # drill another folder by hand
+journalctl -u homelab-restore-drill -n 50                 # last run
+scripts/restore-drill.sh test-alert                       # ntfy test, no root
+sudo systemctl start homelab-restore-drill-failure.service  # real failure alert path
+```

@@ -66,3 +66,15 @@ Setup (parent session):
 - last_run.json: `{"run_id": "c92bf327-cf13-4d8d-82a2-6c3ebb3f05f3-8", "landed": 2, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
 - global skills now: 
 - child summary: results/v2/tasks/task-5.md
+
+## Task 6: restore drill
+
+- session=8b89357a-2266-41f2-b941-a97391b3e985 rc=0 secs=198 waited_for_plugin=60s still_running=0
+- tools=14 {'Bash': 13, 'Write': 1}
+- skills_before=add-service build-ideas claude-hook-maintenance debug-service remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- skills_after=add-service build-ideas claude-hook-maintenance debug-service remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- plugin run files: 20 -> 21
+- files changed: 18 (6 under .claude/)
+- last_run.json: `{"run_id": "8b89357a-2266-41f2-b941-a97391b3e985-14", "landed": 0, "rejected": 2, "absorbed": 0, "families": ["safety", "structure"], "uncategorized": 0}`
+- global skills now: 
+- child summary: results/v2/tasks/task-6.md

@@ -62,12 +62,13 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   - `ops-actions.py [--dry-run]` (cron every 5 min: restart registered non-core containers unhealthy 2 checks running, capped 1/h + 3/day per service, breaker >3/h writes PAUSE; see docs/ops-actions.md)
   - `qbit-setup.py` (qBittorrent login + settings)
   - `qbit-watchdog.sh` (cron, via `install-cron.sh`)
+  - `restore-drill.sh [<folder>]` (root via systemd, monthly on the 1st: `restic restore --verify` of one service's appdata (rotates by month) into a temp dir, file/byte check, fails if the snapshot is >48h old; Discord line, ntfy on failure; `test-alert`)
   - `scrutiny-check.sh` (cron: ntfy on a disk problem in Scrutiny; holds the sda 187/188 exception)
   - `seerr-route.py` (cron: remote users' requests → remote pair)
   - `seerr-setup.py` (Seerr servers, users, permissions)
   - `secret-scan.sh install|history|<dir> <range>` (gitleaks v8.30.1 in ~/.local/bin; idea.sh/deploy-idea.sh scan before every push, a hit or a missing binary = no push)
   - `storage-cleanup.py report [--print]` (cron, Sundays: read-only dry-run list of watched media to clean, ntfy)
-- `systemd/` – host units (backup service/timer, off-site copy, failure alerts, DOCKER-USER rule), installed by `bootstrap.sh`
+- `systemd/` – host units (backup service/timer, off-site copy, monthly restore drill, failure alerts, DOCKER-USER rule), installed by `bootstrap.sh`
 - `ideas/` – queue for the build loop (`ideas/done/`, `ideas/parked/`, `ideas/rejected/`, `ideas/terminal/` = plans that
   write under `.claude/`, built by Dan with `/build-ideas <slug>` in a terminal; `ideas/waiting/` = notes with
   `Depends on: <slug>`, queued once that idea is deployed); the dashboard's admin Ideas tab adds

@@ -1,0 +1,26 @@
+{
+  "run_id": "8b89357a-2266-41f2-b941-a97391b3e985-14",
+  "verdicts": [
+    {
+      "action": "create",
+      "name": "scheduled-job-wiring",
+      "ok": false,
+      "findings": [
+        "safety",
+        "structure",
+        "structure",
+        "structure"
+      ],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "stub-external-tools-shell-tests",
+      "ok": false,
+      "findings": [
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}

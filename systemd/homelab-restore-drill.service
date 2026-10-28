@@ -1,0 +1,11 @@
+[Unit]
+Description=Homelab monthly restore drill (restic restore --verify of one service's appdata)
+RequiresMountsFor=/mnt/backup
+OnFailure=homelab-restore-drill-failure.service
+
+[Service]
+Type=oneshot
+ExecStart=/home/dan/homelab/scripts/restore-drill.sh
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=3h
