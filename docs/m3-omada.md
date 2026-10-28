@@ -19,6 +19,9 @@ TP-Link Omada Software Controller for the 3 access points. Compose:
   `http://<host>:8088/` redirects to `https://<host>:8043/` (browser cert warning
   until HTTPS comes).
 - **Kuma**: `https://${LAN_IP}:8043/`, `ignore_tls=true` (self-signed).
+- **Cert expiry**: `ignore_tls` also hides an expired cert, so `scripts/cert-expiry-check.sh` (cron daily 09:25)
+  reads the 8043 cert's end date: ntfy at 30 days left (weekly), 7 days or expired (high, daily). State in
+  `/srv/homelab/cert-expiry-check/state`; `journalctl -t cert-expiry-check`; `... test` sends a test alert.
 - **Owner**: `PUID`/`PGID` from the env file (1000), so owners match
   `keep/owners.txt`. The image default is 508.
 - **Shutdown**: `stop_grace_period: 60s`. MongoDB gets corrupted if it is killed early.

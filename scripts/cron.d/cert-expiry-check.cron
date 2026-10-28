@@ -1,0 +1,1 @@
+25 9 * * * $R cert-expiry-check 600 --ok 0,1 $REPO/scripts/cert-expiry-check.sh

@@ -25,6 +25,7 @@ Tailscale 100.78.185.81. Docker + compose plugin, Tailscale, UFW.
   - `arr-setup.py` (arr apps + Prowlarr wiring)
   - `backup.sh` + `backup-excludes.txt` (nightly restic to `/mnt/backup/restic`, then `offsite` copy to B2; root via systemd; `test-alert`)
   - `card-prices.py` (cron daily: LeafGreen card watchlist price history; Discord on a drop; `--dry-run`)
+  - `cert-expiry-check.sh` (cron daily: ntfy when a TLS cert nears expiry, today Omada's 8043; warn 30 days weekly, crit 7 days daily)
   - `core-up.sh`
   - `cron-run.sh <name> <timeout> [--ok codes] <cmd>` (wraps every cron job: syslog `cron-<name>` and a Kuma push monitor `cron-<name>`)
   - `dashboard-passwd.py` (hash for the dashboard's /admin login; user runs it, pastes into `.env`)

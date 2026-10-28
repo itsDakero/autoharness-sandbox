@@ -1,0 +1,8 @@
+# Kuma push monitor for scripts/cron.d/cert-expiry-check.cron (merged by scripts/dc.sh)
+services:
+  uptime-kuma:
+    labels:
+      - kuma.cron-cert-expiry-check.push.name=cron-cert-expiry-check
+      - kuma.cron-cert-expiry-check.push.push_token=${KUMA_CRON_PUSH_SECRET:-}certexpirycheck0
+      - kuma.cron-cert-expiry-check.push.interval=93600
+      - kuma.cron-cert-expiry-check.push.max_retries=0
