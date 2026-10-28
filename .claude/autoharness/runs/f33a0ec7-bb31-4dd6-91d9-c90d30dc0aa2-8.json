@@ -1,0 +1,27 @@
+{
+  "run_id": "f33a0ec7-bb31-4dd6-91d9-c90d30dc0aa2-8",
+  "verdicts": [
+    {
+      "action": "create",
+      "name": "script-unit-tests",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure",
+        "structure",
+        "structure"
+      ],
+      "notes": []
+    },
+    {
+      "action": "create",
+      "name": "image-tag-versions",
+      "ok": false,
+      "findings": [
+        "structure",
+        "structure"
+      ],
+      "notes": []
+    }
+  ]
+}

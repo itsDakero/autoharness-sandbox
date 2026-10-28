@@ -21,7 +21,8 @@ Logs to syslog (journalctl -t image-check).
   scripts/image-check.py --propose            # also write one Risk 1 note per strict-semver patch bump
                                               # to ideas/proposed/ (cron); with --print: show, write nothing
 
---propose: a ref gets a note only when current and newest tag both fully match vN.N.N[-suffix] with the same
+--propose: a ref gets a note only when current and newest tag both fully match vN.N.N[-suffix] (semver: no
+leading zeros, so zero-padded dates like 2024.01.15 never match) with the same
 prefix/suffix, same major.minor and a higher patch; no compose file under core/; not gluetun (PROPOSE_SKIP);
 not in HOLDS; no inline `#` comment on its image line; not proposed before (ideas/, proposed, done, parked,
 rejected, terminal, dismissed incl. -N) and no bump-<service>-* note still pending. Only the strictly
@@ -70,7 +71,7 @@ GITHUB = {
 }
 # services never proposed (besides core/ and HOLDS)
 PROPOSE_SKIP = {"gluetun"}
-SEMVER = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(-[a-z][a-z0-9-]*)?$")
+SEMVER = re.compile(r"^v?(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-[a-z][a-z0-9-]*)?$")  # no leading zeros
 IDEAS = REPO / "ideas"
 IDEA_DIRS = ("proposed", "done", "parked", "rejected", "terminal")
 SECURITY = re.compile(r"(?i)security|CVE-\d|GHSA-")
@@ -150,7 +151,12 @@ def read_images():
 
 
 def split_ref(ref: str):
-    name, _, tag = ref.rpartition(":")
+    """-> (name, tag); drops a trailing @sha256 digest and a docker.io/ (+ library/) prefix."""
+    name, _, tag = ref.split("@", 1)[0].rpartition(":")
+    if name.startswith("docker.io/"):
+        name = name[len("docker.io/"):]
+        if name.startswith("library/"):
+            name = name[len("library/"):]
     return name, tag
 
 
@@ -163,7 +169,9 @@ def nums(tag: str) -> tuple:
 
 
 def upstream(tag: str) -> str:
-    return re.split(r"[-_]", tag.lstrip("v"), maxsplit=1)[0]
+    """The app version in a tag: its first dotted number run (v1.2.3, version-1.2.3, 1.2.3-ls12 -> 1.2.3)."""
+    m = re.search(r"\d+(?:\.\d+)*", tag)
+    return m[0] if m else ""
 
 
 def kind(cur: tuple, new: tuple) -> str:

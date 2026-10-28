@@ -150,3 +150,15 @@ Setup (parent session):
 - last_run.json: `{"run_id": "7aada2f9-0471-4910-b73c-47d88426a10e-5", "landed": 0, "rejected": 1, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
 - global skills now: upstream-file-fetch 
 - child summary: results/v2/tasks/task-12.md
+
+## Task 13: image-check tests
+
+- session=f33a0ec7-bb31-4dd6-91d9-c90d30dc0aa2 rc=0 secs=142 waited_for_plugin=50s still_running=0
+- tools=8 {'Bash': 7, 'Write': 1}
+- skills_before=add-cron-job add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- skills_after=add-cron-job add-service build-ideas claude-hook-maintenance debug-service gpu-container-policy remove-service rules-audit scout script-change-sync shell-script-lint update-stack 
+- plugin run files: 27 -> 28
+- files changed: 9 (6 under .claude/)
+- last_run.json: `{"run_id": "f33a0ec7-bb31-4dd6-91d9-c90d30dc0aa2-8", "landed": 0, "rejected": 2, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
+- global skills now: upstream-file-fetch 
+- child summary: results/v2/tasks/task-13.md
