@@ -186,3 +186,11 @@ Setup (parent session):
 - last_run.json: `{"run_id": "bb5bdcf7-d741-48cf-aada-5bb6ae72ed30-12", "landed": 0, "rejected": 3, "absorbed": 0, "families": ["structure"], "uncategorized": 0}`
 - global skills now: upstream-file-fetch 
 - child summary: results/v2/tasks/task-15.md
+
+## Wrap-up (parent session)
+
+- Ran `scripts/check.sh`: all 6 steps PASS, 126 tests.
+- GitHub Actions `check` workflow: green on all 4 pushes.
+- Copied the global skill `upstream-file-fetch` to `results/v2/global-layer/`.
+- Scanned `results/v2` and `.claude/skills` for tokens: one hit, a `${KUMA_CRON_PUSH_SECRET}` placeholder. Nothing leaked.
+- Report: `results/v2/REPORT.md`.
